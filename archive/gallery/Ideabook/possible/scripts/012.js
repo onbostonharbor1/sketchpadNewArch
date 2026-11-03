@@ -1,0 +1,35 @@
+/* gallery/Ideabook/possible/scripts/012.js
+   ============================================================
+   Hint for 012.jpg
+   ============================================================
+   What it seems to be: a pentagon with corner stitches over its whole edges, twice (the second turned), leaving a pentagonal hole
+   Built from:          polygonCorners, polygonCornerStitch
+   Guessed:             sizes, step counts and colours
+   A hint, not a copy: the construction, not the picture.
+   ============================================================ */
+
+import { middle, P, startHint, polygonCorners, polygonCornerStitch } from "/gallery/Ideabook/scripts/ideabookRoutines.js";
+
+export const scriptInfo = {
+  title: "Pentagon of corner stitches",
+  params: {
+    size: 280,
+    steps: 16,
+    color: "#ff9f1c",
+    lineWidth: 0.5,
+    background: "#555555"
+  },
+  controls: {
+    size: { widget: "range", label: "Size", min: 80, max: 420, step: 10 },
+    steps: { widget: "range", label: "Steps", min: 4, max: 60, step: 1 },
+    color: { widget: "colorPicker", label: "Colour" },
+    lineWidth: { widget: "range", label: "Line", min: 0.25, max: 3, step: 0.25 }
+  },
+  draw(p) {
+    const c = middle(), r = p.size, n = p.steps, col = { color: p.color, lineWidth: p.lineWidth };
+    polygonCornerStitch(polygonCorners(c, r, 5, 0), n, { ...col, full: true });
+    polygonCornerStitch(polygonCorners(c, r * 0.85, 5, 36), n, { ...col, full: true });
+  }
+};
+
+export function runPattern() { startHint(scriptInfo); }

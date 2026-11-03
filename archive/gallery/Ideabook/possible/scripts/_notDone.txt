@@ -1,0 +1,7 @@
+possible: images with no hint script, and why
+==============================================
+(2 Nov 2026) Three images have no hint script:
+
+IMG_2373.PNG                                 a shop page (screenshot) for a string-art kit; the work in it is too small to read
+IMG_2374.PNG                                 the same shop, another kit page; too small to read
+YUDECO Abstract Paper String Art Shadow Box Wall Decor Set - 2-Piece (JO1901011).png two framed panels seen across a room; the stitching cannot be made out
