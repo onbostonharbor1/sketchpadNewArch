@@ -1,0 +1,26 @@
+/* screens/prototype.css: the prototype page's look. Plain on purpose. */
+body { font-family: system-ui, sans-serif; margin: 0; font-size: 14px; background: #f4f4f2; color: #222; }
+header { padding: 8px 12px; background: #1d3557; color: #fff; display: flex; gap: 12px; align-items: center; }
+header .sub { opacity: 0.7; }
+header .right { margin-left: auto; }
+main { display: flex; gap: 10px; padding: 10px; }
+aside { width: 290px; flex: none; }
+section { background: #fff; border: 1px solid #ccc; border-radius: 4px; padding: 8px; margin-bottom: 8px; }
+h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: #555; }
+button, select, input { font-size: 13px; margin: 2px 0; }
+.row button { min-width: 34px; }
+ul { list-style: none; padding: 0; margin: 6px 0; }
+li { padding: 3px 6px; border: 1px solid #ddd; margin: 2px 0; cursor: pointer; border-radius: 3px; }
+li.chosen { border-color: #d00; background: #fff4f4; }
+li .status { float: right; font-size: 11px; }
+li .failed, li .blocked { color: #c00; }
+.hint { font-size: 12px; color: #666; margin: 0 0 4px; }
+#stage { background: #fff; border: 1px solid #ccc; }
+canvas { display: block; cursor: crosshair; }
+footer { position: fixed; bottom: 0; left: 0; right: 0; padding: 6px 12px; background: #eee; border-top: 1px solid #ccc; }
+footer.refused { background: #fde2e1; color: #7a1612; }
+#recovery { background: #fff3cd; border-bottom: 1px solid #e0b84a; padding: 6px 12px; }
+dialog { min-width: 460px; }
+.setting { display: grid; grid-template-columns: 1fr 130px 70px; gap: 6px; align-items: center; margin: 3px 0; }
+.setting .help { grid-column: 1 / -1; font-size: 11px; color: #666; margin-top: -2px; }
+.section { font-weight: bold; margin: 10px 0 4px; border-bottom: 1px solid #ccc; }

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<!-- screens/prototype.html
+     Oceania foundation prototype: one page to try the contracts by hand.
+     Served by the Oceania service (npm start, then http://127.0.0.1:5180/). -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Oceania prototype</title>
+<link rel="stylesheet" href="/screens/prototype.css">
+</head>
+<body>
+<header>
+  <strong>Oceania</strong> <span class="sub">foundation prototype</span>
+  <span id="docTitle"></span>
+  <span class="right">
+    <button id="settingsButton" type="button">Settings</button>
+  </span>
+</header>
+<div id="recovery" hidden></div>
+<main>
+  <aside id="controls">
+    <section>
+      <h3>Figure</h3>
+      <button id="newButton" type="button">New</button>
+      <button id="saveButton" type="button">Save</button>
+      <select id="openList"><option value="">Open...</option></select>
+      <button id="undoButton" type="button">Undo</button>
+      <button id="redoButton" type="button">Redo</button>
+    </section>
+    <section>
+      <h3>Layers</h3>
+      <button id="addButton" type="button">Add Parabola</button>
+      <ul id="layerList"></ul>
+      <div class="row">
+        <button id="leftButton" type="button" title="Move the chosen layer left 10 mm">&larr;</button>
+        <button id="rightButton" type="button" title="Move the chosen layer right 10 mm">&rarr;</button>
+        <button id="upButton" type="button" title="Move the chosen layer up 10 mm">&uarr;</button>
+        <button id="downButton" type="button" title="Move the chosen layer down 10 mm">&darr;</button>
+        <button id="rotateButton" type="button" title="Rotate the chosen layer 15 degrees">&#x21bb; 15&deg;</button>
+      </div>
+      <label>Steps <input id="stepsInput" type="number" min="1" max="200"></label>
+    </section>
+    <section>
+      <h3>Points</h3>
+      <p class="hint">Drag a red handle. Drop it on another handle to weld them.</p>
+      <div id="selected">No handle chosen.</div>
+      <button id="unweldButton" type="button">Unweld chosen</button>
+      <label>Attach chosen handle to <select id="attachPath"></select></label>
+      <button id="attachButton" type="button">Attach (half way)</button>
+      <button id="discButton" type="button">Add nail (disc) half way along</button>
+    </section>
+    <section>
+      <h3>Print</h3>
+      <button id="templateButton" type="button">Nail template (SVG, true size)</button>
+    </section>
+  </aside>
+  <div id="stage"><canvas id="canvas" width="1000" height="700"></canvas></div>
+</main>
+<footer id="message">Ready.</footer>
+<dialog id="settingsDialog"><form method="dialog"><div id="settingsBody"></div>
+  <menu><button value="close">Close</button></menu></form></dialog>
+<script type="module" src="/screens/app.js"></script>
+</body>
+</html>

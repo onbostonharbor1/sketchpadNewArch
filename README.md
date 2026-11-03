@@ -9,5 +9,9 @@ nail templates, and a place to explore designs.
 - `docs/V2_IDEAS.md`: the ideas folded into Rev B (I-1 to I-21).
 - `archive/`: a frozen copy of Sketchpad V1 (files only), read as data, never imported. See CLAUDE.md.
 
-Nothing of the new application is built yet. The first work is a reconciliation pass on the specifications and a
-foundation prototype (CLAUDE.md, "First work").
+Code name **Oceania** (Barry, 3 Nov 2026).
+
+Built so far: the foundation prototype (`docs/CHECKLIST_foundation.md`). To try it: `npm start`, then open
+http://127.0.0.1:5180/. Tests: `npm test`, `npm run test:page` (with the service running), `npm run check`.
+
+The work and its order: `docs/TASKS.md`.

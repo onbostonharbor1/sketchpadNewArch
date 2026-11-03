@@ -1,4 +1,4 @@
-# New sketchpad: task list
+# Oceania (new sketchpad): task list
 
 The order of work (RECONCILIATION.md R-17). Each item ends with its tests passing and a checklist for Barry.
 Status: done, doing, next, later, out (out of the first build).
@@ -10,7 +10,7 @@ Status: done, doing, next, later, out (out of the first build).
 | Repository with V1 in `archive/`, specifications, reviews, draft CLAUDE.md | done |
 | Reconciliation of the specifications (`docs/RECONCILIATION.md`) | done |
 | Settings catalogue (`docs/SETTINGS.md`) | done |
-| Name: "new sketchpad" (Barry, 3 Nov 2026) | done |
+| Name: "new sketchpad", code name Oceania (Barry, 3 Nov 2026) | done |
 
 ## Stage 1: foundation prototype
 
@@ -18,18 +18,18 @@ Proves the contracts that the reviews found unsettled, with behaviour Barry can 
 
 | Task | Contract | Status |
 |---|---|---|
-| Project skeleton: `package.json`, dev server, test runner, folders, the archive excluded from every tool | DS 3.2 | doing |
-| Settings: schema, `setting(name)`, settings file, the Settings page | SETTINGS.md ST-1 to ST-8 | doing |
-| Kernel subset: line, pairwise, `{ value, notes }` | R-4 | doing |
-| Parabola generator with four handles | R-1 | doing |
-| Document model: point table in document coordinates, layers with transforms | R-2, R-3, R-9, R-10 | doing |
-| Evaluator: local conversion, attachments, weld-conflict detection, failed and blocked layers | R-2, R-7, R-12 | doing |
-| Commands and undo with state ids | R-8, R-9, R-12 | doing |
-| Node service: read, write (temporary file and rename), settings, address a setting | R-16 | doing |
-| Save, reopen, crash recovery | R-8 | doing |
-| True-scale nail template (SVG) with print-time merging | R-11 | doing |
-| A page to try it: two Parabolas, weld, move, rotate, attach, undo, save, print | R-19 | doing |
-| Stopping experiment for scripts | R-13 | next |
+| Project skeleton: `package.json`, dev server, test runner, folders, the archive excluded from every tool | DS 3.2 | done |
+| Settings: schema, `setting(name)`, settings file, the Settings page | SETTINGS.md ST-1 to ST-8 | done |
+| Kernel subset: line, pairwise, `{ value, notes }` | R-4 | done |
+| Parabola generator with four handles | R-1 | done |
+| Document model: point table in document coordinates, layers with transforms | R-2, R-3, R-9, R-10 | done |
+| Evaluator: local conversion, attachments, weld-conflict detection, failed and blocked layers | R-2, R-7, R-12 | done |
+| Commands and undo with state ids | R-8, R-9, R-12 | done |
+| Node service: read, write (temporary file and rename), settings, address a setting | R-16 | done |
+| Save, reopen, crash recovery | R-8 | done |
+| True-scale nail template (SVG) with print-time merging | R-11 | done |
+| A page to try it: two Parabolas, weld, move, rotate, attach, undo, save, print | R-19 | done |
+| Stopping experiment for scripts | R-13 | doing |
 | Second outside review, of the prototype | | next |
 
 ## Stage 2: first usable object
