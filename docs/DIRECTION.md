@@ -1,118 +1,72 @@
-# Direction: what we agreed to add, and Oceania's changes ordered by fit with Sketchpad
+# Direction
 
-3 November 2026. A working list for discussion. Nothing here is decided until Barry says so.
+3 November 2026, as decided with Barry. This replaces the earlier version of this file, which ordered Oceania's
+changes into four tiers for discussion. The discussion is settled.
 
-## Part 1. What we just talked about adding
+## The decision
 
-| # | Item | Black box or yours | Can go into V1 now |
-|---|---|---|---|
-| 1 | Shapers: operations on the point array (reverse, part, every nth, rotate start, offset, resample, simplify) | **yours** | yes |
-| 2 | Connectors: ways of stitching (pairwise, offset stop/wrap, corner, growing skip, times table, all pairs, mirror, mesh) | **yours** | yes |
-| 3 | Stepping view: one stitch at a time, with its source (layer, arm, i to j) | yours | yes |
-| 4 | Figure robustness core: welds as shared point numbers, point table, dependency order, attachments with fallback, commands, checks | **yours** | the decision point (see Part 3) |
-| 5 | Library index replacing manifests (folders are the truth, optional `_folder.json`, watcher, Rebuild button, migration script) | black box (contract of 5 sentences) | yes |
-| 6 | Error checklist (each distinct error stays until ticked; "acknowledged" logged; quiet list of assumptions) | black box | yes |
-| 7 | Home: Workbench (statuses), Errors, Notes; later Log, Recent, Discoveries | black box | yes (Workbench after item 5) |
-| 8 | Tab state and switching (switching never touches document data, tested) | black box | yes |
-| 9 | Other black boxes: saving and opening, crash recovery, library view and thumbnails, settings page, widget building, menu table, script sandbox, help popup, undo internals, CSS | black box, each with a one-page contract and tests | mostly |
+- **Sketchpad (V1) stays the working system.** Everything Barry agreed from the Oceania specification goes into
+  V1, phase by phase. It's listed as Tier A in V1's `docs/TIERS.md` (repository `sketchpad`, branch
+  `claude/tier-a`), which is the authority for that work.
+- **Oceania (this repository) is reference, not the build.** The specification (Revision C), the reconciliation
+  contracts and the foundation prototype are kept. They show how the hard parts can be done, and the prototype
+  proves welds, attachments, undo and true-scale output work in that design. No further Oceania building unless
+  Barry decides it.
+- **Why:** Oceania as specified was about three times Sketchpad's concepts, and Barry's role depends on
+  understanding the system. Almost everything he wanted fits Sketchpad's model, so it can be added there while he
+  keeps understanding all of it.
 
-Rule for every black box: its contract is in its folder's README, and tests check exactly those sentences.
+## Principles carried into the work
 
-## Part 2. Oceania's proposed changes, from most like Sketchpad to least
+1. **Always do something** (D-23). Draw something malformed rather than crash or draw nothing; log the
+   assumption; let Barry fix it. The exception: never lose work silently.
+2. **What Barry owns, and what can be a black box.**
+   - **He owns:** the drawing objects and scripts, the point-array operations (shapers), the ways of stitching
+     (connectors), the figure core (welds, layers, transforms, checks), and the lists he writes (settings,
+     name-to-control conventions).
+   - **Black boxes:** the library index, tab state and switching, saving and opening, crash recovery, error
+     display and Home, the settings page, widget building, menus, the script sandbox, help, undo internals, CSS.
+   - **Rule for every black box:** a short written contract, and tests that check exactly that contract.
+3. **Points carry x, y and z.** Depth comes later (2.5D, then 3D), but no function drops `z`.
+4. **Words that keep other materials possible.** New geometry code says *link* and *anchor point* where it can.
+   Meshes and inserted objects are in reach; shaped nylon and true 3D are separate projects.
+5. **Welds are Barry's table** (his original idea): a table of groups. Members are named handles, not indices.
+   Values are in figure coordinates, and a check confirms every member agrees. Whether a row stores one value or
+   kept-equal copies is decided when that phase is reached.
 
-### Tier A: within the Sketchpad model (additions; no new concept to learn)
+## Tier A progress (Sketchpad, branch `claude/tier-a`)
 
-1. Templates as starting documents (FS 6.20); snap as a template property.
-2. Drawing shape palette: rectangle, polygon, ellipse and more, inserted like Line and Parabola on the subtab command menu.
-3. Curve library: each curve is one more registry object (rose, Lissajous, epicycloid, superellipse, spiral, ...).
-4. One unified commands table for menus and buttons (label, when enabled, action), replacing eight menu files.
-5. Error checklist (Part 1, item 6).
-6. Home subtabs (Part 1, item 7).
-7. Settings page: one place for configurable values, each with a Default button.
-8. Name-to-control conventions table (`lineWidth` gives the whole control definition).
-9. Control groups (`style` = color, lineWidth, alpha).
-10. Clickable badges on library items with a problem.
-11. Duplicate ids: load both and badge both (DWIM).
-12. "Always do something" (D-23): draw something malformed rather than crash or draw nothing. It's already your philosophy, written down.
-13. Spacing check that never blocks printing.
-14. Draggable alignment marks; no tiling engine (Snagit does that).
-15. Inches as default units; nail colour cycle red, green, orange, blue, yellow.
-16. Regression report: overlay, flicker and difference views; per-item tolerance.
-17. Comment standard; generated alphabetical function dictionary.
-18. Notes popup from headers (kept).
-19. Markdown help: optional; HTML may stay.
-20. "Important versus interesting" tag (core, keeper, test) on registry objects.
+| Step | Items (TIERS.md numbers) | Status |
+|---|---|---|
+| 1 | Shapers and connectors library, points keep z, always-do-something for unequal arms (A1, A2, A9, A10) | **built**: `draw/shapers.js`, `draw/connectors.js`, `drawPairs`, 20 tests |
+| 2 | Stepping view (A3) | **built** for the Draw tab: Step through the drawing |
+| 3 | Error checklist, Home Errors and Notes (A25, A26) | **built** |
+| 4 | Library index replacing manifests, migration, Home Workbench (A24, A26) | next; needs Windows testing on Barry's PC |
+| 5 | Output: true-scale SVG, units (inches) and print width, spacing check, alignment marks, nail colours (A19–A23) | to do |
+| 6 | Undo and redo (A12) | to do; tidies the paths that change a figure |
+| 7 | Welds as a table of groups; visualization kept apart from the product (A11, A13–A15) | to do |
+| 8 | Commands table, settings page, name-to-control conventions, control groups, Sweep over two settings (A30–A34) | to do |
+| 9 | Curve library, shape palette, intersections, simplified-curve overlay, clipping, templates, crash recovery, tags, badges, regression views, function dictionary (A4–A8, A16, A18, A27–A29, A35, A36) | to do |
 
-### Tier B: extends the model (one small new idea each)
+Each step is a branch phase that Barry reviews before the next is built on it.
 
-21. True-scale SVG output; PDF made by printing the SVG. New output, nothing else changes.
-22. Units and a print width per drawing; unknown units assumed to be canvas, and logged.
-23. Library index replacing manifests (Part 1, item 5). New mechanism, same lists.
-24. Shapers and connectors library (Part 1, items 1 and 2). Your stitcher, cut into small named pieces.
-25. Stepping view.
-26. Visualization drawn separately from the product: handles, welds, magic points and intersections on their own canvas layer, never printed.
-27. Magic and named points shown as an overlay.
-28. Intersections as nail candidates, with their own mark.
-29. Simplified-curve overlay, with a precision setting.
-30. Clipping and boolean shapers (nails inside a shape).
-31. Layer depth (2.5D) as a layer property; `z` kept by every geometry function.
-32. Crash recovery.
-33. Undo. New to you, but self-contained: each change is one step.
-34. Document checks when a figure is opened.
-35. Sweep (your design): grid of 2×2 over two settings you choose, and the slideshow.
-36. Bring-to-front on choosing a layer, as a view change only.
+## Not being done
 
-### Tier C: changes the model (robustness for figures; the hard half)
+Oceania's new machinery stays out of Sketchpad:
+- the importer beyond level 1, and the recorder;
+- Learn;
+- journals and run history;
+- Workers;
+- plugin discovery;
+- two settings scopes, and most of the 70 settings;
+- nesting;
+- output engines beyond SVG.
 
-37. Geometry as values: `build()` returns lines as data; drawing, discs, nails and hit tests all read that result. Replaces separate `draw()` and `infrastructure()`.
-38. Generators hold no state; each layer keeps its own settings in the figure. Replaces singletons, `params` and `Object.create` copies.
-39. Only settings are saved; derived values and the `points[]` mirror go.
-40. Handles declared by name; a drag writes that one named point. Replaces `update()` guessing.
-41. Point table: handles name point numbers.
-42. A weld is one shared point number. Replaces the propagation walk and `cornerPartners`.
-43. Attachments (a point riding on another layer's path at a fraction of its length), with a fallback position.
-44. Layers evaluated in dependency order; local and document coordinates converted in one place.
-45. Commands as the only way to change a figure (refuse or flag; undoable).
-46. A weld-pulling move: refused (D-17) or done and flagged (D-23). Undecided.
-47. Document, session and pointer state kept apart; tabs close and reopen from their own state.
-48. One Node process serving pages and files; no Vite.
-49. Separate repository with V1 as `archive/`.
+Any of these can be raised again on its own merits.
 
-### Tier D: new machinery (deferred or dropped)
+## Open
 
-50. Script sandbox frames and Workers.
-51. Recorder (a foreign script's drawing captured as a frozen layer).
-52. Importer, Levels 1 to 3.
-53. Learn (send to Claude for a draft).
-54. Journals and run history; Discoveries.
-55. Plugin discovery (keep a plain list instead).
-56. Two settings scopes; most of the 70 settings.
-57. Nesting (a layer that refers to another figure).
-58. Other materials (meshes, inserted objects); shaped nylon; true 3D.
-59. Output engines beyond SVG (plotter, CNC, DXF).
-
-## Part 3. What the ordering shows
-
-- Tiers A and B, about 36 items, fit Sketchpad's model, and nearly all of them could go into V1.
-- Figure robustness lives entirely in Tier C. That's the one real decision: rebuild the figure core inside V1, or
-  in Oceania.
-- Tier D is where most of Oceania's extra complexity came from, and none of it serves figures.
-
-## Part 4. Barry's answers (3 November 2026)
-
-**Tier A:** accepted as a natural fit.
-
-**Tier B:**
-
-| Answer | Items |
-|---|---|
-| Want | 23 library index; 24 shapers and connectors library; 25 stepping view; 28 intersections as nail candidates; 29 simplified-curve overlay; 35 Sweep; 31 partly (depth not implemented yet, but points carry x, y and z everywhere) |
-| Free to add | 21 true-scale SVG; 22 units and print width |
-| Nice, a natural fit | 26 visualization separate from the product; 27 magic and named points as an overlay |
-| Natural fit (the rest) | 30 clipping and boolean shapers; 32 crash recovery; 33 undo; 34 document checks; 36 bring-to-front as a view change |
-
-**Tier C:** 42 (a weld is one shared point number) is mostly Barry's original conception of welds.
-
-**Tier D:** 58 (other materials) may be retained. Meshes and inserted objects come almost free from connectors;
-shaped nylon and true 3D stay separate projects. To keep them possible, the geometry code says *link* and
-*anchor point*, not stitch and nail.
+- The figure core in full (the point table, attachments in dependency order) is the one large change still
+  undecided. Step 7 brings welds as groups into V1. Whether attachments follow, and where, is decided after that.
+- Revision C's open items O-15 to O-21, and the alternative to D-17 (refusing weld-breaking moves versus doing the
+  move and flagging it).
