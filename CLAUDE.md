@@ -53,6 +53,11 @@ When a decision trades one purpose against the other, say so and let Barry decid
 - No unexplained regression change merges. Approve intended changes explicitly.
 - Errors are caught only at choke points and reported (FS 6.14); no try/catch scattered through logic.
 - Anything an AI writes into Sketchpad is a draft Barry approves; nothing leaves the machine without his press.
+- **CSS stays radically simple** (Barry, 3 Nov 2026: in V1 "the only area I HATE is the css ... the AI constantly
+  went for complexity"). One stylesheet per page, plain selectors on a fixed page structure written in the HTML; no
+  framework (no Bootstrap), no `!important`, no styles set from JavaScript except to show or hide a fixed region, no
+  generated class names, no layout tricks where a plain block or flex row will do. If a style rule needs a comment to
+  explain why it wins over another, the structure is wrong: fix the structure.
 
 ## Decisions since the specifications (Barry, 3 Nov 2026)
 

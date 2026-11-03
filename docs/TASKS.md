@@ -29,7 +29,7 @@ Proves the contracts that the reviews found unsettled, with behaviour Barry can 
 | Save, reopen, crash recovery | R-8 | done |
 | True-scale nail template (SVG) with print-time merging | R-11 | done |
 | A page to try it: two Parabolas, weld, move, rotate, attach, undo, save, print | R-19 | done |
-| Stopping experiment for scripts | R-13 | doing |
+| Stopping experiment for scripts (network check left for the PC) | R-13 | done |
 | Second outside review, of the prototype | | next |
 
 ## Stage 2: first usable object

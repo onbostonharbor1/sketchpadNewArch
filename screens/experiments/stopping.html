@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<!-- screens/experiments/stopping.html: the stopping experiment's host page (docs/experiments/stopping.md). -->
+<html><head><meta charset="utf-8"><title>Stopping experiment</title></head><body>
+<pre id="out"></pre>
+<script type="module">
+/* Each trial starts a misbehaving script one way, measures whether this page keeps running (timer ticks over
+   one second), stops it, and measures again. Results are written to #out as JSON lines for the runner. */
+const out = document.getElementById("out");
+const log = (o) => { out.textContent += JSON.stringify(o) + "\n"; };
+const ticks = (ms) => new Promise((resolve) => { let n = 0; const id = setInterval(() => n++, 20); setTimeout(() => { clearInterval(id); resolve(n); }, ms); });
+const messages = [];
+addEventListener("message", (e) => messages.push(String(e.data)));
+
+async function trial(name, start, stop) {
+  messages.length = 0;
+  const handle = start();
+  // Wait until the script says it has started (or 5 s), so the measurement is of it running.
+  for (let i = 0; i < 50 && !messages.length; i++) await new Promise((r) => setTimeout(r, 100));
+  const started = messages.length > 0;
+  await new Promise((r) => setTimeout(r, 200));
+  const during = await ticks(1000);
+  const t0 = performance.now(); await stop(handle); const stopMs = Math.round(performance.now() - t0);
+  const after = await ticks(1000);
+  log({ name, started, during, after, stopMs, messages: [...messages] });
+}
+const other = location.origin.includes("127.0.0.1") ? location.origin.replace("127.0.0.1", "localhost") : location.origin.replace("localhost", "127.0.0.1");
+const frame = (src, sandbox) => { const f = document.createElement("iframe"); if (sandbox) f.sandbox = "allow-scripts"; f.src = src; document.body.appendChild(f); return f; };
+
+// One trial per page load (?trial=worker&mode=loop), so a crash in one cannot hide the others.
+const q = new URLSearchParams(location.search), kind = q.get("trial"), mode = q.get("mode");
+if (kind === "worker") await trial("worker " + mode, () => { const w = new Worker("runaway.js"); w.onmessage = (e) => messages.push(e.data); w.postMessage(mode); return w; }, (w) => w.terminate());
+if (kind === "same") await trial("sandboxed frame, same site " + mode, () => frame("frame.html?mode=" + mode, true), (f) => f.remove());
+if (kind === "plain") await trial("plain frame, same origin (control) " + mode, () => frame("frame.html?mode=" + mode, false), (f) => f.remove());
+if (kind === "other") await trial("frame, other site " + mode, () => frame(other + "/screens/experiments/frame.html?mode=" + mode, true), (f) => f.remove());
+log({ done: true });
+</script></body></html>

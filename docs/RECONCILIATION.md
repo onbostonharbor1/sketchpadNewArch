@@ -107,10 +107,10 @@ suppresses a layer's automatic stitch-end nails is open (O-17). *Test: nails.tes
 
 ## R-13 Runaway code
 
-Geometry generators run where they can be stopped: in a Worker, terminated at the time limit. Legacy painting
-scripts run in a page of their own on a second origin, with a content security policy that blocks network access;
-whether a runaway one can be stopped from the main page is to be proved by the stopping experiment before the script
-host is built. *Experiment: docs/experiments/stopping.md.*
+Geometry generators run in a Worker, terminated at the time limit. Legacy painting scripts run in a frame with
+`sandbox="allow-scripts"` and never `allow-same-origin`, which current Chrome and Edge put in its own process: its
+code cannot freeze the page, and removing the frame stops it. The frame's content security policy blocks network
+access (to be confirmed on Barry's PC). *Proved: docs/experiments/stopping.md (3 Nov 2026).*
 
 ## R-14 Regression records
 
