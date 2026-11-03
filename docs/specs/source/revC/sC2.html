@@ -1,0 +1,179 @@
+<h2>15.0 ARCHITECTURAL REVIEW: OCEANIA COMPARED WITH SKETCHPAD [C]</h2>
+<h3>15.1 Purpose and method</h3>
+<p>This section is for the owner's careful re-reading before construction goes further. For each area of the
+architecture it sets Sketchpad (V1, branch <tt>claude1</tt>) beside Oceania, says what changes, what is gained and what
+is lost, the implications that can be foreseen, and the alternatives. Where Oceania's choice has been proved by the
+prototype, that is said; where it has not, it is a judgement and may be wrong. An alternative marked <b>viable</b> could
+be chosen now at little cost; one marked <b>costly later</b> becomes expensive once construction builds on the current
+choice.</p>
+
+<h3>15.2 Summary</h3>
+<table class="small">
+<tr><th>Area</th><th>Sketchpad</th><th>Oceania</th><th>Net effect</th></tr>
+<tr><td>Drawing</td><td>Objects paint through <tt>drawLine</tt>; geometry exists only while painting</td><td>Generators return geometry as values; renderers paint it</td><td>Large gain; costs a rewrite of every object</td></tr>
+<tr><td>Objects</td><td>Shared singletons with <tt>update</tt> and <tt>draw</tt>; private copies by <tt>Object.create</tt></td><td>Pure <tt>build(settings)</tt>; no state</td><td>Removes a class of bugs; less "just poke it"</td></tr>
+<tr><td>Coordinates</td><td>Each layer in its own object space with a transform</td><td>Points in document coordinates; layers convert</td><td>Welds become simple; layer transforms matter less</td></tr>
+<tr><td>Welds</td><td>Copies kept in step by a propagation walk</td><td>One shared point; weld-breaking moves refused</td><td>Simpler and correct; some V1 moves now refused</td></tr>
+<tr><td>Undo</td><td>None</td><td>Whole-document snapshots with state ids</td><td>Gain; memory is the cost</td></tr>
+<tr><td>State</td><td>One <tt>uiState</tt> mixing document, view and history</td><td>Document, session and history apart</td><td>Gain</td></tr>
+<tr><td>Lists</td><td>Manifests, rebuilt and checked</td><td>Folders are the truth; small metadata files</td><td>Gain; the watcher must be reliable</td></tr>
+<tr><td>Processes</td><td>Vite and a Node service</td><td>One Node service that also serves the pages</td><td>Simpler; no hot reload</td></tr>
+<tr><td>Scripts</td><td>Run in the application's page</td><td>Sandboxed frames and Workers</td><td>Safe; scripts lose direct reach into the app</td></tr>
+<tr><td>Controls</td><td><tt>params</tt> plus <tt>controls</tt>, several conventions</td><td>One schema; one Settings page</td><td>Gain</td></tr>
+<tr><td>Page and CSS</td><td>Bootstrap, offcanvas, 46 <tt>!important</tt> rules</td><td>Fixed structure, one plain stylesheet, no framework</td><td>Gain; looks plainer</td></tr>
+<tr><td>Units</td><td>Canvas pixels; scale set for printing</td><td>Millimetres; pixels only on screen</td><td>Gain for templates; every V1 number must be converted</td></tr>
+<tr><td>Errors</td><td>Bar and log (added late)</td><td>Choke points and containment from the start</td><td>Same idea, designed in</td></tr>
+<tr><td>Tests</td><td>Tab switching, regression (added late)</td><td>Contracts first, page tests, layer check</td><td>Gain</td></tr>
+</table>
+
+<h3>15.3 Drawing: geometry as values</h3>
+<p><b>Sketchpad.</b> A registry object's <tt>draw()</tt> calls <tt>drawLine</tt> for each thread; <tt>drawLine</tt> both
+paints and is the only record of what was drawn (bounds, stitch ends for printing are collected as side effects).
+<tt>infrastructure()</tt> repeats what <tt>draw()</tt> knows so discs can be placed.</p>
+<p><b>Oceania.</b> A generator returns paths, stitches and named points as plain data; painting, hit-testing,
+printing and comparing all read that data.</p>
+<p><b>Gained.</b> Printing, nail checks, regression and attachments read the same geometry the screen shows, so they
+cannot disagree. Geometry can be computed off screen (sweeps, thumbnails) without borrowing the canvas.</p>
+<p><b>Lost.</b> The immediacy of "write a few <tt>ctx</tt> calls and see it". A playful idea now needs a generator, or
+stays a playpen script (which still paints freely, in its frame).</p>
+<p><b>Implications.</b> Every V1 object is rewritten (D-5). Effects that are not lines (fills, gradients, text, blending:
+29 and 20 V1 scripts) have no place in a nail template and live only in playpen scripts; if the owner wants a figure
+layer that is a painted picture, the role <tt>image</tt> must hold a picture, not geometry.</p>
+<p><b>Alternatives.</b> (a) Keep painting objects and record what they paint (the recorder): <b>viable</b> as a bridge,
+but recorded geometry has no names, no infrastructure and no handles. (b) A hybrid: generators may also return a
+<tt>paint(ctx)</tt> for decoration that is never printed: <b>viable</b>, worth considering if the owner misses
+decoration in figures.</p>
+
+<h3>15.4 Objects: pure generators instead of shared singletons</h3>
+<p><b>Sketchpad.</b> Fourteen singletons hold <tt>params</tt> and derived state; copies for figure layers are made with
+<tt>Object.create</tt> and <tt>structuredClone</tt>. The shared-settings bug fixed in V1 (Draw, Figures and Patterns
+sharing one set of settings) came from this.</p>
+<p><b>Oceania.</b> <tt>build(settings, kernel)</tt> keeps nothing between calls.</p>
+<p><b>Implications.</b> Objects that kept running state (V1's Pursuit, animated scripts, <tt>manyRowsColumns</tt>'s
+seeding) must either recompute it from settings each time or keep it in the document as data. That is the right
+discipline for templates, but an animation needs a different home: time becomes a setting, or animation stays in
+playpen scripts. A generator that is expensive to recompute on every drag needs the memoisation of DS DR-6.6, which the
+prototype does not yet have.</p>
+<p><b>Alternatives.</b> (a) Allow a generator a private cache keyed by its settings: <b>viable</b>, invisible to the
+document. (b) Allow stateful generators for animation only: <b>viable</b> later.</p>
+
+<h3>15.5 Coordinates, transforms and welds</h3>
+<p><b>Sketchpad.</b> Each layer draws in its own object space; its transform maps to the canvas; a weld keeps copies of a
+point in several layers' spaces in step, walking the welded group after each move (729 lines before the split, both
+Phase 8 bugs found there).</p>
+<p><b>Oceania.</b> Every point is in document coordinates; each layer converts them into its local coordinates to build.
+A weld is two handles naming one point (D-3). Moving or rotating a layer moves its own points; if one of them is shared
+or attached, the move is refused with its reason (owner, 3 Nov 2026: detect and flag; the right behaviour is deferred).</p>
+<p><b>Gained.</b> A weld cannot drift, because there is nothing to keep in step. Proved by the prototype.</p>
+<p><b>Implications, foreseen.</b></p>
+<ul>
+<li><b>Layer transforms matter much less.</b> For a generator whose geometry comes wholly from its handles (Parabola), the
+transform has no effect: moving the layer moves its points. The transform still matters for geometry a generator makes
+from settings alone (a circle of given radius at a fixed centre setting) and for imported V1 layers. Whether to keep
+transforms at all is worth deciding now (15.12, item 1).</li>
+<li><b>Welded groups cannot be moved as a unit yet.</b> In V1 the owner could move a welded layer and its partners
+followed. In Oceania that is refused. The obvious next command is "move the whole welded group", which is easy to add
+(every point of every layer in the group moves together) and keeps the weld.</li>
+<li><b>Rotating one layer of a welded group</b> is the case the owner deferred: there is no answer that is both
+rigid and keeps the weld. Refusing is honest; it may signal a relationship that does not make sense.</li>
+<li><b>A generator's custom drag</b> (DS DR-5.2: a midpoint handle that moves both ends) must also obey the refusal when
+it would move a shared point indirectly. Not yet built; the rule must be applied there too.</li>
+<li><b>Break apart</b> (V1 item 7) produces layers sharing points by construction; it must create shared points, not
+copies, or the parts will not move together.</li>
+</ul>
+<p><b>Alternatives.</b> (a) <b>Group move</b> as a command: <b>viable</b>, recommended next. (b) <b>Auto-unweld</b> on a
+refused move, with undo: <b>viable</b>, but silent consequences are what the owner distrusts. (c) A <b>constraint
+solver</b> (points satisfy relations; the solver moves partners): <b>costly later</b> and hard to read; only if the
+owner's designs come to need many-way relations. (d) <b>Keep V1's per-layer object space for handles</b>, and solve
+welds as V1 did: rejected by both reviews; this is where V1's weld bugs lived.</p>
+
+<h3>15.6 Attachments</h3>
+<p><b>Sketchpad.</b> Anchored discs at a fraction t along an infrastructure arm, or on a magic point by feature name.</p>
+<p><b>Oceania.</b> The same idea, made exact: layer, path name, and t by arc length, or a feature by permanent id;
+one-way (the attached point follows its path, never the reverse); cycles refused; a fallback position saved.</p>
+<p><b>Implications.</b> One-way is the right default for nails on curves. It does not express "this point is where two
+curves cross, and both may move it". If the owner wants a point that two layers both constrain, that is the constraint
+problem of 15.5(c).</p>
+<p><b>Alternatives.</b> Attach by step index instead of arc length (follows a nail number, not a distance): <b>viable</b>
+as an option per attachment; arc length is the better default because it survives a change of nail count.</p>
+
+<h3>15.7 Undo, state and recovery</h3>
+<p><b>Sketchpad.</b> No undo. One state object held the figure, live instances, the saved snapshot, mode and selection,
+so choosing a layer needed a special rule not to mark the figure changed.</p>
+<p><b>Oceania.</b> Commands return new documents; history keeps snapshots with state ids; session state is separate;
+recovery checkpoints open documents.</p>
+<p><b>Implications.</b> Memory grows with figure size times undo depth (200 by default). For the owner's figures this is
+small; for a 5,000-point figure it may reach tens of megabytes, which the limits of DS DR-7.2 cap. Every change must be a
+command: code that changes a document directly is a bug, and the layer check cannot catch it.</p>
+<p><b>Alternatives.</b> (a) Inverse operations per command (smaller memory): <b>costly later</b>, and each command then has
+two halves that must agree. (b) Structural sharing of unchanged layers: <b>viable</b> as an optimisation, invisible to
+commands. Recommended only if memory is measured to matter.</p>
+
+<h3>15.8 Lists, files and the service</h3>
+<p><b>Sketchpad.</b> Manifests per category, a Home manifest, directory registries, a start-up rebuild and a missing-file
+check; Vite serves the code and a Node service writes files.</p>
+<p><b>Oceania.</b> Folders are the truth (catalog worked out from them, small <tt>.meta.json</tt> beside items); one Node
+process serves the pages and writes the library; writes go through a temporary file and rename; version checks refuse
+an overwrite of a file changed elsewhere.</p>
+<p><b>Implications.</b> A file-system watcher on Windows can miss or duplicate events, especially for files edited in VS
+Code (which writes through temporary files). The catalog must tolerate that by re-reading a folder when in doubt. Without
+Vite there is no hot reload: after editing code, the owner reloads the page, which with no build step is immediate.
+V1's manifest fields (status, title edits) move into metadata files; titles edited in V1's Edit Manifest dialog must be
+carried across by the importer.</p>
+<p><b>Alternatives.</b> (a) Keep Vite for hot reload during development: <b>viable</b> at any time, nothing depends on it.
+(b) Keep manifests as caches, rebuilt from folders: <b>viable</b>, but reintroduces two copies of the truth.</p>
+
+<h3>15.9 Scripts</h3>
+<p><b>Sketchpad.</b> Scripts run in the application's page and may reach anything: <tt>ctx</tt>, <tt>drawState</tt>,
+<tt>window</tt>, the DOM. Two failed after about a hundred earlier runs until V1 reset state between runs.</p>
+<p><b>Oceania.</b> Painting scripts in a sandboxed frame, geometry in Workers. Proved stoppable.</p>
+<p><b>Implications.</b> A script cannot change the application: no reaching into panels, no arming the interactor (8 V1
+scripts call <tt>armInteractor</tt>; 3 have draggable points). The adapter must offer handles and controls as a service
+across the frame boundary, or those scripts become "preview only". The survey of the 185 scripts (reference R-12, <tt>V2_LEGACY_SURVEY.md</tt>)
+is the work list.</p>
+<p><b>Alternatives.</b> (a) Run trusted scripts (Barry's own) in the page as V1 does, sandbox only foreign ones:
+<b>viable</b>, simpler for his scripts, but brings back the state-leak class of bugs. (b) Convert the 11 interactive
+scripts to generators early: <b>viable</b> and probably the best value.</p>
+
+<h3>15.10 Controls, settings and the page</h3>
+<p><b>Sketchpad.</b> <tt>params</tt> and <tt>controls</tt> declared separately, with drifted conventions (three keys for the
+widget name, two colour widgets); constants spread through the code; Bootstrap, offcanvas panels and 46 <tt>!important</tt>
+rules, the one area the owner hates.</p>
+<p><b>Oceania.</b> One schema for generator settings and application settings; one Settings command (section 16);
+a fixed page structure in the HTML and one plain stylesheet; no framework; no styles set from code except to show or
+hide a region (CLAUDE.md rule).</p>
+<p><b>Implications.</b> The page will look plainer than V1. Panels that V1 slid in from the side become fixed regions or a
+dialog. Every number that was a constant becomes a named setting, so the Settings page will grow; sections keep it
+navigable.</p>
+<p><b>Alternatives.</b> A small hand-written component for the few panels that need to slide: <b>viable</b> if wanted,
+kept inside the one stylesheet.</p>
+
+<h3>15.11 Units and output</h3>
+<p><b>Sketchpad.</b> Everything in canvas pixels; for printing, a scale is set from one measurement.</p>
+<p><b>Oceania.</b> Documents in millimetres; pixels only on screen (a zoom setting); nails merge only when printing, at a
+merge distance that is a document setting.</p>
+<p><b>Implications.</b> V1 figures import as "legacy" units with their scale; until a scale is set they cannot print true
+size. Every V1 tolerance in pixels (snap radius, tip standout) must be restated: screen-feel tolerances (snap, hit
+radius) stay in screen pixels; geometric ones (merge, tracking) become millimetres. The settings catalogue marks which.</p>
+
+<h3>15.12 Decisions most worth reconsidering now</h3>
+<p>These are cheap now and costly later. Each is a recommendation; the owner decides.</p>
+<table class="small">
+<tr><th>No.</th><th>Decision</th><th>Recommendation</th><th>Why now</th></tr>
+<tr><td>1</td><td>Keep layer transforms?</td><td>Keep them, but only for geometry not made from handles and for imported V1 layers; move layers by moving points.</td><td>Generators written in Stage 3 will assume one or the other.</td></tr>
+<tr><td>2</td><td>Group move for welded layers</td><td>Add it in Stage 2, before figures grow.</td><td>Without it, welding becomes something the owner avoids.</td></tr>
+<tr><td>3</td><td>Trusted scripts in the page?</td><td>No: keep every script sandboxed; convert the interactive ones to generators.</td><td>The adapter's shape depends on it.</td></tr>
+<tr><td>4</td><td>Decoration in figures (fills, text)</td><td>Leave out of generators; revisit if missed.</td><td>Generators' return type depends on it.</td></tr>
+<tr><td>5</td><td>Discs and automatic nails (O-17)</td><td>Per layer: a layer with discs prints its discs; a layer without prints its stitch ends.</td><td>The print code and the owner's habits depend on it.</td></tr>
+<tr><td>6</td><td>Vite</td><td>Not needed; add for hot reload only if the owner misses it.</td><td>Nothing depends on it either way.</td></tr>
+<tr><td>7</td><td>Units</td><td>Millimetres, as built.</td><td>Every generator's defaults are in these units.</td></tr>
+</table>
+
+<h3>15.13 Overall assessment</h3>
+<p>Oceania keeps what Sketchpad does well (one file per idea, header comments, controls declared beside settings, a
+single drawing path, permanent names, the playpen) and replaces what the reviews and V1's own bugs showed to be
+fragile: geometry existing only while painting, shared mutable objects, copies kept in step, state of three kinds in one
+object, manifests copying the folders, and scripts sharing the application's page. The price is a rewrite of every
+object and a period of maintaining two programs. The largest risk is not technical: it is that construction runs long
+before the owner can feel whether exploration is cheaper (R-19). The stages are ordered so that he can try something
+real after each.</p>

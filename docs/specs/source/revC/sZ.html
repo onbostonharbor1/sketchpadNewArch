@@ -1,0 +1,53 @@
+<h2>17.0 GLOSSARY [C: renumbered from 13.0]</h2>
+<table class="t">
+<tr><td><b>Attachment</b></td><td>A point-table entry that lies on another layer's path; one-way.</td></tr>
+<tr><td><b>Catalog</b></td><td>The index of library items, worked out from the folders.</td></tr>
+<tr><td><b>Checkpoint</b></td><td>A working build the owner evaluates before work continues.</td></tr>
+<tr><td><b>Command</b></td><td>A named change to a document; the only way a document changes.</td></tr>
+<tr><td><b>Connector</b></td><td>A kernel rule joining path points into stitches.</td></tr>
+<tr><td><b>Disc</b></td><td>A numbered point placed on a layer: free, or anchored to a path (an attachment).</td></tr>
+<tr><td><b>Document</b></td><td>Plain JSON describing a drawing or figure; saved; undoable.</td></tr>
+<tr><td><b>Finder</b></td><td>A kernel rule naming points on a path by feature.</td></tr>
+<tr><td><b>Generator</b></td><td>One file describing one drawable object or script: meta, settings schema, build or run.</td></tr>
+<tr><td><b>Handle</b></td><td>A draggable setting of type point; it names a point in the point table.</td></tr>
+<tr><td><b>Kernel</b></td><td>The geometry code: values in, values out, no state, no painting.</td></tr>
+<tr><td><b>Maker</b></td><td>A kernel rule producing a path: line, circle, parametric curve and so on.</td></tr>
+<tr><td><b>Panel</b></td><td>A side area of the page. Replaces one meaning of V1's "overlay".</td></tr>
+<tr><td><b>Path</b></td><td>An ordered array of points, open or closed.</td></tr>
+<tr><td><b>Point table</b></td><td>The document's list of numbered points; welds are shared entries.</td></tr>
+<tr><td><b>Renderer</b></td><td>The only code that paints: canvas, SVG, PDF, nail list.</td></tr>
+<tr><td><b>Session</b></td><td>View state: selection, mode, zoom. Not saved, not undone.</td></tr>
+<tr><td><b>Shaper</b></td><td>A kernel rule turning a path into another path.</td></tr>
+<tr><td><b>Weld</b></td><td>Two handles naming one point (shared), or a handle attached to a path.</td></tr>
+</table>
+
+<h2 class="nonum">APPENDIX A. TRACEABILITY</h2>
+<table class="t">
+<tr><th>Problem</th><th>Requirements</th><th>Checkpoint</th></tr>
+<tr><td>P-1 geometry while painting</td><td>FR-6.2.9, 6.3.4, 6.11.1, 6.11.8</td><td>CP-1, CP-2</td></tr>
+<tr><td>P-2 shared singletons</td><td>FR-6.3.1, 6.5.7</td><td>CP-2</td></tr>
+<tr><td>P-3 mixed settings</td><td>FR-6.4.1, 6.5.7</td><td>CP-3</td></tr>
+<tr><td>P-4 guessing drags</td><td>FR-6.3.5, 6.3.6, 6.4.4</td><td>CP-2</td></tr>
+<tr><td>P-5 undeclared handles</td><td>FR-6.3.5 to 6.3.7</td><td>CP-2</td></tr>
+<tr><td>P-6 weld propagation</td><td>FR-6.5.1 to 6.5.5</td><td>CP-4</td></tr>
+<tr><td>P-7 no undo</td><td>FR-6.6.1 to 6.6.8</td><td>CP-3</td></tr>
+<tr><td>P-8 mixed state</td><td>FR-6.7.1 to 6.7.4</td><td>CP-3, CP-4</td></tr>
+<tr><td>P-9 tab flags</td><td>FR-6.7.5, 6.7.6</td><td>CP-0</td></tr>
+<tr><td>P-10 manifests</td><td>FR-6.8.1 to 6.8.4</td><td>CP-0, CP-2</td></tr>
+<tr><td>P-11 bypassed boundaries</td><td>FR-6.1.4, 6.8.5</td><td>CP-0</td></tr>
+<tr><td>P-12 shared script state</td><td>FR-6.10.1 to 6.10.3</td><td>CP-5</td></tr>
+<tr><td>P-13 adding items</td><td>FR-6.9.1 to 6.9.8</td><td>CP-2</td></tr>
+<tr><td>P-14 controls</td><td>FR-6.4.1 to 6.4.8</td><td>CP-2</td></tr>
+<tr><td>P-15 units and output</td><td>FR-6.5.8, 6.11.4 to 6.11.7</td><td>CP-7</td></tr>
+<tr><td>P-16 menus and words</td><td>FR-6.12.2, 6.12.3</td><td>CP-4, CP-8</td></tr>
+<tr><td>P-17 metadata</td><td>FR-6.3.2, 6.3.3, 6.5.6</td><td>CP-2, CP-3</td></tr>
+<tr><td>P-18 parametric divide</td><td>FR-6.2.2, 6.2.3, 6.2.8</td><td>CP-1</td></tr>
+<tr><td>P-19 manual adaptation</td><td>FR-6.10.5 to 6.10.10</td><td>CP-6</td></tr>
+<tr><td>P-20 invisible errors [B]</td><td>6.14</td><td>CP-0</td></tr>
+<tr><td>P-21 no regression checks [B]</td><td>6.17</td><td>CP-0, CP-8</td></tr>
+<tr><td>P-22 scattered commands [B]</td><td>6.13</td><td>CP-2</td></tr>
+<tr><td>P-23 lost working history [B]</td><td>FR-6.16.3, 6.16.4</td><td>CP-5</td></tr>
+<tr><td>P-24 joining rules rewritten [B]</td><td>FR-6.2.5a, 6.2.5b, 6.19.6</td><td>CP-1</td></tr>
+<tr><td>P-25 flat points [B]</td><td>FR-6.5.1, 6.11.10</td><td>CP-0, CP-7</td></tr>
+</table>
+<p class="endmark">END OF DOCUMENT</p>

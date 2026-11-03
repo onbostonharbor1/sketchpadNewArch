@@ -1,0 +1,33 @@
+<h2>16.0 SETTINGS, AND DECISIONS SINCE REVISION B [C]</h2>
+<h3>16.1 The settings command</h3>
+<p>The owner, 3 November 2026: values accumulated across the specifications (nail size, merge distance, tolerances,
+limits) should be set in one place, "our equivalent to a settings command". The full catalogue, about seventy values with
+their defaults, sources and scope, is <tt>docs/SETTINGS.md</tt>.</p>
+<table class="req">
+<tr><td>FR-16.1</td><td>Every setting is declared once, in the settings schema, with the same fields as generator settings (type, default, limits, label, section, help). Declaring it is the only step needed to add one.</td></tr>
+<tr><td>FR-16.2</td><td>A setting has a scope: application (one value), or document (each document carries its own value, copied from the application value when the document is made; changing the application value never alters a saved document).</td></tr>
+<tr><td>FR-16.3</td><td>One Settings command, global in scope (6.13), opens one page built from the schema, by section, each setting with its control, its default, a "Default" button and its help.</td></tr>
+<tr><td>FR-16.4</td><td>No tolerance, size, limit or colour is a bare constant in code; code reads settings by name.</td></tr>
+<tr><td>FR-16.5</td><td>A stored value whose setting no longer exists is kept, ignored and listed as unused.</td></tr>
+<tr><td>FR-16.6</td><td>The limits on runaway generation (stitches, time) are one overall setting for now. A finer control (a limit per generator, or one a generator declares) may follow: a huge parametric today usually means a design problem, but may not later.</td></tr>
+</table>
+<h3>16.2 Decisions since Revision B</h3>
+<table class="small">
+<tr><th>No.</th><th>Decision (owner, 3 Nov 2026 unless noted)</th></tr>
+<tr><td>D-16</td><td>Code name Oceania; "new sketchpad" in conversation. No other renaming is needed.</td></tr>
+<tr><td>D-17</td><td>A move, rotation or drag that would pull a shared or attached point is detected and refused with its reason. What should happen instead is deferred (it may be a real need, or a sign the relationship does not make sense).</td></tr>
+<tr><td>D-18</td><td>Nearby points merge only when printing, at a merge distance that is a setting; in the figure they stay independent.</td></tr>
+<tr><td>D-19</td><td>One Settings command for every configurable value (16.1).</td></tr>
+<tr><td>D-20</td><td>CSS stays radically simple: a fixed page structure, one plain stylesheet per page, no framework, no <tt>!important</tt>.</td></tr>
+<tr><td>D-21</td><td>Oceania is a separate repository (<tt>sketchpadNewArch</tt>) with Sketchpad V1 copied, as files, into <tt>archive/</tt>: read as data, never imported, refreshed only when the owner asks.</td></tr>
+<tr><td>D-22</td><td>One Node process serves the pages and the library; Vite is not needed (no build step).</td></tr>
+</table>
+<h3>16.3 Open decisions added</h3>
+<table class="small">
+<tr><th>No.</th><th>Question</th><th>Needed by</th></tr>
+<tr><td>O-17</td><td>Does a disc on a layer suppress that layer's automatic stitch-end nails? (Recommendation 15.12, item 5: per layer.)</td><td>Stage 6</td></tr>
+<tr><td>O-18</td><td>Keep layer transforms only for non-handle geometry and imported layers (15.12, item 1)?</td><td>Stage 3</td></tr>
+<tr><td>O-19</td><td>Add "move the welded group" as a command (15.12, item 2)?</td><td>Stage 2</td></tr>
+<tr><td>O-20</td><td>Keep every script sandboxed, converting the interactive ones to generators (15.12, item 3)?</td><td>Stage 6</td></tr>
+<tr><td>O-21</td><td>The network block in a script's frame, to be confirmed on the owner's PC (14.2, R-13).</td><td>Stage 6</td></tr>
+</table>

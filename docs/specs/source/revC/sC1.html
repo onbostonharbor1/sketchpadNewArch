@@ -1,0 +1,44 @@
+<h2>14.0 OUTSIDE REVIEWS AND THEIR RESOLUTION [C]</h2>
+<h3>14.1 The reviews</h3>
+<p>Two outside reviews were made on 2 November 2026: the first of this specification at Revision B, the second of the
+companion Detailed Specification (DS). Both are kept as received in <tt>docs/reviews/</tt>. Their common judgement: the
+architecture is sound and worth keeping (geometry separate from drawing, declared handles, shared points as shared data,
+the makers&ndash;shapers&ndash;connectors model); the weaknesses are at the boundaries between features, where
+requirements conflicted or left behaviour undecided. Every finding was accepted. The resolutions are the contracts R-1 to
+R-19 of <tt>docs/RECONCILIATION.md</tt>, which govern over any earlier text of this specification or the DS that differs.
+The foundation prototype was built to prove the ones the reviews found most dangerous.</p>
+<h3>14.2 Findings and resolutions</h3>
+<p>Status: <b>proved</b> (built in the foundation prototype and tested), <b>fixed</b> (the contract is settled; built in a
+later stage), <b>open</b> (needs the owner or more evidence).</p>
+<table class="small">
+<tr><th>Finding</th><th>Resolution</th><th>Contract</th><th>Status</th></tr>
+<tr><td>Exploration has no acceptance tests (review 1, item 2)</td><td>Each stage is accepted against exploration scenarios: switch a connector keeping the paths; apply, undo or keep a sweep result; grow, reshape and shrink a lattice; compare variations; revisit a discovery; make an Ideabook hint your own.</td><td>R-19</td><td>fixed</td></tr>
+<tr><td>Shared points and layer transforms have no coordinate contract; the DS evaluator transforms a shared point twice (1.3, 2.2)</td><td>Points live in document coordinates; the evaluator converts them into each layer's local coordinates before building. A move, rotation or drag that would pull a shared or attached point is detected and refused with its reason; what should happen instead is deferred by the owner.</td><td>R-2</td><td>proved</td></tr>
+<tr><td>Point, disc and nail identities not reconciled; snapshot undo can reuse numbers (1.4)</td><td>A point's number is its permanent identity; the print label may differ. Counters are outside undo, so a number is never handed out twice. Nails on a path by count are not table entries.</td><td>R-9, R-10</td><td>proved</td></tr>
+<tr><td>Attachments lack a path, and t is undefined (1.5)</td><td>An attachment names layer, path, and t as a fraction of arc length.</td><td>R-10</td><td>proved</td></tr>
+<tr><td>Missing, ambiguous and reappearing features (1.5, 2.6)</td><td>Permanent feature id, display number and matching data; ambiguous means unresolved, never guessed; tolerances in document units.</td><td>R-6</td><td>fixed</td></tr>
+<tr><td>Rejected edit and damaged dependency not distinguished (1.6)</td><td>An invalid command changes nothing; a valid edit that makes a generator fail is kept and the layer marked failed; dependents are marked blocked naming the cause; stale pictures are marked.</td><td>R-12</td><td>proved</td></tr>
+<tr><td>Runaway code cannot be stopped from an iframe timer (1.7, 2.9)</td><td>Generators in Workers; legacy painting scripts in a frame with <tt>sandbox="allow-scripts"</tt>, never <tt>allow-same-origin</tt>. Measured: both stop at once and the page is never frozen; an ordinary frame (the control) froze it. The network block remains to be confirmed on the owner's PC.</td><td>R-13</td><td>proved (network open)</td></tr>
+<tr><td>The recorder promises too much (1.7)</td><td>Supported operations are listed; anything else is reported; a partial recording never silently becomes a figure.</td><td>R-13, R-14</td><td>fixed</td></tr>
+<tr><td>Importer promises exceed the evidence (1.8)</td><td>Level 1 for recognised patterns only; "no useful proposal" is a proper answer; Levels 2 and 3 are out of the first build.</td><td>R-17</td><td>fixed</td></tr>
+<tr><td>Faithful replay needs dependencies (1.9)</td><td>Runs and studies record the code they ran with (commit and fingerprint); "inspect" always works, "rebuild" says when code has changed.</td><td>R-15</td><td>fixed</td></tr>
+<tr><td>Examples inconsistent with the schema (1.10)</td><td>Every example is a real file under <tt>tests/fixtures/</tt>, made by the real commands and validated by the test run.</td><td>R-18</td><td>proved</td></tr>
+<tr><td>Module rules describe proxies, not ownership (1.11)</td><td>No application state on globals; platform calls in adapters; a check enforces who may import whom.</td><td>DS 3.1, layer check</td><td>proved</td></tr>
+<tr><td>Construction order overloads later checkpoints; physical output too late (1.12, 2.12)</td><td>New order: foundation, first usable object, geometry, basic figures, exploration, compatibility and output, advanced. A true-scale nail template in the foundation.</td><td>R-17</td><td>proved (template)</td></tr>
+<tr><td>Remote operation (1.13)</td><td>The service address is a setting; nothing assumes a shared file system; open-in-editor may be unavailable. Touch authoring is not required (the owner reviews on the iPad).</td><td>R-16</td><td>fixed</td></tr>
+<tr><td>Parabola example merges the two corners (2.1)</td><td>Four handles; the corners are separate until welded.</td><td>R-1</td><td>proved</td></tr>
+<tr><td>Changed defaults silently change saved work (2.3)</td><td>Saved layers record every effective setting; adopting new defaults is an explicit command.</td><td>R-3</td><td>proved</td></tr>
+<tr><td>Kernel error contract contradicts this specification (2.4)</td><td>Every kernel call returns <tt>{ value, notes }</tt>; unequal arms draw what exists and note both lengths and the missing index.</td><td>R-4</td><td>proved</td></tr>
+<tr><td>Lattice construction breaks the purity boundary (2.5)</td><td>Structure is made by commands; generators only compute geometry.</td><td>R-5</td><td>fixed</td></tr>
+<tr><td>"Keep the last position" needs saved data (2.7)</td><td>An attached point saves a fallback position as recovery data.</td><td>R-7</td><td>proved</td></tr>
+<tr><td>Crash recovery records too little; "saved" fails after branching (2.8)</td><td>Recovery checkpoints the open documents; "saved" is a state id.</td><td>R-8</td><td>proved</td></tr>
+<tr><td>Regression blind spots (2.10)</td><td>Stitches, nails, infrastructure, features, styles and structure compared separately; absolute position kept in the V1 comparison.</td><td>R-14</td><td>fixed</td></tr>
+<tr><td>Output decisions settled without authority (2.11)</td><td>Merging nearby points happens only when printing, at a merge distance that is a setting (owner, 3 Nov 2026); welded points are one number; different depths never merge. Whether a disc suppresses a layer's automatic nails is open (O-17).</td><td>R-11</td><td>proved (O-17 open)</td></tr>
+</table>
+<h3>14.3 What the prototype proved</h3>
+<p>The foundation prototype (<tt>docs/CHECKLIST_foundation.md</tt>) is one page the owner can use: Parabolas with four
+handles, welds by dropping one handle on another, moves and rotations (refused when they would pull a shared or attached
+point), attachments half way along another layer's arm, nails, undo and redo, save and open with conflict detection,
+crash recovery, a true-scale SVG nail template, and the Settings page. Nineteen unit tests prove the contracts, seventeen
+page checks drive the page as the owner would, and a check enforces the layer rules. The page test found one real bug
+(a click counted as a move and discarded the redo history), which is the kind of finding documents cannot make.</p>

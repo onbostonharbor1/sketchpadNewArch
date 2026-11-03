@@ -30,6 +30,7 @@ Proves the contracts that the reviews found unsettled, with behaviour Barry can 
 | True-scale nail template (SVG) with print-time merging | R-11 | done |
 | A page to try it: two Parabolas, weld, move, rotate, attach, undo, save, print | R-19 | done |
 | Stopping experiment for scripts (network check left for the PC) | R-13 | done |
+| Functional specification Revision C: reviews, architectural review, settings (Barry re-reading it) | | done |
 | Second outside review, of the prototype | | next |
 
 ## Stage 2: first usable object
@@ -89,3 +90,7 @@ Learn; importer levels 2 and 3; image to thread; 3D beyond the z field; nesting.
 | O-16 | Linked Circles in the new kernel: anything lost in its look? |
 | O-17 | Does a disc on a layer suppress that layer's automatic stitch-end nails? |
 | deferred | What moving a welded layer should do (now: detected and refused, R-2.4) |
+| O-18 | Keep layer transforms only for non-handle geometry and imported layers? (FS Rev C 15.12) |
+| O-19 | Add "move the welded group" as a command? |
+| O-20 | Keep every script sandboxed, converting the interactive ones to generators? |
+| O-21 | Network block in a script's frame: confirm on the PC |

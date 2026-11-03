@@ -1,0 +1,110 @@
+<h3>6.13 Commands at three levels [B]</h3>
+<p>The owner's two aims: less clutter, and a place where a thing always is (I-12). A command's level is set by what it
+acts on, not by the tab it happens to be shown on.</p>
+<table class="small">
+<tr><th>Level</th><th>Acts on</th><th>Examples</th><th>Fixed place, on every tab</th></tr>
+<tr><td>Global</td><td>The application</td><td>Help, Notes, archive, settings, error log, service status</td><td>A strip at the right end of the tab bar</td></tr>
+<tr><td>Tab</td><td>The tab's collection</td><td>New, open, categories, import, rebuild thumbnails, run all</td><td>Under the left-hand Commands button</td></tr>
+<tr><td>Subtab</td><td>The one open object, script or figure</td><td>Save, save as, Sweep, print template, export, reset, undo, Script history</td><td>Under the caption's "v" menu</td></tr>
+</table>
+<table class="req">
+<tr><td>FR-6.13.1</td><td>Each entry of the commands table (FR-6.12.2) shall carry <tt>scope</tt>: <tt>global</tt>, <tt>tab</tt> or <tt>subtab</tt>. Menus shall be built from the table; no tab shall write its own menu.</td></tr>
+<tr><td>FR-6.13.2</td><td>A command shown in two places shall be one entry shown twice, never a copy.</td></tr>
+<tr><td>FR-6.13.3</td><td>Commands that do the same kind of thing (save, export, help, reset) shall be one command that reads its context (the active tab and subtab), not one per tab.</td></tr>
+<tr><td>FR-6.13.4</td><td>Help shall be global and open at the page for the current tab and subtab.</td></tr>
+<tr><td>FR-6.13.5</td><td>A command that cannot run now shall be shown greyed, with its reason as a tooltip, never hidden.</td></tr>
+<tr><td>FR-6.13.6</td><td>Layer commands shall stay on the layer (its number chip, or a right-click on it), not in a fourth menu.</td></tr>
+<tr><td>FR-6.13.7</td><td>Before the commands table is written, every V1 command shall be surveyed and sorted by level, noting where it lives now, so V1's misplacements are seen.</td></tr>
+</table>
+
+<h3>6.14 Error handling [B]</h3>
+<p>Barry keeps checks out of the logic so it stays readable (I-13). V1 now shows and logs every error
+(<tt>claude/v1-errors</tt>); V2 builds the same in from the start.</p>
+<table class="req">
+<tr><td>FR-6.14.1</td><td>Every error shall be shown in an error bar that stays on every tab until dismissed, naming what failed, where, and the file and line; and written once to a daily error log kept apart from other logs. A repeat shall be counted, not logged again.</td></tr>
+<tr><td>FR-6.14.2</td><td>Errors shall be caught only at choke points: a layer's evaluation, a command's run, a tab switch, opening or saving a file, a generator's registration. There shall be no try/catch in kernel or generator logic.</td></tr>
+<tr><td>FR-6.14.3</td><td>An error shall never stop the whole application (D-12). A failing layer draws nothing and is marked; the others draw. A failing command leaves the document as it was, by the snapshot undo of 6.6.</td></tr>
+<tr><td>FR-6.14.4</td><td>Checks shall be made at the edges only: a file when read, a generator when registered (its settings schema checked once), an index when built. The interior trusts its inputs.</td></tr>
+<tr><td>FR-6.14.5</td><td>Assertions on invariants (point numbers never reused, welds name existing points) shall live in a separate checks file, run after each command when debugging is on, so the logic never carries them.</td></tr>
+<tr><td>FR-6.14.6</td><td>At start-up, Home shall summarise the newest error log and the newest index check, each with its own Dismiss. A log viewer shall group error logs, index checks and other logs.</td></tr>
+</table>
+
+<h3>6.15 Sweep [B]</h3>
+<p>A parameter study, as the owner described it (I-15). V1's <tt>v1-finish</tt> version, one setting in a grid, is a placeholder.</p>
+<table class="req">
+<tr><td>FR-6.15.1</td><td>Form 1, the grid: up to 16 pictures over one or two settings, the first across and the second down, each picture labelled with its values.</td></tr>
+<tr><td>FR-6.15.2</td><td>Form 2, the slideshow: one- and two-setting runs shown one frame at a time, 5 to 10 seconds a frame (owner's choice), with Pause, Back and Stop.</td></tr>
+<tr><td>FR-6.15.3</td><td>Stopping, or clicking a picture, shall put those settings into the open object (Draw) or the active layer (Figures), as one undoable command.</td></tr>
+<tr><td>FR-6.15.4</td><td>Values shall be steps counted from the setting's minimum and kept inside its limits; a sweep of a random generator shall hold its seed fixed, so only the swept settings change.</td></tr>
+<tr><td>FR-6.15.5</td><td>A sweep may be saved as a study in the journal of what was swept (6.16.7) and replayed.</td></tr>
+<tr><td>FR-6.15.6</td><td>The order of frames over two settings is open (O-12).</td></tr>
+</table>
+
+<h3>6.16 Journals, notes, run history and Learn [B]</h3>
+<p>A journal is kept beside each thing, never inside it (D-10): the document says what a thing is; the journal says what
+happened to it and why (I-19).</p>
+<table class="req">
+<tr><td>FR-6.16.1</td><td>Each script, generator and figure shall have one journal file, in a journal folder beside them, one entry per line, entries added and never rewritten, readable in VS Code.</td></tr>
+<tr><td>FR-6.16.2</td><td>Journals shall be keyed by permanent names (generator name, figure name, layer <tt>lid</tt>). Renames shall go through the application, which moves the journal.</td></tr>
+<tr><td>FR-6.16.3</td><td>Run history: each run of a script whose source has changed since its last run shall store the source, the time, a small picture of what it drew and any error, so each version of the code is paired with the picture it made. It is captured at run time, not from git, because the owner saves and runs many times between commits (P-23).</td></tr>
+<tr><td>FR-6.16.4</td><td>Any two runs shall be comparable as a line diff with both pictures. Any run's source may be restored or shown beside the current one. Runs may be marked, with a note; marked runs are kept for good, unmarked ones thinned after a period, keeping the first and last of each session.</td></tr>
+<tr><td>FR-6.16.5</td><td>Notes: one global, context-aware Notes command (6.13) shall open the journal of whatever is open and add a note to it.</td></tr>
+<tr><td>FR-6.16.6</td><td>Learn: on the owner's request, a pair of runs (code diff and both pictures), a regression change (6.17), or an Ideabook image (6.22) may be sent to an AI for an explanation or a draft. The result is a draft the owner edits and approves; nothing leaves the machine without his press; nothing is written to a journal or the library unapproved (D-13).</td></tr>
+<tr><td>FR-6.16.7</td><td>Studies: a saved sweep shall record its target (script, generator, or figure and layer <tt>lid</tt>), a copy of the starting settings (not a pointer, so a replay shows what was seen), the swept settings and values, the form and frame timing, the seed, and the picture chosen. Two replays shall be offered: faithful, from the saved settings, and "as it would look now", against today's figure.</td></tr>
+<tr><td>FR-6.16.8</td><td>Until journals exist, V1's Script history (VS Code's saved versions, read only) is the bridge; it has no pictures and no notes.</td></tr>
+</table>
+
+<h3>6.17 Regression tests and checks [B]</h3>
+<table class="req">
+<tr><td>FR-6.17.1</td><td>Every generator at its defaults, every saved figure and every legacy script shall have an approved copy of its output: its geometry (the stitch ends and points of every layer, exact) and a small picture (for the eye). One command shall compare everything with the approved copies and report what changed (D-9).</td></tr>
+<tr><td>FR-6.17.2</td><td>The report shall be a page showing approved and new side by side, for each change only. An intended change shall be accepted with one command, which replaces the approved copy. Nothing shall merge with an unexplained change.</td></tr>
+<tr><td>FR-6.17.3</td><td>Items that draw differently on each run (random without a seed, animated) shall be reported as unstable, not compared. With seeds (6.18.1) there should be none.</td></tr>
+<tr><td>FR-6.17.4</td><td>The same approved copies shall be the import check of V1 work (FR-6.10, I-2): a V1 figure opened in V2 is compared with V1's approved geometry, within a stated tolerance.</td></tr>
+<tr><td>FR-6.17.5</td><td>A removed-code check (I-8) shall list every exported name before and after a branch and print what disappeared, run with lint and the import check before every review.</td></tr>
+<tr><td>FR-6.17.6</td><td>Kernel functions shall be pure (paths in, paths out) and tested without a browser.</td></tr>
+<tr><td>FR-6.17.7</td><td>A git hook shall run the fast checks (lint, imports, removed code) on every commit.</td></tr>
+</table>
+
+<h3>6.18 Robustness [B]</h3>
+<table class="req">
+<tr><td>FR-6.18.1</td><td>Seeded randomness: every random generator and script shall take a seed, saved with it, so it repeats exactly and a random design that was liked can be had again (I-17).</td></tr>
+<tr><td>FR-6.18.2</td><td>Runaway guard: evaluation shall have a budget of points and of time; a generator that exceeds it is stopped with a message naming the setting most likely responsible, not left to freeze the tab. Evaluation may run in a background worker.</td></tr>
+<tr><td>FR-6.18.3</td><td>Crash recovery: session state shall be journalled as the owner works and offered back after a crash or a closed tab.</td></tr>
+<tr><td>FR-6.18.4</td><td>Kept versions: the last few saves of each figure shall be kept beside it.</td></tr>
+<tr><td>FR-6.18.5</td><td>Integrity check on open: welds name points that exist, points name layers that exist, layers name generators that exist; problems are listed with a repair offered, never a half-drawn figure.</td></tr>
+<tr><td>FR-6.18.6</td><td>Service status: when the Node service is down the application shall say so and go read-only, rather than let saves fail silently.</td></tr>
+<tr><td>FR-6.18.7</td><td>Offline: every library shall be in the repository; nothing shall be fetched from a CDN at run time.</td></tr>
+</table>
+
+<h3>6.19 Exploration generators [B]</h3>
+<table class="req">
+<tr><td>FR-6.19.1</td><td>Lattice: a generator shall repeat any shape over a lattice whose points are shared point numbers, so one drag reshapes the neighbours (the <tt>manyRowsColumns</tt> model, I-10). Copies are added with a setting, not code.</td></tr>
+<tr><td>FR-6.19.2</td><td>The lattice shall lay out different predefined shapes in a pattern, and allow a layer where one shape rests on top, told apart by colour.</td></tr>
+<tr><td>FR-6.19.3</td><td>Symmetry repeat: any layer may be repeated n times about a centre, as one setting.</td></tr>
+<tr><td>FR-6.19.4</td><td>Roulettes (Spirograph curves) with a pen distance that may change as the curve is drawn.</td></tr>
+<tr><td>FR-6.19.5</td><td>Component groups: prebuilt sets of components may be inserted as a group with mostly default values (I-4).</td></tr>
+<tr><td>FR-6.19.6</td><td>Pursuit: one engine shall cover every V1 pursuit script (rules next, kth, opposite, centroid, random, circle, fixed point; fraction or fixed speed; per-point speeds; bias; jitter; seed; drawn as nested polygons or trails). V1's <tt>gallery/Ideabook/scripts/pursuitEngine.js</tt> is the prototype.</td></tr>
+<tr><td>FR-6.19.7</td><td>Image to thread (later): approximating a photograph with one continuous thread wound across nails on a circle, chosen line by line.</td></tr>
+</table>
+
+<h3>6.20 Templates [B]</h3>
+<table class="req">
+<tr><td>FR-6.20.1</td><td>Generic templates (circle, rectangle, saw tooth, ruler, bounding box and more) shall each be built by its own controls and kept in a template registry separate from the generators, added by saving a file (I-5).</td></tr>
+<tr><td>FR-6.20.2</td><td>A template layer shall have the role guide: shown while working, left out of Show All, Final and output. V1's templates (v1-finish item 6) are the first step this replaces.</td></tr>
+</table>
+
+<h3>6.21 Intersections and parametrics [B]</h3>
+<table class="req">
+<tr><td>FR-6.21.1</td><td>Intersections are nail candidates, not magic points (FR-6.2.7a). They move, appear and vanish as objects change; a disc placed on one shall follow it by feature name, and report when it vanishes rather than jump elsewhere.</td></tr>
+<tr><td>FR-6.21.2</td><td>Later, intersections may be defined by formula (which curves, which occurrence, by rule) instead of found by search (I-7).</td></tr>
+<tr><td>FR-6.21.3</td><td>Parametric curves shall be sampled adaptively (more where the curve bends, fewer where it is straight) and simplified (dropping points that change nothing), reducing V1's excessive loop counts to the usual (I-3). The owner's intersection routine shall be studied for which curves it serves and why it fails on others.</td></tr>
+</table>
+
+<h3>6.22 Ideabook hints [B]</h3>
+<table class="req">
+<tr><td>FR-6.22.1</td><td>Each ideabook image may have a hint beside it, by name, a rough sketch of how it might be built from the kernel's parts, stating what was guessed. A Run script control, greyed when there is none, shows it in place of the image (I-20).</td></tr>
+<tr><td>FR-6.22.2</td><td>In V2 a hint shall be a document like any other, so it can be opened as a figure and worked on; the image and the hint may be shown side by side.</td></tr>
+<tr><td>FR-6.22.3</td><td>Each folder shall keep a not-done list: the images with no hint, and why.</td></tr>
+<tr><td>FR-6.22.4</td><td>V1's 282 hints (five folders) and the routines they needed are the evidence for FR-6.2.5a and FR-6.2.5b, and the first test material for the V2 importer.</td></tr>
+<tr><td>FR-6.22.5</td><td>Images with a figure number were drawn by the first StringThing (R-15); their hints shall point to the original function.</td></tr>
+</table>

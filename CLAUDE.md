@@ -6,8 +6,8 @@ plain, readable code over clever code.
 
 Read first: `docs/TASKS.md` (the work, in order, and its status), `docs/RECONCILIATION.md` (contracts R-1 to R-19,
 which govern over both specifications where they differ), `docs/SETTINGS.md` (every configurable value; nothing is a
-bare constant in code). Then `docs/specs/`: the functional specification (Rev B) and the detailed specification
-(SPV2-DS-001). The two outside reviews that led to the reconciliation are in `docs/reviews/`.
+bare constant in code). Then `docs/specs/`: the functional specification (Revision C is current: section 14 the reviews, 15 the
+architectural review against Sketchpad, 16 settings) and the detailed specification (SPV2-DS-001). The two outside reviews that led to the reconciliation are in `docs/reviews/`.
 
 ## What Sketchpad is for
 

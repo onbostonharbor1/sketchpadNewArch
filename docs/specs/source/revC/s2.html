@@ -1,0 +1,70 @@
+<h2>5.0 ORGANIZATION AND MODULARIZATION</h2>
+<h3>5.1 Principle of division</h3>
+<p>V1 divided its code mostly by <i>mechanism</i>: how a thing is done (an HTTP read, a Node request, building the page).
+V2 divides by <i>purpose</i>: what a thing is for (the catalog, the document, storage). A module is defined by the one kind
+of data it owns, the modules it may call, and the modules it must never call. A boundary that cannot be checked by a script
+will be bypassed, as <tt>fileLayer</tt> and <tt>nodeLayer</tt> were (P-11); every V2 boundary is therefore checkable
+(FR-6.1.4).</p>
+[[FIG module_map | Version 1 components and their Version 2 replacements]]
+<h3>5.2 Layers of the system</h3>
+<p>Figure 2 is a layered structure chart. A module may call modules in the bands below it and never above. The kernel
+calls nothing. Only <tt>main.js</tt> may touch the browser's <tt>window</tt> object. The Node service is a separate
+process, reached only through Storage and Catalog.</p>
+[[FIG structure_chart | Structure chart: the bands of V2 and the direction of calls]]
+<h3>5.3 Draw separation, sharpened</h3>
+<p>The owner's rule "UI owns the definition; Draw owns the implementation" held in one direction in V1: nothing in
+<tt>draw/</tt> or <tt>classes/</tt> imports from <tt>ui/</tt>. It blurred in two ways. First, "draw" mixed geometry with
+painting: <tt>drawState.js</tt> creates the canvas and holds global <tt>ctx</tt>, <tt>transform</tt>, <tt>bounds</tt> and
+<tt>final</tt>, and four draw files touch the page. Second, the interface paints too: discs, weld marks, handles and the
+script runner call <tt>ctx</tt> from <tt>ui/</tt>. V2 keeps the rule and moves its boundary one step earlier than
+<tt>drawLine</tt>, as Figure 3 shows.</p>
+[[FIG three_layers | The three layers: definition, geometry, pixels]]
+<h3>5.4 Module definitions</h3>
+<table class="t small">
+<tr><th>Id</th><th>Module</th><th>Owns</th><th>May call</th><th>Must never</th></tr>
+<tr><td>M-1</td><td>Kernel</td><td>Paths; makers, shapers, connectors, finders; transforms; bounds</td><td>nothing</td><td>touch ctx, the page, window or any state</td></tr>
+<tr><td>M-2</td><td>Generators (files)</td><td>One drawable object or script each: meta, settings schema, build</td><td>the kernel, passed in as an argument</td><td>import draw or ui code; keep state</td></tr>
+<tr><td>M-3</td><td>Schema</td><td>Setting types, the generator format, the document format, migrations, name rules</td><td>nothing</td><td>touch files</td></tr>
+<tr><td>M-4</td><td>Document</td><td>The open document as plain data</td><td>Schema</td><td>be changed except through Commands</td></tr>
+<tr><td>M-5</td><td>Evaluator</td><td>Turning a document into geometry, layer by layer in dependency order</td><td>Kernel, Generators, Schema</td><td>change the document</td></tr>
+<tr><td>M-6</td><td>Commands and History</td><td>Every document change; snapshots; undo and redo; the saved position</td><td>Document, Evaluator, Schema</td><td>touch the page</td></tr>
+<tr><td>M-7</td><td>Session</td><td>View state per tab and per open document: selection, mode, zoom, open subtabs</td><td>nothing</td><td>be saved in a document</td></tr>
+<tr><td>M-8</td><td>Renderers</td><td>Pixels and output files: canvas, SVG, PDF, nail list; the passes for discs, welds and handles</td><td>Kernel</td><td>read or change the document</td></tr>
+<tr><td>M-9</td><td>Interaction</td><td>One mouse and keyboard controller: screen to document coordinates, hit testing, gestures</td><td>Session, Commands, Renderers (hit data)</td><td>change the document directly</td></tr>
+<tr><td>M-10</td><td>Controls</td><td>Building widgets from a settings schema</td><td>Schema, Commands</td><td>write settings directly</td></tr>
+<tr><td>M-11</td><td>Commands table</td><td>Every menu item and button: label, enabled rule, action</td><td>Commands, Storage (via Catalog), Session</td><td>contain drawing code</td></tr>
+<tr><td>M-12</td><td>Panels and canvas layers</td><td>Page side areas (panels) and drawing surfaces (canvas layers)</td><td>nothing</td><td>know about documents</td></tr>
+<tr><td>M-13</td><td>Library view</td><td>Category lists and thumbnails; V1's <tt>categories.js</tt> rule kept</td><td>nothing; it is handed a descriptor</td><td>know about manifests or tabs</td></tr>
+<tr><td>M-14</td><td>Catalog</td><td>The index of every library item, built from the folders and per-item metadata</td><td>Storage</td><td>store copies of facts held elsewhere</td></tr>
+<tr><td>M-15</td><td>Storage</td><td>The only door to files and the Node service</td><td>Node service</td><td>be bypassed (no other module fetches)</td></tr>
+<tr><td>M-16</td><td>Script host</td><td>Running scripts in an isolated frame with a fresh canvas; the legacy adapter; the recorder</td><td>Storage (to load code), Renderers</td><td>share state between runs</td></tr>
+<tr><td>M-17</td><td>Importer</td><td>Analysing a script and proposing the ingestion levels</td><td>Script host, Schema, Storage</td><td>rewrite a file without approval</td></tr>
+<tr><td>M-18</td><td>Help and notes</td><td>Markdown help pages; header notes</td><td>Storage</td><td>load an editor until asked</td></tr>
+<tr><td>M-19</td><td>Tab lifecycle</td><td>Closing one tab and opening another</td><td>Session, Panels</td><td>keep flags such as needsUpdate</td></tr>
+<tr><td>M-20</td><td>Bootstrap</td><td><tt>main.js</tt>: creates the single <tt>app</tt> object and starts the screens</td><td>all</td><td>(the only module that touches <tt>window</tt>)</td></tr>
+<tr><td>M-21</td><td>Node service</td><td>Files, the folder watcher, thumbnails, path safety</td><td>the file system</td><td>build page content</td></tr>
+</table>
+<h3>5.5 Folder layout</h3>
+<p>V2 lives in <tt>app2/</tt> beside V1 on the version-2 branch. The library folders (<tt>patterns/</tt>,
+<tt>gallery/</tt>, <tt>utilities/</tt>, <tt>figures/</tt>) stay where they are and are read by both, so V1 keeps working and
+nothing is copied. New generators live in <tt>generators/</tt>.</p>
+<pre class="code">app2/
+  main.js                    M-20  bootstrap; the only window access
+  kernel/                    M-1   paths, makers, shapers, connectors, finders, transform
+  schema/                    M-3   types, generator format, document format, migrate, names
+  model/                     M-4..M-7, M-14, M-15
+    document.js  evaluator.js  commands.js  history.js  session.js  catalog.js  storage.js
+  render/                    M-8   canvas.js  svg.js  pdf.js  nails.js  passes.js
+  ui/                        M-9..M-13, M-18, M-19
+    tabs/ home.js draw.js patterns.js figures.js gallery.js utilities.js
+    library.js  controls/  interaction.js  commandsTable.js  panels.js  help.js  lifecycle.js
+  host/                      M-16, M-17   scriptHost.js  legacyAdapter.js  recorder.js  importer/
+  node/                      M-21  server.mjs  storage.mjs  catalog.mjs  watcher.mjs  thumbnails.mjs  safePaths.mjs
+  vendor/                          acorn.js (if approved, O-4)  d3-delaunay.js
+  tests/                           kernel, evaluator, commands, storage (Node); screens (Playwright)
+generators/                  one file per drawable object (replaces drawRegistry/)
+patterns/ gallery/ utilities/ figures/     unchanged locations, shared with V1</pre>
+<h3>5.6 Screen layout</h3>
+<p>The six tabs remain (A-1). Within a tab, the screen has the regions shown in Figure 4. The library list, the layer strip,
+the canvas and the inspector are the same components in every tab that uses them; a tab chooses which to show.</p>
+[[FIG screen_layout | Screen regions, shown on the Figures tab]]

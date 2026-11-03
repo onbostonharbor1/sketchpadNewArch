@@ -1,0 +1,227 @@
+<h2>6.0 FUNCTIONAL REQUIREMENTS</h2>
+
+<h3>6.1 General</h3>
+<table class="req">
+<tr><td>FR-6.1.1</td><td>V2 shall be built on its own branch in <tt>app2/</tt>, leaving V1 usable until cut-over (D-1).</td></tr>
+<tr><td>FR-6.1.2</td><td>V2 shall be plain JavaScript modules served without a build step (A-2).</td></tr>
+<tr><td>FR-6.1.3</td><td>Every source file shall begin with a header comment stating what it does; the Notes popup shall show it.</td></tr>
+<tr><td>FR-6.1.4</td><td>An automatic check shall verify the call rules of Section 5.4 (which module may import which) and fail the build on a violation. It shall run with the other checks.</td></tr>
+<tr><td>FR-6.1.5</td><td>Only <tt>main.js</tt> shall read or write the browser's <tt>window</tt> object.</td></tr>
+</table>
+
+<h3>6.2 Kernel: paths</h3>
+<p>A path is an ordered array of points with a flag saying whether it closes on itself. Figure 5 shows an open path and
+a closed path. When a path is closed, an index past the last point wraps to the first.</p>
+[[FIG path_figure | Paths: the array of points underneath every drawing]]
+<p>Kernel operations fall into four families. Makers build a path from a rule. Figure 6 shows that a line, a circle and a
+parametric curve differ only in their rule: each is sampled into a path the same way, which is what removes the parametric
+and non-parametric divide (P-18).</p>
+[[FIG makers_figure | Makers: three rules, one kind of result]]
+<p>Shapers turn a path into another path. They are V1's <tt>createNodes</tt> pipeline (sample finely, space by arc length,
+bias, jitter) taken apart so that each step works on any path, not only an ellipse. Figure 7 shows the principal shapers.</p>
+[[FIG shapers_figure | Shapers: path in, path out]]
+<p>Connectors join the points of one or more paths into stitch lines. Each of V1's string-art objects is one connector
+applied to one or two paths, as Figure 8 shows.</p>
+[[FIG connectors_figure | Connectors: four rules that produce four familiar objects]]
+<table class="req">
+<tr><td>FR-6.2.1</td><td>The kernel shall represent a path as <tt>{ points, closed }</tt> (Section 8).</td></tr>
+<tr><td>FR-6.2.2</td><td>The kernel shall provide makers at least for: line, polygon, circle, ellipse, arc, spiral, and parametric curve <tt>p(t)</tt> over a range of <tt>t</tt>.</td></tr>
+<tr><td>FR-6.2.3</td><td>The kernel shall provide shapers at least for: move, rotate, scale; even spacing by arc length; spacing bias; jitter; trim; reverse; start at index; every k-th point; split; join; mirror.</td></tr>
+<tr><td>FR-6.2.4</td><td>Jitter shall take a seed, so the same settings give the same picture on every redraw.</td></tr>
+<tr><td>FR-6.2.5</td><td>The kernel shall provide connectors at least for: pairwise between two paths, skip by s, multiply by k, all pairs, ring, and connection among several paths (Linked Circles).</td></tr>
+<tr><td>FR-6.2.5a [B]</td><td>Connectors shall be one pluggable family (I-21), each a file declaring its settings, added without other edits. The family shall include at least: point i to i; offset (i to i + k, stopping or wrapping); reversed; every nth; part of an arm (from, to); growing skip (i to i + s<sub>0</sub> + i&middot;g); times table with negative and fractional factors; all pairs; mirror; and the corner stitch (arm a&rarr;c to arm c&rarr;b), which is the most used rule in the owner's ideabook. Every setting shall have a default, and a connector shall draw whatever its settings produce, however odd (D-15), stopping only where the result would be undefined.</td></tr>
+<tr><td>FR-6.2.5b [B]</td><td>The kernel shall provide composite makers proven by the Ideabook hints: star of corners (n tips, an inner radius, a twist), polygon corner stitch (from edge mid-points or whole edges), segment stitch, zigzag row, growing chords and offset rings, so that the common string-art constructions are one call each.</td></tr>
+<tr><td>FR-6.2.6</td><td>When two paths of different length are connected, the connector shall either resample to match, or stop with a message naming both lengths and the missing index, as the owner asked in October.</td></tr>
+<tr><td>FR-6.2.7</td><td>The kernel shall provide finders at least for: ends, midpoints, extremes, lobe tips, cusps and crossings. A finder shall name a point by feature (for example "tip of lobe 3"), not by array index.</td></tr>
+<tr><td>FR-6.2.7a [B]</td><td>Crossings of curves shall be called intersections and treated as nail candidates, shown with their own mark, distinct from the magic points (ends, middles, tips, cusps). See 6.21.</td></tr>
+<tr><td>FR-6.2.8</td><td>A curve shall have two samplings: a fine one for display and an n-point one for nails and stitches.</td></tr>
+<tr><td>FR-6.2.9</td><td>No kernel function shall read or write anything other than its arguments and its return value.</td></tr>
+</table>
+
+<h3>6.3 Generators</h3>
+<p>A generator is one file that describes one drawable object or one script. It replaces both the V1 registry object and
+the V1 <tt>scriptInfo</tt> script. Listing 1 shows a complete generator for the Parabola. Its corner is two handles,
+independent until welded (A-5).</p>
+<pre class="code listing"><span class="ln"> 1</span> /* generators/parabola.js  -- two arms stitched pairwise: the curve-stitch parabola. */
+<span class="ln"> 2</span> export const meta = {
+<span class="ln"> 3</span>   id: "parabola", version: 1, title: "Parabola",
+<span class="ln"> 4</span>   tags: ["stitch"], notes: "Two arms stitched at equal steps."
+<span class="ln"> 5</span> };
+<span class="ln"> 6</span>
+<span class="ln"> 7</span> export const params = {                 // one entry per setting; controls come from this
+<span class="ln"> 8</span>   a:      { type: "point", handle: true, default: [100, 100] },
+<span class="ln"> 9</span>   b1:     { type: "point", handle: true, default: [100, 300] },   // arm 1 corner end
+<span class="ln">10</span>   b2:     { type: "point", handle: true, default: [100, 300] },   // arm 2 corner end
+<span class="ln">11</span>   c:      { type: "point", handle: true, default: [300, 300] },
+<span class="ln">12</span>   steps:  { type: "int",   default: 18, min: 3, max: 64, label: "Steps" },
+<span class="ln">13</span>   trim:   { type: "int",   default: 0,  min: 0, max: 15, label: "Trim" },
+<span class="ln">14</span>   color:  { type: "color", default: "#0044cc" }
+<span class="ln">15</span> };
+<span class="ln">16</span>
+<span class="ln">17</span> export function build(p, k) {           // k is the kernel, passed in
+<span class="ln">18</span>   const arm1 = k.trim(k.line(p.a,  p.b1, p.steps), p.trim, 0);
+<span class="ln">19</span>   const arm2 = k.line(p.b2, p.c,  p.steps);
+<span class="ln">20</span>   return { paths: { arm1, arm2 },        // infrastructure: where discs may go
+<span class="ln">21</span>            stitches: k.pairwise(arm1, arm2),
+<span class="ln">22</span>            style: { color: p.color } };
+<span class="ln">23</span> }</pre>
+<div class="cap">Listing 1. A complete generator. There is no init, update or draw, and nothing is stored on the object.</div>
+<table class="req">
+<tr><td>FR-6.3.1</td><td>A generator file shall export <tt>meta</tt>, <tt>params</tt> and one of <tt>build(p, k)</tt> (geometry) or <tt>run(api)</tt> (a painting script). It may export <tt>drag(name, position, p)</tt> and <tt>migrate(oldVersion, p)</tt>.</td></tr>
+<tr><td>FR-6.3.2</td><td><tt>meta.id</tt> shall be permanent: it is what saved documents refer to. Renaming the file shall have no effect on documents. Two files with the same id shall both be reported and neither loaded.</td></tr>
+<tr><td>FR-6.3.3</td><td><tt>meta.version</tt> shall be a whole number. When it rises, <tt>migrate</tt> shall convert settings saved under earlier versions.</td></tr>
+<tr><td>FR-6.3.4</td><td><tt>build</tt> shall return, in one result, everything needed by every reader: paths (infrastructure), stitches, named points, bounds and style. There shall be no second method that must agree with it.</td></tr>
+<tr><td>FR-6.3.5</td><td>A setting marked <tt>handle: true</tt> shall be draggable on the canvas. Dragging writes that setting through a command and <tt>build</tt> runs again.</td></tr>
+<tr><td>FR-6.3.6</td><td>Where a handle's behaviour is not "move this point", the generator's <tt>drag</tt> shall return the new settings (for example the Circular Parabola Multi handle that separates and joins copies).</td></tr>
+<tr><td>FR-6.3.7</td><td>A generator may declare a handle that moves others (for example a midpoint that moves a whole arm) with <tt>moves: [ ... ]</tt>.</td></tr>
+<tr><td>FR-6.3.8</td><td>Each generator file shall be checked against the format when loaded. A failure shall show a badge with the reason on that item only; the rest of the library shall load.</td></tr>
+<tr><td>FR-6.3.9</td><td>The 14 V1 Draw objects shall be rewritten as generators (D-5). Exact reproduction of V1 output is not required (D-4). Before each is written, a one-page feature list (controls, handles and what each does, infrastructure, special behaviour) shall be drafted from V1 and corrected by the owner, so nothing distinctive is lost.</td></tr>
+</table>
+
+<h3>6.4 Settings schema and controls</h3>
+<table class="req">
+<tr><td>FR-6.4.1</td><td>Each setting shall be declared once, with its type, default and limits, in <tt>params</tt>. There shall be no separate <tt>controls</tt> block (P-14).</td></tr>
+<tr><td>FR-6.4.2</td><td>The types shall be: <tt>int</tt>, <tt>number</tt>, <tt>angle</tt>, <tt>color</tt>, <tt>choice</tt>, <tt>bool</tt>, <tt>text</tt>, <tt>point</tt>, <tt>points</tt> (a list) and <tt>pathRef</tt> (a reference to another layer's path).</td></tr>
+<tr><td>FR-6.4.3</td><td>Each type shall have a default widget. A setting may name a different widget with <tt>widget:</tt>. Conversion and checking of values shall happen in one place, by type, not in each widget.</td></tr>
+<tr><td>FR-6.4.4</td><td>A widget shall not write a setting. It shall send one <tt>SetParam</tt> command. A whole slider movement shall be one undo step.</td></tr>
+<tr><td>FR-6.4.5</td><td>A setting may carry <tt>section:</tt> (grouping, shown as an accordion) and <tt>showIf: { setting: value }</tt> (conditional display).</td></tr>
+<tr><td>FR-6.4.6</td><td>Number settings shall show a number box beside the slider for exact entry, and every setting shall offer reset to its default.</td></tr>
+<tr><td>FR-6.4.7</td><td>Buttons are actions, not settings, and belong to the commands table (6.9). Static text belongs to notes or help.</td></tr>
+<tr><td>FR-6.4.9 [B]</td><td>A common settings set (colour, line width, steps, rotate, scale) shall be shared by every generator and shown in one standard panel; each generator declares only its own settings beyond it (I-4). Standard groupings of settings may be shown as tabs.</td></tr>
+<tr><td>FR-6.4.8</td><td>A converter shall turn V1 declarations into the schema mechanically: <tt>range</tt> with whole-number bounds and step 1 to <tt>int</tt>, other <tt>range</tt> to <tt>number</tt> (or <tt>angle</tt> where named so), <tt>color</tt> and <tt>colorPicker</tt> to <tt>color</tt>, <tt>select</tt> and <tt>radio</tt> to <tt>choice</tt>, <tt>checkbox</tt> to <tt>bool</tt>, any leftover <tt>pointPicker</tt> to a handle.</td></tr>
+</table>
+
+<h3>6.5 Documents, the point table and welds</h3>
+<p>A document holds layers and a point table. A layer's handles name point numbers; they do not hold coordinates. A table
+entry either holds a position (a free point) or refers to a place on another layer's path (an attached point). These two
+kinds of entry give exactly two kinds of weld.</p>
+<p><b>Shared point.</b> Two handles name the same free point. Figure 9 shows two Parabola layers sharing point 11. The point
+is stored once; dragging it moves both layers. This is the owner's rule D-3: the table entry is the point, so nothing is
+copied and nothing can drift (P-6).</p>
+[[FIG weld_shared | A shared point: two layers name point 11]]
+<p><b>Attachment.</b> A handle names a point that lies on another layer's path, at a fraction <tt>t</tt> along it or on a named
+feature. It is one-way: the path decides where the point is and the handle follows. Dragging the attached handle slides it
+along the path. Figure 10 shows a line attached to a circle. Anchored discs, handles dropped mid-arm and scaffold all work
+this way.</p>
+[[FIG weld_attach | An attachment: point 14 lies on layer L3's path]]
+<p>Because attachments are one-way, layers can be evaluated in order: each after every layer it is attached to. A loop of
+attachments cannot be evaluated and is refused at the moment the weld is made, with a message (Figure 11). The V1
+propagation walk, its snapshots and deltas, its four special cases and <tt>cornerPartners()</tt> are not needed.</p>
+[[FIG eval_order | Evaluation order, and a loop refused at weld time]]
+<table class="req">
+<tr><td>FR-6.5.1</td><td>A document shall hold a point table; each entry shall be either a free point <tt>{x, y, z}</tt> or an attached point <tt>{on, t}</tt> or <tt>{on, feature}</tt>. <b>[B]</b> z is carried from the first checkpoint, default 0 (D-11); flat work never sees it.</td></tr>
+<tr><td>FR-6.5.2</td><td>Point numbers shall be permanent and never reused (V1's <tt>nextPoint</tt> rule). Disc numbers, point numbers and nail numbers shall be the same numbers.</td></tr>
+<tr><td>FR-6.5.3</td><td>Welding two handles shall make them name one free point. Unwelding shall copy the point under a new number and point one handle at the copy.</td></tr>
+<tr><td>FR-6.5.4</td><td>Dropping a handle within the snap radius of another handle shall weld them on release, never while passing over (V1 Phase 8 next pass behaviour kept).</td></tr>
+<tr><td>FR-6.5.5</td><td>Attaching shall be refused, with a message naming the layers, if it would create a loop.</td></tr>
+<tr><td>FR-6.5.6</td><td>A document shall carry <tt>format</tt> (a whole number). The loader shall apply one upgrade step per format number, so old files always open. Unknown generator ids shall open as visible placeholders with their data kept.</td></tr>
+<tr><td>FR-6.5.7</td><td>A document shall contain no derived values and no code. Anything computable shall be computed on load.</td></tr>
+<tr><td>FR-6.5.8</td><td>A document shall record the units and scale chosen for output (O-1). Documents imported without a scale shall show "scale not established".</td></tr>
+<tr><td>FR-6.5.9</td><td>When a path's point count changes, an attachment by node shall move to the nearest node; one that cannot be placed shall be reported, never silently moved to whatever point now has its old index.</td></tr>
+<tr><td>FR-6.5.10</td><td>A layer may be a reference to another saved document (nesting). A reference shall follow edits to that document; a copy shall not. Break apart shall expand a nested document or turn a generator's stitches into layers.</td></tr>
+<tr><td>FR-6.5.11</td><td>A layer shall have a role: <tt>stitch</tt>, <tt>guide</tt>, <tt>scaffold</tt> or <tt>image</tt>. Guides and scaffold shall never print. Scaffold is one-way by construction: other layers attach to it.</td></tr>
+</table>
+
+<h3>6.6 Commands and undo</h3>
+<p>Every change to a document goes through a named command. Before a command runs, the whole document is copied onto the
+history (A-3). Undo restores the previous copy; redo moves forward. A snapshot cannot be wrong in the way a hand-written
+reverse function can: it puts back exactly what was there, partners included.</p>
+[[FIG undo_stack | Snapshot history, the current position and the saved position]]
+<table class="req">
+<tr><td>FR-6.6.1</td><td>Nothing shall change a document except a command. Commands shall at least cover: insert layer, delete layer, set setting, move point, weld, unweld, attach, add disc, delete disc, move or turn layer, reorder layers, set layer colour, set output inclusion, break apart, revert to saved.</td></tr>
+<tr><td>FR-6.6.2</td><td>One gesture shall be one undo step: a handle drag is recorded on release; a slider when movement starts, the whole movement one step; consecutive arrow-key nudges one step until a pause or a change of selection.</td></tr>
+<tr><td>FR-6.6.3</td><td>Undo shall not cover session changes (selection, mode, Show All, zoom) or file operations (Save, Save As, Archive). File operations shall continue to ask first where V1 asks.</td></tr>
+<tr><td>FR-6.6.4</td><td>"Unsaved changes" shall mean the history position differs from the position at the last save. Undoing back to that position shall make the document clean.</td></tr>
+<tr><td>FR-6.6.5</td><td>History shall last while the document is open, including across tab switches, and shall not be saved in the file.</td></tr>
+<tr><td>FR-6.6.6</td><td>Ctrl+Z shall undo and Ctrl+Y shall redo, except while a text or number field has focus, where the field's own undo applies.</td></tr>
+<tr><td>FR-6.6.7</td><td>Delete Layer shall no longer warn that it cannot be undone. Reset shall become "revert to saved", an ordinary command that can itself be undone.</td></tr>
+<tr><td>FR-6.6.8</td><td>Every command shall end by calling one <tt>refresh()</tt>, which redraws the open tab's regions in a fixed order (A-4).</td></tr>
+</table>
+
+<h3>6.7 Session state and tab switching</h3>
+<p>V1 keeps three kinds of state in one object (P-8). V2 keeps them apart.</p>
+<table class="t">
+<tr><th>Kind</th><th>Examples</th><th>Saved in the file</th><th>Undoable</th><th>Survives a tab switch</th></tr>
+<tr><td>Document</td><td>layers, settings, points, welds, transforms, colours, stacking, output inclusion</td><td>yes</td><td>yes</td><td>yes</td></tr>
+<tr><td>Session</td><td>open subtabs, active layer, mode, Show All, hidden while editing, selected point, zoom</td><td>no</td><td>no</td><td>yes</td></tr>
+<tr><td>Interaction</td><td>a drag in progress, hover</td><td>no</td><td>no</td><td>no (ends with the gesture)</td></tr>
+</table>
+[[FIG state_diagrams | State transitions of a tab and of an open document]]
+<table class="req">
+<tr><td>FR-6.7.1</td><td>Document, session and interaction state shall be held in separate objects. Only the document shall be saved or undone.</td></tr>
+<tr><td>FR-6.7.2</td><td>The active layer shall be session state. Choosing a layer shall not mark the document changed.</td></tr>
+<tr><td>FR-6.7.3</td><td>Choosing a layer and reordering layers shall be separate actions. V1's bring-to-front on select may remain as an option (O-6).</td></tr>
+<tr><td>FR-6.7.4</td><td>"Hidden while editing" shall be session state; "left out of output" shall be document state. Show All shall reveal hidden layers as in V1.</td></tr>
+<tr><td>FR-6.7.5</td><td>Switching tabs shall close the old tab (detach its listeners, clear its regions) and open the new one, which draws from its own state. There shall be no <tt>needsUpdate</tt> or <tt>saved</tt> flags.</td></tr>
+<tr><td>FR-6.7.6</td><td>A tab shall re-read the catalog when it opens.</td></tr>
+</table>
+
+<h3>6.8 Catalog and storage</h3>
+<table class="req">
+<tr><td>FR-6.8.1</td><td>A folder shall be a category. <tt>patterns/builds/myStar.js</tt> is in Patterns, category builds. There shall be no registration step and no hand-maintained list.</td></tr>
+<tr><td>FR-6.8.2</td><td>An item's title, tags and notes shall come from its file (<tt>meta</tt>, or the header comment for legacy scripts). Its status shall be kept in a small metadata file beside it. Figures carry their title inside the document.</td></tr>
+<tr><td>FR-6.8.3</td><td>The catalog index shall be built from the folders, never stored as the authority. If curation needs order or hidden entries, these shall be fields in the metadata file (O-5).</td></tr>
+<tr><td>FR-6.8.4</td><td>Thumbnails shall be a cache: made when missing or out of date, deletable at any time.</td></tr>
+<tr><td>FR-6.8.5</td><td>Storage shall be the only module that reads files or calls the Node service. It shall offer named operations (open, list, save, save as, archive, write thumbnail, open in editor), never paths or request names to its callers.</td></tr>
+<tr><td>FR-6.8.6</td><td>Saving shall be atomic for the document file. A thumbnail or index failure shall not turn a successful save into "not saved"; the index shall be repairable from the folders.</td></tr>
+<tr><td>FR-6.8.7</td><td>One name check shall apply everywhere, rejecting Windows reserved names (CON, PRN, AUX, NUL, COM1 to COM9, LPT1 to LPT9), trailing dots and spaces, and names differing only by letter case from an existing name.</td></tr>
+<tr><td>FR-6.8.8</td><td>V1's path-safety rules (<tt>safePaths.mjs</tt>) and foreign-origin refusal shall be kept.</td></tr>
+</table>
+
+<h3>6.9 Adding scripts and objects while the application runs</h3>
+<p>This is a defining feature (D-6). Saving a file into a library folder is the whole procedure. [[REF dynamic_add]] shows the sequence.</p>
+[[FIG dynamic_add | Adding a script: save the file, and it appears]]
+<table class="req">
+<tr><td>FR-6.9.1</td><td>The Node service shall watch the library folders. On a file added, changed or removed, it shall read the item's description without running it, update the index, and notify the open application over a connection kept open for the purpose.</td></tr>
+<tr><td>FR-6.9.2</td><td>A new item shall appear in its list within two seconds of the file being saved, with no restart and no Rebuild.</td></tr>
+<tr><td>FR-6.9.3</td><td>When an open item's file changes, it shall rerun with the current settings kept.</td></tr>
+<tr><td>FR-6.9.4</td><td>Code shall be loaded with the file's change time in its address, so an edited file is never served from the browser cache.</td></tr>
+<tr><td>FR-6.9.5</td><td>At start-up the service shall scan the folders once, so files added while it was stopped are found. This scan replaces the V1 manifest check.</td></tr>
+<tr><td>FR-6.9.6</td><td>A generator saved into <tt>generators/</tt> shall appear in the Figures Insert list as a full object, with no other code changed.</td></tr>
+<tr><td>FR-6.9.7</td><td>"New script" shall write a skeleton native script into a chosen category and open it in VS Code. "Import" shall accept pasted code or a chosen file.</td></tr>
+<tr><td>FR-6.9.8</td><td>Outside libraries a script needs shall be kept in <tt>vendor/</tt> so everything works without the internet.</td></tr>
+<tr><td>FR-6.9.9 [B]</td><td>Plugins (I-1): makers, shapers, connectors, finders, generators, templates and output engines shall all be found the same way, by saving a file in their folder, each declaring <tt>kind</tt>, <tt>name</tt>, <tt>version</tt> and its settings. This is settled before CP-0 because it decides how the kernel is loaded.</td></tr>
+</table>
+
+<h3>6.10 Script host and the ingestion ladder</h3>
+<table class="req">
+<tr><td>FR-6.10.1</td><td>Every script shall run in an isolated frame with a fresh canvas and fresh state. Nothing shall carry from one run to the next (P-12). Animation frames, timers and listeners shall be stopped when the item closes.</td></tr>
+<tr><td>FR-6.10.2</td><td>An error shall show as a badge on the item with its message; a run exceeding a time limit shall be stopped. The list shall keep working.</td></tr>
+<tr><td>FR-6.10.3</td><td>Three kinds of script shall be accepted: <b>native</b> (FR-6.3.1), <b>legacy</b> (V1 <tt>runPattern</tt> and <tt>scriptInfo</tt>, run through an adapter that supplies the old names inside the frame), and <b>foreign</b> (any canvas code, run through the recorder).</td></tr>
+<tr><td>FR-6.10.4</td><td>The recorder shall supply an object with the canvas drawing methods that records each line and arc as data instead of drawing. A recorded script's output shall be placeable in a figure as a frozen layer.</td></tr>
+<tr><td>FR-6.10.5</td><td>On first sight of a script, the host shall run it once and save beside it: a report (what it drew, likely stitches, number literals that look like settings, globals touched, internet use, animation, run time) and a thumbnail. Its status shall be <tt>new</tt>.</td></tr>
+</table>
+<p>Adapting a script to built-in controls proceeds by levels ([[REF ladder]]). Each level is proposed by the importer, reviewed
+by the owner, and approved separately; the script works after every level. Level 3, with the owner's minimizing, is
+promotion: the owner's rule that playpen scripts are never promoted as-is is kept.</p>
+[[FIG ladder | The ingestion ladder]]
+<table class="req">
+<tr><td>FR-6.10.6</td><td>Level 1: the importer shall read the script's structure with a JavaScript parser and propose a typed settings entry for each independent top-level number literal and loop bound, with name, type and range. It shall not propose derived values (<tt>x2 = x1 + xLength</tt>) or constants (<tt>Math.PI / 2</tt>).</td></tr>
+<tr><td>FR-6.10.7</td><td>Level 2: the importer shall propose point settings with handles from paired names (<tt>x1</tt>/<tt>y1</tt>, <tt>cx</tt>/<tt>cy</tt>) and points built from literals.</td></tr>
+<tr><td>FR-6.10.8</td><td>Level 3: the importer shall draft a recipe from the recorder's stitch detection (for example "pairwise between two lines, 18 steps").</td></tr>
+<tr><td>FR-6.10.9</td><td>Each level shall be shown in a review panel: the proposed settings (tick, rename, change ranges), a live preview of the controls, and the code change. Accepting shall rewrite the file and keep the original beside it. Nothing shall be rewritten without approval.</td></tr>
+<tr><td>FR-6.10.10</td><td>The first test of the importer shall be <tt>patterns/builds/OverlappingStars.js</tt>; its Level 1 proposal shall be compared with the hand adaptation in V1's <tt>OVERLAP.js</tt>.</td></tr>
+</table>
+
+<h3>6.11 Rendering and physical output</h3>
+<table class="req">
+<tr><td>FR-6.11.1</td><td>Renderers shall be the only code that paints. Each shall take geometry and view options and return pixels or a file.</td></tr>
+<tr><td>FR-6.11.2</td><td>Final (points only) shall be a renderer option, not a flag read by objects.</td></tr>
+<tr><td>FR-6.11.3</td><td>The canvas renderer shall draw, in order: layers (with dimming), discs, weld marks, then the interaction layer (handles, selection) on its own canvas.</td></tr>
+<tr><td>FR-6.11.4</td><td>Output engines shall at least include: SVG; a true-scale PDF with a scale bar and a 100 mm calibration line; and a nail list (number, x and y in the chosen units, weld group).</td></tr>
+<tr><td>FR-6.11.5</td><td>A weld group (a shared point) shall print as one nail. Coincident points that are not welded shall follow a stated grouping rule shown in an output preview (O-2).</td></tr>
+<tr><td>FR-6.11.6</td><td>A spacing check shall take nail diameter and clearance (O-3), and highlight and list pairs that are too close. It shall not prevent an experimental drawing from being made.</td></tr>
+<tr><td>FR-6.11.7</td><td>Tiling across several sheets, with overlap and alignment marks, should be provided if the owner's boards exceed one sheet (O-7).</td></tr>
+<tr><td>FR-6.11.8</td><td>Thumbnails shall be the renderer drawing small onto its own canvas, never the main canvas.</td></tr>
+<tr><td>FR-6.11.9 [B]</td><td>Each printed nail shall keep where it came from (layer, arm, step). The nail template may then colour each nail by its step along its arm, in a repeating cycle of five colours, so the builder, going up by a constant, does not lose his place (I-14). The cycle is off by default; the owner has a colour laser.</td></tr>
+<tr><td>FR-6.11.10 [B]</td><td>Output engines shall be able to write one file per layer (SVG or DXF for laser-cut layers mounted at depth) and, later, a 3D format for curves extruded in space (I-11). Mounted layers need little more than V1's roles and per-layer print.</td></tr>
+</table>
+
+<h3>6.12 Help, notes, menus and the screens</h3>
+<table class="req">
+<tr><td>FR-6.12.1</td><td>Help pages shall be Markdown files, edited in VS Code. TinyMCE shall be removed.</td></tr>
+<tr><td>FR-6.12.2</td><td>Every menu item and button shall be an entry in one commands table: <tt>{ id, label, enabledWhen(state), run() }</tt>. A disabled item shall say why. <b>[B]</b> Each entry also carries its <tt>scope</tt>; see 6.13.</td></tr>
+<tr><td>FR-6.12.3</td><td>"Panel" shall mean a page side area and "canvas layer" a drawing surface. "Overlay" shall not be used.</td></tr>
+<tr><td>FR-6.12.4</td><td>Home, Draw, Patterns, Figures, Gallery and Utilities shall keep their V1 purposes (A-1). Draw shall be a one-layer document; a saved Draw setting shall be a saved document.</td></tr>
+<tr><td>FR-6.12.5</td><td>Save As shall use one form showing category, title and destination, replacing V1's chain of prompts.</td></tr>
+</table>
