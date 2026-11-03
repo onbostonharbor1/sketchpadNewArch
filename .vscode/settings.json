@@ -1,0 +1,8 @@
+{
+  // archive/ is a frozen copy of Sketchpad V1: read as data, never edited here.
+  // Kept out of search and file watching so it does not drown the new code.
+  "search.exclude": { "archive/**": true },
+  "files.watcherExclude": { "archive/**": true },
+  "files.readonlyInclude": { "archive/**": true },
+  "workbench.localHistory.maxFileEntries": 500
+}

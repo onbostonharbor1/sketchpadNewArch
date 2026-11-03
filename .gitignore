@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.vite/
+*.log
+.DS_Store
+Thumbs.db
+# Regression test: this run's pictures and report (approved copies are committed)
+/tests/regression/latest/
+/tests/regression/report.html
