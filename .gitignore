@@ -7,3 +7,6 @@ Thumbs.db
 # Regression test: this run's pictures and report (approved copies are committed)
 /tests/regression/latest/
 /tests/regression/report.html
+# Working data the service writes (figures saved while trying the prototype stay; recovery files do not)
+/library/recovery/
+/library/settings.json

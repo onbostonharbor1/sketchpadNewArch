@@ -1,0 +1,14 @@
+{
+  "name": "new-sketchpad",
+  "version": "0.1.0",
+  "description": "New sketchpad: string-art geometry, nail templates, and a place to sketch",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node service/server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:page": "node tests/page/prototype.page.mjs",
+    "check": "node tests/checks/layers.mjs"
+  },
+  "license": "UNLICENSED"
+}
