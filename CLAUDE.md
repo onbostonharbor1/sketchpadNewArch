@@ -1,12 +1,13 @@
-# Sketchpad, new architecture: notes for Claude (DRAFT for Barry to edit)
+# New sketchpad: notes for Claude (DRAFT for Barry to edit)
 
-The rebuild of Sketchpad (called V2 in the specifications; Sketchpad 3 in Barry's own numbering, open item O-11).
+The rebuild of Sketchpad. Barry calls it **new sketchpad** (3 Nov 2026); the specifications call it V2; no code name.
 Barry is a retired technical writer and an old-time Unix maintenance programmer. He reads every line he keeps:
 plain, readable code over clever code.
 
-The specifications are in `docs/specs/`: the functional specification (Rev B governs) and the detailed
-specification (SPV2-DS-001). Two outside reviews are in `docs/reviews/`; they found real defects, listed in
-"Known defects" below, which govern over the specifications until a reconciliation pass fixes the documents.
+Read first: `docs/TASKS.md` (the work, in order, and its status), `docs/RECONCILIATION.md` (contracts R-1 to R-19,
+which govern over both specifications where they differ), `docs/SETTINGS.md` (every configurable value; nothing is a
+bare constant in code). Then `docs/specs/`: the functional specification (Rev B) and the detailed specification
+(SPV2-DS-001). The two outside reviews that led to the reconciliation are in `docs/reviews/`.
 
 ## What Sketchpad is for
 
@@ -53,31 +54,13 @@ When a decision trades one purpose against the other, say so and let Barry decid
 - Errors are caught only at choke points and reported (FS 6.14); no try/catch scattered through logic.
 - Anything an AI writes into Sketchpad is a draft Barry approves; nothing leaves the machine without his press.
 
-## Known defects in the specifications (from the reviews; fix before building on them)
+## Decisions since the specifications (Barry, 3 Nov 2026)
 
-1. Parabola has two independent corner handles until welded (FS A-5). DS 5.1's example merges them: wrong.
-2. Shared points and layer transforms: shared points live in document coordinates; the evaluator converts them into
-   each layer's local coordinates before building. DS 6.2's order transforms a shared point twice: wrong. What
-   rotating a welded layer does to its partners is Barry's decision (pending).
-3. Saved objects keep their effective settings; changed defaults never alter saved work. DS-6.4 is wrong.
-4. Unequal arms: draw what can be drawn and give a note naming both lengths and the missing index. Every kernel call
-   returns `{ value, notes }`.
-5. Building a lattice or a symmetry repeat is a command that creates document structure; generators only compute.
-6. Features have a permanent identity separate from their display number; ambiguous matches are unresolved, never
-   guessed; tolerances are in document units. Angle numbering from the top is not stable.
-7. An unresolved attachment saves a fallback position (recovery data).
-8. Crash recovery checkpoints the open documents, not only the session; "saved" is a state identity, not a history
-   position.
-9. Runaway code: geometry generators run in Workers (terminable); legacy painting scripts need a separate-process
-   frame; prove stopping with a prototype first. A content security policy blocks network access in the frame.
-10. Regression compares stitches, nails, styles and structure separately; V1 comparison keeps absolute position.
-11. Nail merging, and whether a disc suppresses a layer's automatic nails, are Barry's decisions (pending).
-12. The first build is the foundation prototype (below), not the checkpoint plan.
+- Moving or rotating a layer, or a drag, that would move a point shared with another layer is detected and refused
+  with a message (R-2.4). What should happen instead is deferred.
+- Nearby points merge only when printing (R-11); the merge distance is a setting. In the figure they stay independent.
+- One Settings command for every configurable value (SETTINGS.md).
 
-## First work, in order
+## The work
 
-1. Reconciliation pass: make the two specifications agree and fix the defects above; examples become test files.
-2. Foundation prototype: one generator with its own handle behaviour; save, reopen, undo, crash recovery; two
-   instances sharing a point; move and rotate while welded; an attachment to a transformed path; one correctly
-   scaled nail template. And the stopping experiment for scripts.
-3. A second outside review, pointed at the prototype's code and behaviour.
+`docs/TASKS.md` holds the order and the status. Keep it current: update it in the same commit as the work.
