@@ -1,0 +1,136 @@
+<h2>11.0 THE COMMANDS TABLE AND THE SCREENS</h2>
+<h3>11.1 Three levels, fixed places</h3>
+<p>FS 6.13. The level of a command is what it acts on. Each level has one place, the same on every tab, so the owner, after a
+month away, has one rule to remember.</p>
+[[FIG screen_layout | The screen: where each level of command lives]]
+<table class="req">
+<tr><td>DR-11.1</td><td>The menus (global strip, Commands button panel, caption "v" menu, a layer's chip menu) shall be built from the commands table by filtering on <tt>scope</tt> and on the context (active tab, subtab, layer). No screen shall build a menu item by hand.</td></tr>
+<tr><td>DR-11.2</td><td>Context-aware commands: one <tt>save</tt>, <tt>saveAs</tt>, <tt>export</tt>, <tt>reset</tt>, <tt>help</tt>, <tt>notes</tt>, <tt>history</tt> each, reading the context to decide what they act on. A tab supplies a small adapter (what "the open item" is), not its own command.</td></tr>
+<tr><td>DR-11.3</td><td>Keyboard: each command may declare a key; keys are shown in the menus; the same key does the same kind of thing on every tab (Ctrl+S save, Ctrl+Z undo, Delete delete the selection).</td></tr>
+<tr><td>DR-11.4</td><td>Before the table is written, a survey of every V1 command shall be made (FR-6.13.7): id, label, where it is now, which level it belongs to, and duplicates. The survey is reviewed by the owner.</td></tr>
+</table>
+<h3>11.2 Acceptance tests</h3>
+<table class="req">
+<tr><td>AT-11.1</td><td>On every tab, Help is in the same place and opens the page for that tab and subtab.</td></tr>
+<tr><td>AT-11.2</td><td>Save on Draw, Figures and Patterns is one command id; its greyed tooltip, with nothing open, says "nothing open to save".</td></tr>
+<tr><td>AT-11.3</td><td>A code search finds no menu item built outside <tt>screens/menus.js</tt>.</td></tr>
+</table>
+
+<h2>12.0 ERROR HANDLING</h2>
+<p>FS 6.14. The design rule: no checks in the logic; catch at a few choke points; show every error; never stop the whole
+application (D-12). V1 has this since <tt>claude/v1-errors</tt>; V2 is built with it.</p>
+<table class="small">
+<tr><th>Choke point</th><th>On error</th></tr>
+<tr><td>A layer's evaluation</td><td>That layer draws nothing and shows a red mark; the others draw. The error names the document and layer.</td></tr>
+<tr><td>A command's run</td><td>The document is unchanged (DR-7.4); the error names the command.</td></tr>
+<tr><td>A tab switch</td><td>The tab shows a message in its main area; other tabs work.</td></tr>
+<tr><td>Reading or writing a file</td><td>The item is marked; the error names the file and what was wrong with it.</td></tr>
+<tr><td>Registering a generator, template or connector</td><td>It is listed greyed with the reason; others load.</td></tr>
+<tr><td>A script run (in its frame)</td><td>The frame reports it; the script's view shows it; the app is unaffected.</td></tr>
+<tr><td>Anything uncaught</td><td>The window's error and unhandled-rejection handlers report it as "uncaught".</td></tr>
+</table>
+<pre class="code">ErrorRecord   = { time, where, message, place, count }     // place: "file:line" of the owner's code, if any
+error log     = journal/logs/errors_YYYY-MM-DD.txt, one line per new error:
+  2026-11-02 14:03:11  Figure "star", layer 3 (parabola): steps is not a number  (generators/parabola.js:22)</pre>
+<table class="req">
+<tr><td>DR-12.1</td><td>The error bar is a fixed region of the page, on every tab, not cleared by a tab switch; it lists the latest five different errors with counts, and a Dismiss.</td></tr>
+<tr><td>DR-12.2</td><td>An error is logged once per page load per (where, message); repeats increment the count shown in the bar.</td></tr>
+<tr><td>DR-12.3</td><td>An error inside the error handler itself is written only to the console, so a fault in reporting cannot loop.</td></tr>
+<tr><td>DR-12.4</td><td>At start-up, Home summarises the newest error log (count and latest lines) with its own Dismiss, remembered by file name and count, so new errors in the same file show again.</td></tr>
+<tr><td>DR-12.5</td><td>Debug checks (FR-6.14.5) are in <tt>documents/checks.js</tt>, run after each command when <tt>session.debug</tt> is on: point numbers unique and below nextPoint; every handle names an existing point; every attached point names an existing layer; order lists every layer once. A failure is reported like any error.</td></tr>
+</table>
+<h3>12.1 Acceptance tests</h3>
+<table class="req">
+<tr><td>AT-12.1</td><td>Make one layer's generator throw: the bar names the layer; the other layers draw; the log has one line; redraw ten times: the count is 11, the log still one line.</td></tr>
+<tr><td>AT-12.2</td><td>Reload: Home says the newest error log has 1 error.</td></tr>
+</table>
+
+<h2>13.0 EXPLORATION GENERATORS AND GEOMETRY ALGORITHMS</h2>
+<h3>13.1 Lattice with shared points</h3>
+<p>The <tt>manyRowsColumns</tt> model (FR-6.19.1): M shapes per row, N rows, neighbours sharing points, so one drag reshapes
+several shapes. Copies are added with a setting.</p>
+<pre class="code">lattice(settings):
+  shape: a generator id with k handles; rows N, cols M; spacing dx, dy; shareRule: "edges" | "corners" | "none"
+  lay out an (M+1) x (N+1) grid of point numbers in the document's point table (created once, kept on resize
+    where positions exist, new ones added at the grid position)
+  for each cell (r, c): a child layer of the shape whose handles name the grid's point numbers for that cell,
+    chosen by shareRule (corners: the four cell corners; edges: also the edge mid-points)
+  the lattice is one layer to the owner (one settings panel), many layers to evaluation</pre>
+<table class="req">
+<tr><td>DR-13.1</td><td>Changing M or N keeps every existing point where it was dragged; new points take grid positions (manyRowsColumns re-seeds and loses drags; V2 shall not).</td></tr>
+<tr><td>DR-13.2</td><td>A lattice may list several shapes, used in a repeating pattern across the cells, and an overlay layer (one shape resting on top, its own colour) (FR-6.19.2).</td></tr>
+<tr><td>DR-13.3</td><td>A drag of a shared point is one command and redraws every cell using it in the same frame (DR-6.6).</td></tr>
+</table>
+<h3>13.2 Symmetry repeat</h3>
+<p>Any layer may carry <tt>repeat: { n, center, mirror }</tt>: evaluated once, drawn n times turned 360/n&deg; about the centre
+(and mirrored if asked). Repeated copies are drawn, not new layers; their nails are real (they print) and numbered after the
+original's.</p>
+<h3>13.3 Component groups</h3>
+<p>A group file lists layers with mostly default settings and their welds; inserting it inserts them all, as one command, with
+fresh point numbers (FR-6.19.5).</p>
+<h3>13.4 Roulettes</h3>
+<pre class="code">roulette(R, r, d, turns, steps, dChange):
+  k = (R - r) / r
+  for i in 0..steps: th = turns * 2pi * i / steps;  dd = d + dChange * th / (2pi)
+    x = (R - r) cos th + dd cos(k th);  y = (R - r) sin th - dd sin(k th)
+  closes after turns = r / gcd(R, r) when R and r are whole numbers; otherwise never: limited by turns</pre>
+<h3>13.5 Templates</h3>
+<p>FS 6.20. A template is a generator with <tt>meta.kind = "template"</tt>, inserted with role guide: shown while working, left out
+of Show All, Final and output. The first set: rectangle, circle, ruler (shows its length in the caption, in mm once the scale is
+set), bounding box of the figure, saw tooth, grid.</p>
+<h3>13.6 The pursuit engine</h3>
+<p>One engine for every V1 pursuit script (FR-6.19.6). Prototype: <tt>gallery/Ideabook/scripts/pursuitEngine.js</tt>.</p>
+<pre class="code">pursuitSteps(start: Point[], s):
+  defaults: steps 40, rule "next", k 2, move "fraction", f 0.08, speed 4, speeds null,
+            bias 0, jitter 0, seed 1, reverse false, center, radius 100, target
+  pts = reverse ? start reversed : start;  rnd = seeded(seed);  heading = none for each point
+  out = [pts]
+  repeat steps times:
+    for each point p_i:
+      t = target by rule:  next p_(i+1) | kth p_(i+k) | opposite p_(i+n/2) | centroid of all
+                           | random (a target fixed per point from rnd) | circle (a point moving on a circle)
+                           | fixed (s.target) | a function (i, pts, step)
+      d = t - p_i
+      rate = speeds ? speeds[i] : (move = "speed" ? speed : f)
+      d = move = "speed" ? unit(d) * min(rate, |d|) : d * rate
+      d = d * (1 - bias) + heading_i * bias;   heading_i = d
+      p_i' = p_i + d + jitter * (rnd() - 0.5) * 2 (each axis)
+    pts = all p'; out.push(pts)
+  return out                                    // drawn as "edges" (nested polygons) or "trails" (each point's path)</pre>
+<table class="small">
+<tr><th>V1 script (gallery/Scripts/Pursuit/)</th><th>Engine settings that reproduce it</th></tr>
+<tr><td>pursuit.js</td><td>rule next, move fraction, cw or ccw by reverse; as edges</td></tr>
+<tr><td>pursuitMice.js</td><td>the same, start a regular n-gon</td></tr>
+<tr><td>pursuit2.js</td><td>rule next | kth | centroid; speeds from a seed for its "speeds" rule</td></tr>
+<tr><td>pursuit3.js</td><td>rule next, as trails</td></tr>
+<tr><td>pursuitStatic5 / Dynamic5.js</td><td>several runs, some reversed</td></tr>
+<tr><td>copilot1 / copilotAnimation.js</td><td>move speed, bias, jitter, rule random | opposite | circle | fixed; animation = drawing steps over time</td></tr>
+<tr><td>pusuitSurface.js</td><td>not covered: it fills polygons (playpen)</td></tr>
+<tr><td>pursuit4.js</td><td>not a pursuit: a stitch rule (pairwise with offset 2 sides)</td></tr>
+</table>
+<h3>13.7 Intersections</h3>
+<p>Intersections are nail candidates, shown with their own mark, distinct from magic points (FR-6.2.7a, 6.21).</p>
+<pre class="code">intersections(pathA, pathB, s):
+  segments of A and B (a closed path includes its closing segment)
+  candidate pairs by a uniform grid of cell size = 2 x the mean segment length (avoids n*m)
+  for each pair, solve the two-segment intersection; keep 0 &lt;= u, v &lt;= 1
+  merge points closer than 0.5 px
+  name each "cross A.B #k", k numbered by angle about the pair's joint centroid from straight up, clockwise (DR-4.9)
+tracking: a disc attached to "cross A.B #k" is re-found after a change by name; if #k no longer exists,
+  the nearest crossing to its last position within 5 px is taken and the change noted; otherwise it is marked lost (DR-6.3)</pre>
+<table class="req">
+<tr><td>DR-13.4</td><td>Self-intersections only on request (DR-4.11). At most 400 intersections per pair are offered (V1's cap), the rest counted.</td></tr>
+<tr><td>DR-13.5</td><td>Later (FR-6.21.2), an intersection may be defined by rule: "the k-th crossing of A and B counted from A's start", which is stable where angle numbering is not.</td></tr>
+<tr><td>DR-13.6</td><td>The owner's own intersection routine shall be studied first: for which curves it works and why it fails on others, and kept if it is better on its curves.</td></tr>
+</table>
+<h3>13.8 Image to thread (later)</h3>
+<p>FR-6.19.7, for analysis now, building later: approximate a photograph with one continuous thread across N nails on a circle.
+The known greedy method: start at a nail; repeatedly choose the next nail whose straight line most darkens the remaining
+darkness of the image along it; subtract the line; stop after L lines or when no line helps. Output is a nail sequence, the
+build instructions in this one case.</p>
+<h3>13.9 Acceptance tests</h3>
+<table class="req">
+<tr><td>AT-13.1</td><td>A 3 &times; 2 lattice of Parabolas sharing corners: drag a shared corner, all cells using it follow; change to 4 &times; 2: the dragged corner stays.</td></tr>
+<tr><td>AT-13.2</td><td>Each V1 pursuit script listed as covered is reproduced by the engine within 1 px per point for its default settings.</td></tr>
+<tr><td>AT-13.3</td><td>Two crossing lines give one intersection named "cross L1.line.L2.line #1"; a disc on it follows as one line turns 10&deg;.</td></tr>
+</table>

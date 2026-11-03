@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Help Treatise — The Manifest System: Loading, Caching, Invalidation, and Tab Registration</title>
+
+  <link rel="stylesheet" href="/help/help_treatise.css" />
+</head>
+
+<body>
+
+<p class="note">Checked 27 October 2026 against the current code; this page was already close. Corrected:
+paths are absolute (<code>/&lt;basedir&gt;/...</code>, no longer <code>../</code>); there is a sixth public method,
+<code>getRegistry()</code>; Figures registers a callback but reads its category list with <code>fetch()</code>
+itself and has no archive or edit command yet, so nothing invalidates <code>"figures"</code>; the Node service file is
+<code>node/sketchpadService.mjs</code>.</p>
+
+  <h1>The Manifest System: Loading, Caching, Invalidation, and Tab Registration</h1>
+
+  <p>
+    This treatise describes the current manifest architecture as implemented across
+    <span class="mono">ui/manifest.js</span>, the tab lifecycle files, and
+    <span class="mono">ui/home/homeManifest.js</span>.
+    It supersedes the earlier treatise, which documented a simpler system
+    without the registration/invalidation model.
+  </p>
+
+  <div class="note">
+    <b>Scope</b><br/>
+    1) The <span class="mono">ManifestManager</span> class: its four caches and six public methods.<br/>
+    2) How tabs register callbacks and how invalidation fires them.<br/>
+    3) How the standard tabs (Patterns, Gallery, Utilities, Figures) use the system.<br/>
+    4) How the Home tab differs and why.<br/>
+    5) The two global-reset operations that bypass the registration model.<br/>
+    6) How the Node service keeps <span class="mono">/home/manifest.json</span> consistent
+       when items in other tabs are edited or archived.
+  </div>
+
+
+  <h2>1. ManifestManager: the four caches</h2>
+
+  <p>
+    <span class="mono">ManifestManager</span> is instantiated once as a singleton named
+    <span class="mono">manifest</span> and imported by every file that needs manifest data.
+    Its constructor initialises four dictionaries:
+  </p>
+
+  <pre><code>this.cache        = {};  // basedir → raw loaded data (array or array-of-arrays)
+this.registryCache = {}; // basedir → directoryRegistry array
+this.shapedCache   = {}; // basedir → { categoryName: [entries] }  (lazily built)
+this.listeners     = {}; // basedir → [ callback, ... ]</code></pre>
+
+  <p>
+    All four are keyed by <b>basedir</b> — the string passed to
+    <span class="mono">manifest.get(basedir)</span>.
+    Examples of valid basedir strings:
+  </p>
+
+  <pre><code>"patterns"
+"gallery/Ideabook"
+"gallery/Patterns"
+"gallery/Scripts"
+"utilities/Tools"
+"utilities/Lab"
+"figures"</code></pre>
+
+  <p>
+    Home is a special case and is discussed separately in section 5.
+  </p>
+
+
+  <h2>2. The six public methods</h2>
+
+  <h3>2.1 get(basedir)</h3>
+
+  <p>
+    The primary loader. Checks <span class="mono">cache</span> first; on a miss it loads from disk
+    via <span class="mono">fileLayer</span> using one of two models:
+  </p>
+
+  <ul>
+    <li>
+      <b>DirectoryRegistry model</b> — if <span class="mono">/&lt;basedir&gt;/directoryRegistry.json</span>
+      exists, it is read as an array of category names. For each category,
+      <span class="mono">/&lt;basedir&gt;/&lt;category&gt;/manifest.json</span> is loaded (or an empty
+      array substituted if absent). The result is an array-of-arrays, one inner array per category.
+      Both the result and the registry array are cached.
+    </li>
+    <li>
+      <b>Flat model</b> — if no registry exists but
+      <span class="mono">/&lt;basedir&gt;/manifest.json</span> exists, it is loaded as a flat array
+      and cached.
+    </li>
+    <li>
+      <b>Nothing</b> — returns and caches <span class="mono">[]</span>.
+    </li>
+  </ul>
+
+  <p>
+    All tabs call <span class="mono">await manifest.get(basedir)</span> during their init to prime the cache
+    before calling <span class="mono">getCategoryMap</span>.
+  </p>
+
+  <h3>2.2 getCategoryMap(basedir)</h3>
+
+  <p>
+    Synchronous. Returns a plain object <span class="mono">{ categoryName: [entries], ... }</span>
+    shaped from the raw array-of-arrays. The shaped result is memoised in
+    <span class="mono">shapedCache</span> and cleared automatically by both
+    <span class="mono">invalidate</span> and <span class="mono">clearCache</span>.
+    Throws if <span class="mono">get(basedir)</span> has not yet been awaited.
+  </p>
+
+  <p>
+    This is the method tabs use when they need to look up items by category name.
+    It replaces the earlier pattern of tabs maintaining their own
+    <span class="mono">manifest.cache.patterns</span> secondary cache.
+  </p>
+
+  <h3>2.3 register(key, callback)</h3>
+
+  <p>
+    Registers a zero-argument callback to be fired whenever
+    <span class="mono">invalidate(key)</span> is called for that key.
+    Multiple callbacks can be registered for the same key.
+    Each tab registers once, guarded against duplicate registration on repeated inits:
+  </p>
+
+  <pre><code>if (!initPatternsTab._registered) {
+  manifest.register("patterns", () => restorePatternsTab());
+  initPatternsTab._registered = true;
+}</code></pre>
+
+  <p>
+    Registrations accumulate in <span class="mono">listeners[key]</span> and are never automatically
+    cleared — they persist for the lifetime of the page. The duplicate guard on the
+    <span class="mono">_registered</span> flag ensures each tab registers exactly once regardless
+    of how many times its init function is called.
+  </p>
+
+  <h3>2.4 invalidate(key)</h3>
+
+  <p>
+    The primary mechanism for signalling that on-disk data has changed for a specific key.
+    It does three things in order:
+  </p>
+
+  <ol>
+    <li>Deletes <span class="mono">cache[key]</span>, <span class="mono">registryCache[key]</span>,
+        and <span class="mono">shapedCache[key]</span>.</li>
+    <li>Logs the invalidation to the console.</li>
+    <li>Fires every callback registered for that key.</li>
+  </ol>
+
+  <p>
+    The callbacks fire synchronously, so they execute before
+    <span class="mono">invalidate</span> returns to its caller.
+    Async callbacks (those that return a Promise) are not awaited — they run
+    in parallel with whatever follows the <span class="mono">invalidate</span> call.
+    This is intentional: the tab doing the edit does its own navigation independently,
+    and background tabs refresh themselves without blocking the foreground work.
+  </p>
+
+  <h3>2.5 clearCache()</h3>
+
+  <p>
+    A global reset: wipes all three data caches (<span class="mono">cache</span>,
+    <span class="mono">registryCache</span>, <span class="mono">shapedCache</span>) in one operation.
+    It does <b>not</b> touch <span class="mono">listeners</span> — registrations survive a global reset.
+    It does <b>not</b> fire any callbacks.
+  </p>
+
+  <p>
+    <span class="mono">clearCache</span> is reserved for two specific global-reset operations
+    described in section 6. All other invalidation should use
+    <span class="mono">invalidate(key)</span>.
+  </p>
+
+
+  <h2>3. How the standard tabs use the system</h2>
+
+  <p>
+    Patterns, Gallery and Utilities all follow the same pattern. Figures registers a callback (below) but
+    does not use <span class="mono">manifest.get()</span>: <span class="mono">figuresDisplay.js</span> fetches
+    <span class="mono">/figures/directoryRegistry.json</span> and each category's manifest itself.
+    <span class="mono">getRegistry(basedir)</span> returns the cached category list for a basedir
+    (an empty array if none).
+  </p>
+
+  <h3>3.1 At init time</h3>
+
+  <ol>
+    <li>Call <span class="mono">await manifest.get(basedir)</span> to prime the cache.</li>
+    <li>Call <span class="mono">manifest.getCategoryMap(basedir)</span> to get the shaped data.</li>
+    <li>Register a refresh callback (once, guarded by <span class="mono">_registered</span>).</li>
+  </ol>
+
+  <h3>3.2 After a Node operation that mutates a manifest</h3>
+
+  <p>
+    The tab's menu command calls <span class="mono">manifest.invalidate(key)</span>.
+    This clears the stale cache and fires the registered callback, which reloads and
+    re-renders. The calling code then handles its own navigation (e.g. deciding whether
+    to stay in pattern view or return to categories after an archive).
+  </p>
+
+  <h3>3.3 Registration table</h3>
+
+  <table>
+    <thead>
+      <tr><th>Tab</th><th>Key(s) registered</th><th>Callback</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Patterns</td>
+        <td><span class="mono">"patterns"</span></td>
+        <td><span class="mono">restorePatternsTab()</span></td>
+      </tr>
+      <tr>
+        <td>Gallery</td>
+        <td><span class="mono">"gallery/Ideabook"</span><br/>
+            <span class="mono">"gallery/Patterns"</span><br/>
+            <span class="mono">"gallery/Scripts"</span></td>
+        <td><span class="mono">restoreGalleryTab()</span> (all three)</td>
+      </tr>
+      <tr>
+        <td>Utilities</td>
+        <td><span class="mono">"utilities/Tools"</span><br/>
+            <span class="mono">"utilities/Lab"</span></td>
+        <td><span class="mono">refreshUtilitiesFromManifestEdit()</span> (both)</td>
+      </tr>
+      <tr>
+        <td>Figures</td>
+        <td><span class="mono">"figures"</span></td>
+        <td><span class="mono">initFiguresTab(false)</span></td>
+      </tr>
+      <tr>
+        <td>Home</td>
+        <td><span class="mono">"home"</span></td>
+        <td><span class="mono">loadHomeManifest_async()</span> — only if Home is the active tab
+            (<span class="mono">uiState.activeTab === "home"</span>)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>3.4 Invalidation table: which keys are invalidated and when</h3>
+
+  <table>
+    <thead>
+      <tr><th>Operation</th><th>Keys invalidated</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Edit manifest entry (Patterns)</td>
+        <td><span class="mono">"patterns"</span>, <span class="mono">"home"</span></td>
+      </tr>
+      <tr>
+        <td>Archive item (Patterns)</td>
+        <td><span class="mono">"patterns"</span>, <span class="mono">"home"</span></td>
+      </tr>
+      <tr>
+        <td>Edit manifest entry (Gallery)</td>
+        <td><span class="mono">"gallery/Ideabook"</span>, <span class="mono">"gallery/Patterns"</span>,
+            <span class="mono">"gallery/Scripts"</span>, <span class="mono">"home"</span></td>
+      </tr>
+      <tr>
+        <td>Edit manifest entry (Utilities)</td>
+        <td><span class="mono">"utilities/Tools"</span>, <span class="mono">"utilities/Lab"</span>,
+            <span class="mono">"home"</span></td>
+      </tr>
+      <tr>
+        <td>Archive item (Utilities)</td>
+        <td>same as above (routes through <span class="mono">refreshUtilitiesFromManifestEdit</span>)</td>
+      </tr>
+      <tr>
+        <td>Archive or edit manifest (Figures)</td>
+        <td>none yet: Figures has no such commands until Save As (Phase 10)</td>
+      </tr>
+      <tr>
+        <td>Create pattern PNG (from Draw)</td>
+        <td><span class="mono">"gallery/Patterns"</span></td>
+      </tr>
+      <tr>
+        <td>Create pattern script (from Draw)</td>
+        <td><span class="mono">"patterns"</span></td>
+      </tr>
+      <tr>
+        <td>Edit manifest entry (from Home)</td>
+        <td><span class="mono">"home"</span> (via <span class="mono">refreshHomeCategoriesFromManifestEdit</span>)</td>
+      </tr>
+    </tbody>
+  </table>
+
+
+  <h2>4. How Home differs</h2>
+
+  <p>
+    Home's manifest is architecturally distinct from all other tabs.
+    The differences are not incidental — they follow from what Home actually represents.
+  </p>
+
+  <h3>4.1 What Home's manifest is</h3>
+
+  <p>
+    <span class="mono">/home/manifest.json</span> is a <b>virtual aggregate</b>: a flat array
+    assembled by the Node rebuild service by scanning all status-bearing entries across every
+    Patterns, Gallery, and Utilities manifest on disk. It is not the authoritative source
+    for any item — the per-tab manifests are. Home's manifest is a derived view, rebuilt
+    from scratch whenever <span class="mono">rebuildAndValidateManifests</span> runs.
+  </p>
+
+  <h3>4.2 Why Home bypasses manifest.get()</h3>
+
+  <p>
+    <span class="mono">manifest.get("home")</span> would first probe for
+    <span class="mono">/home/directoryRegistry.json</span>, which does not exist.
+    The dev server returns a 200 with an HTML error page rather than a 404 for unknown
+    paths, causing <span class="mono">fileLayer.exists()</span> to return true and
+    <span class="mono">fileLayer.loadJSON()</span> to fail on parsing.
+  </p>
+
+  <p>
+    Home's loader (<span class="mono">loadHomeManifest_async</span> in
+    <span class="mono">homeManifest.js</span>) therefore bypasses <span class="mono">manifest.get()</span>
+    entirely and calls <span class="mono">fileLayer.loadJSON("/home/manifest.json")</span> directly.
+    It then stores the result manually into <span class="mono">manifest.cache["home"]</span>
+    so that <span class="mono">manifest.invalidate("home")</span> can clear it in the normal way.
+  </p>
+
+  <pre><code>// loadHomeManifest_async — simplified
+if (Object.prototype.hasOwnProperty.call(manifest.cache, "home")) {
+  data = manifest.cache["home"];          // cache hit
+} else {
+  data = await fileLayer.loadJSON("/home/manifest.json");  // disk read
+  manifest.cache["home"] = data;          // store manually
+}</code></pre>
+
+  <h3>4.3 Home's registration callback</h3>
+
+  <p>
+    Home registers a callback for <span class="mono">"home"</span> that only runs when Home
+    is currently the active tab:
+  </p>
+
+  <pre><code>manifest.register("home", () => {
+  if (uiState.activeTab === "home") {
+    loadHomeManifest_async();
+  }
+});</code></pre>
+
+  <p>
+    When another tab (e.g. Gallery) calls <span class="mono">manifest.invalidate("home")</span>,
+    the cache is always cleared. If Home is active, the callback fires
+    <span class="mono">loadHomeManifest_async()</span> immediately so the user sees the
+    updated data without navigating away. If Home is in the background, the cache is already
+    empty and the next time the user switches to Home it will load fresh data from disk.
+  </p>
+
+  <h3>4.4 Home's data shape</h3>
+
+  <p>
+    Unlike other tabs, Home does not use <span class="mono">getCategoryMap</span>.
+    After loading, <span class="mono">loadHomeManifest_async</span> passes the flat array to
+    <span class="mono">groupHomeEntriesByStatus(data)</span>, which produces a plain object
+    keyed by status string. Only entries that have a non-empty
+    <span class="mono">status</span> field appear in this object — entries without a status
+    exist in the flat array on disk but are invisible to Home's UI.
+  </p>
+
+  <pre><code>{
+  "working":  [ { file, path, title, status }, ... ],
+  "favorite": [ ... ],
+  "broken":   [ ... ]
+}</code></pre>
+
+  <p>
+    This grouped object is stored in <span class="mono">homeState</span> via
+    <span class="mono">setHomeManifestGrouped()</span> and drives Home's category frames.
+  </p>
+
+
+  <h2>5. Keeping Home consistent after per-tab edits</h2>
+
+  <p>
+    Because <span class="mono">/home/manifest.json</span> is a derived file, any edit to a
+    per-tab manifest that adds, changes, or removes a status must also be mirrored into Home's
+    manifest on disk. This is handled entirely in the Node service
+    (<span class="mono">node/sketchpadService.mjs</span>) so the browser does not need to know about it.
+  </p>
+
+  <h3>5.1 editManifestEntry (Case A: editing from within a tab)</h3>
+
+  <p>
+    When the service writes a status change to a Patterns, Gallery, or Utilities manifest,
+    it immediately mirrors that change into <span class="mono">/home/manifest.json</span>
+    handling three cases:
+  </p>
+
+  <ul>
+    <li><b>Status newly set</b> — the item does not yet exist in Home's manifest.
+        A new entry is appended.</li>
+    <li><b>Status changed</b> — the item already exists in Home's manifest.
+        Its <span class="mono">status</span> and <span class="mono">title</span> are updated in place.</li>
+    <li><b>Status cleared</b> — the item exists in Home's manifest.
+        It is removed.</li>
+  </ul>
+
+  <p>
+    The match is made by <b>rooted path</b> — the item's absolute path from the project root,
+    e.g. <span class="mono">/gallery/Scripts/Arcs/arcsAndInner.js</span>.
+    This is computed by the <span class="mono">makeRootedPath</span> helper from the item's
+    manifest directory and its local <span class="mono">entry.path</span> value.
+    The response includes a <span class="mono">homeMirrorResult</span> field
+    (<span class="mono">"added"</span>, <span class="mono">"updated"</span>,
+    <span class="mono">"removed"</span>, or <span class="mono">"skipped"</span>) for diagnostics.
+  </p>
+
+  <h3>5.2 editManifestEntry (Case B: editing from within Home)</h3>
+
+  <p>
+    When the UI sends a manifest edit with <span class="mono">manifestPath</span> pointing to
+    <span class="mono">/home/manifest.json</span>, the service treats this as a virtual edit.
+    It uses the rooted path (the <span class="mono">matchValue</span>) to locate the original
+    per-tab manifest entry, updates that file, and then also updates
+    <span class="mono">/home/manifest.json</span> directly.
+  </p>
+
+  <h3>5.3 archiveItem</h3>
+
+  <p>
+    When an item is archived from any tab, the service removes it from the item's own manifest
+    and also removes the matching entry from <span class="mono">/home/manifest.json</span>,
+    again matched by rooted path. Both writes happen before the service returns, so the
+    browser's subsequent <span class="mono">manifest.invalidate("home")</span> always
+    finds correct data on disk.
+  </p>
+
+
+  <h2>6. Global reset operation</h2>
+
+  <p>
+    One operation wipes the entire cache rather than invalidating specific keys.
+    It is <span class="mono">syncSystemStateAfterRebuild()</span> in <span class="mono">rebuildSync.js</span> and is only called after the
+    Node rebuild service has rewritten all manifests on disk.
+  </p>
+
+  <ul>
+    <li>
+      <b><span class="mono">syncSystemStateAfterRebuild()</span></b> — clears the cache and
+      marks all tab <span class="mono">needsUpdate</span> flags so each tab re-initialises
+      on next visit.
+    </li>
+      </ul>
+
+  <p>
+    (A second function, <span class="mono">rebuildAllSystemCaches()</span>, which also re-fetched
+    every basedir to warm the cache, was removed on 31 October 2026: nothing called it.)
+  </p>
+
+  <p>
+    It does not fire registered callbacks — that is intentional.
+    A global rebuild replaces all data from scratch and the tab lifecycle
+    (via <span class="mono">needsUpdate</span>) handles re-rendering.
+    Firing all callbacks would cause redundant re-renders before the fresh data arrives.
+  </p>
+
+  <p>
+    <span class="mono">clearCache()</span> should not be called outside of this function.
+    All other invalidation uses <span class="mono">invalidate(key)</span>.
+  </p>
+
+
+  <h2>7. End-to-end example: editing a Gallery/Scripts status</h2>
+
+  <ol>
+    <li>User opens a Gallery/Scripts item, chooses Edit Manifest, sets status to "working", confirms.</li>
+    <li>
+      UI calls <span class="mono">openEditManifestDialog()</span> which dispatches
+      <span class="mono">editManifestEntry</span> to the Node service.
+    </li>
+    <li>
+      Node writes the new status to the item's manifest file, then mirrors it into
+      <span class="mono">/home/manifest.json</span> (adding a new entry because none existed).
+      Returns <span class="mono">homeMirrorResult: "added"</span>.
+    </li>
+    <li>
+      UI calls <span class="mono">refreshGalleryFromManifestEdit()</span>, which calls:
+      <ul>
+        <li><span class="mono">manifest.invalidate("gallery/Ideabook")</span></li>
+        <li><span class="mono">manifest.invalidate("gallery/Patterns")</span></li>
+        <li><span class="mono">manifest.invalidate("gallery/Scripts")</span> — fires <span class="mono">restoreGalleryTab()</span></li>
+        <li><span class="mono">manifest.invalidate("home")</span> — fires Home's callback</li>
+      </ul>
+    </li>
+    <li>
+      Home's callback checks <span class="mono">uiState.activeTab</span>:
+      <ul>
+        <li>If Gallery is active: cache is cleared, Home loads fresh on next visit.</li>
+        <li>If Home is active: <span class="mono">loadHomeManifest_async()</span> runs immediately,
+            reads the updated file, re-groups by status, and re-renders.</li>
+      </ul>
+    </li>
+  </ol>
+
+
+  <h2>8. Summary: what each layer owns</h2>
+
+  <table>
+    <thead>
+      <tr><th>Layer</th><th>Responsibility</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="mono">manifest.js</span></td>
+        <td>Loading, caching, shaped access, registration, and targeted invalidation.
+            Knows nothing about tabs or UI.</td>
+      </tr>
+      <tr>
+        <td>Tab init functions</td>
+        <td>Call <span class="mono">manifest.get()</span> to prime the cache, then register a
+            refresh callback once.</td>
+      </tr>
+      <tr>
+        <td>Tab menu command functions</td>
+        <td>Call <span class="mono">manifest.invalidate(key)</span> after Node operations,
+            including <span class="mono">"home"</span> for any status-affecting operation.
+            Handle their own navigation independently of the callback.</td>
+      </tr>
+      <tr>
+        <td><span class="mono">homeManifest.js</span></td>
+        <td>Loads Home's flat manifest directly via <span class="mono">fileLayer</span>,
+            stores into <span class="mono">manifest.cache["home"]</span> manually,
+            groups by status, and updates Home's display state.</td>
+      </tr>
+      <tr>
+        <td><span class="mono">node/sketchpadService.mjs</span></td>
+        <td>Writes per-tab manifests and mirrors every status change into
+            <span class="mono">/home/manifest.json</span> immediately,
+            so the browser never reads stale home data after a cache clear.</td>
+      </tr>
+      <tr>
+        <td><span class="mono">rebuildSync.js</span></td>
+        <td>Owns the two global-reset operations (<span class="mono">clearCache()</span>)
+            that follow a full Node rebuild. These do not fire callbacks.</td>
+      </tr>
+    </tbody>
+  </table>
+
+
+  <div class="hr"></div>
+
+  <p class="small">End of treatise.</p>
+
+</body>
+</html>

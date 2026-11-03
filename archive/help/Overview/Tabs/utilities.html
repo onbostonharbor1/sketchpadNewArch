@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Utilities Tab — How It Works</title>
+  <link rel="stylesheet" href="/help/help_treatise.css" />
+</head>
+<body>
+
+<h1>Utilities Tab — How It Works</h1>
+
+<p class="note">Rewritten 27 October 2026 against the current code. The tab is now five files under
+<code>ui/utilities/</code>, and scripts run through the shared script runner instead of being imported
+here.</p>
+
+<p>Utilities runs small helper scripts. <strong>Tools</strong> scripts produce text or HTML, shown in
+<code>#text</code>. <strong>Lab</strong> scripts draw on the shared canvas. A third subtab,
+<strong>Result</strong>, appears after the first run and re-runs the last script.</p>
+
+<h2>The files</h2>
+<table>
+<tr><th>File</th><th>Owns</th></tr>
+<tr><td><code>utilities.js</code></td><td><code>UtilityTabSpec</code>; init / restore / save; loading the Tools and Lab
+  manifests; refreshing after a manifest edit; the Commands panel</td></tr>
+<tr><td><code>utilitiesNav.js</code></td><td>the Tools / Lab / Result subtabs and switching between them</td></tr>
+<tr><td><code>utilitiesDisplay.js</code></td><td>the category frames, what a click does, running a script, showing a
+  text result</td></tr>
+<tr><td><code>utilitiesMenuCmds.js</code></td><td>caption ("category: title") and menu (Help, Show Script, Notes, Edit
+  Manifest, Archive)</td></tr>
+<tr><td><code>utilitiesState.js</code></td><td>current domain, category, list, index, and whether anything has run</td></tr>
+</table>
+
+<h2>Where the scripts are</h2>
+<pre>/utilities/Tools/&lt;Category&gt;/&lt;entry.path&gt;
+/utilities/Lab/&lt;Category&gt;/&lt;entry.path&gt;</pre>
+<p>Each group has a directory registry and per-category manifests, read through the shared manifest
+system (<code>utilities/Tools</code>, <code>utilities/Lab</code>).</p>
+
+<h2>Running a script: runUtilityEntry(subtab, category, entry)</h2>
+<ul>
+<li><strong>Lab</strong>: <code>runScriptByPath(path, "canvas", ...)</code> into <code>#sketchpad</code>, controls in
+  <code>#action</code>.</li>
+<li><strong>Tools</strong>: <code>runScriptByPath(path, "text", ...)</code>; a string result is kept in
+  <code>uiState.utilities.lastResult</code> and shown in <code>#text</code>.</li>
+<li>Then the caption is set. An error is shown in <code>#text</code> and rethrown.</li>
+</ul>
+<p>A click on an item records the subtab, category and entry in <code>uiState.utilities</code>, marks that
+something has run (which makes the Result subtab appear), and runs it.</p>
+
+<h2>State</h2>
+<pre>uiState.utilities = {
+  activeUtilityTabId:    "tab-tools" | "tab-lab" | "tab-result",
+  lastUtilitySubtab:     "Tools" | "Lab",
+  activeUtilityCategory: category name,
+  activeUtilityItem:     the manifest entry,
+  lastResult:            last Tools output (HTML),
+  saved:                 null
+}</pre>
+<p>Result is reproducible because the three remembered values rebuild the script's path.</p>
+
+<h2>Activation</h2>
+<p>Nothing calls <code>saveUtilityState()</code>, so <code>uiState.utilities.saved</code> stays null and
+<code>setUI.js</code> always calls <code>initUtilityTab(false)</code>. Init reloads the manifests, rebuilds the
+subtabs, and switches to <code>activeUtilityTabId</code>, which is remembered in <code>uiState</code>.</p>
+<div class="callout"><strong>Probable glitch (read from the code, not tried).</strong> Init with
+<code>restored = false</code> also resets "has anything run" to false, which hides the Result subtab. If you
+leave Utilities while on Result and come back, init switches to Result (re-running the script) while
+the Result subtab button is hidden.</div>
+
+<h2>Commands panel</h2>
+<p>Rebuild &amp; Validate goes through the Node service, clears the manifest cache and marks every tab
+<code>needsUpdate</code>, then re-runs <code>initUtilityTab(false)</code> and prints the report.</p>
+<p>After a manifest edit (Edit Manifest, Archive) the tab instead calls
+<code>refreshUtilitiesFromManifestEdit()</code>: it drops the cached Tools, Lab and Home manifests and
+reloads the two groups, finds the remembered item again by its path, and fails loudly if it is gone.</p>
+
+</body>
+</html>

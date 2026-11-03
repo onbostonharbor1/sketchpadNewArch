@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>caption.js — The Caption Bar</title>
+  <link rel="stylesheet" href="/help/help_treatise.css" />
+</head>
+<body>
+
+<h1>caption.js — The Caption Bar</h1>
+
+<p class="note">Rewritten 27 October 2026 against the current code. New since the earlier page: a Reset
+button option and the Prev/Next click zones over the picture. Three helpers the old page described are
+still exported but no longer called, and one of them would fail if it were (see the end).</p>
+
+<p>The caption bar is the gray strip above the picture. Every tab builds it the same way, through
+<code>setCaptionBar()</code>: a title on the left, buttons on the right.</p>
+
+<h2>setCaptionBar(config)</h2>
+<table>
+<tr><th>config</th><th>Meaning</th></tr>
+<tr><td><code>targetId</code></td><td>the container, normally <code>"caption"</code> (required; throws if missing)</td></tr>
+<tr><td><code>title</code></td><td>text on the left</td></tr>
+<tr><td><code>onPrev</code>, <code>onNext</code></td><td>if given, Prev and Next buttons</td></tr>
+<tr><td><code>overlayTargetId</code></td><td>with both of the above: also turns on click zones over that region (left
+  quarter = Prev, right quarter = Next; <code>nextPrevOverlay.js</code>). Without it the zones are turned off.</td></tr>
+<tr><td><code>onPrimary</code></td><td>if given, a Reset button (meant for secondary objects; no tab passes it at
+  present)</td></tr>
+<tr><td><code>onMenu(button, event)</code></td><td>what the "v" button does; without it "v" is drawn grayed and inert</td></tr>
+</table>
+<p>The bar is rebuilt from nothing on every call. The "v" button is always there. The title goes in a
+<code>span.caption-title</code>; the buttons in a <code>div.caption-buttons</code>, in the order Prev, Next, Reset,
+v. Tabs that add their own items to the bar (Home's file path, Figures' Line and Parabola buttons and
+layer name) find it by those class names, after building it.</p>
+
+<h2>Who uses Prev/Next and the click zones</h2>
+<ul>
+<li>Patterns: buttons, and click zones over the picture.</li>
+<li>Gallery: buttons, and click zones over the picture (scripts) or the image (in <code>#text</code>).</li>
+</ul>
+
+<h2>Removed 31 October 2026</h2>
+<p><code>normalizeCaptionEntry</code>, <code>rebuildCaption</code> and <code>buildMenuHandler</code> were exported
+but nothing called them (the last passed the wrong arguments to <code>menuManager.open</code>). They are gone.
+<code>setCaptionBar</code> is the only function in this file.</p>
+
+</body>
+</html>

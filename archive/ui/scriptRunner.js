@@ -1,0 +1,422 @@
+/* scriptRunner.js
+   ------------------------------------------------------------
+   Universal Script Loader + Execution Helpers  (COMPAT FIX)
+   ------------------------------------------------------------
+   PURPOSE
+   -------
+   This module is the *single execution pipeline* for all
+   runnable scripts in Sketchpad.
+
+   It deliberately does NOT:
+     - interpret script meaning
+     - manage UI state
+     - decide where scripts come from
+
+   It ONLY:
+     - loads ES modules by path
+     - executes them deterministically
+     - optionally builds parameter controls
+     - routes output either to canvas or to #text
+
+   ------------------------------------------------------------
+   USED BY
+   -------
+     • Patterns tab      → canvas
+     • Gallery Scripts   → canvas
+     • Utilities → Lab   → canvas
+     • Utilities → Tools → text
+
+   ------------------------------------------------------------
+   CONTRACT (CANVAS SCRIPTS)
+   -------------------------
+   REQUIRED:
+     - export function runPattern()
+
+   ARGUMENTS:
+     - runPattern() is always called with no arguments.
+
+   OPTIONAL (parameterControls support):
+     - export const scriptInfo = { ... }
+       where scriptInfo.parameters (or .params) exists
+     - scriptInfo.redrawHandler may be set by the script during runPattern()
+
+   ------------------------------------------------------------
+   CONTRACT (TEXT SCRIPTS)
+   -----------------------
+   REQUIRED:
+     - export function runPattern()   returning HTML string
+
+   ------------------------------------------------------------
+   FAIL-FAST PHILOSOPHY
+   -------------------
+   Any ambiguity (missing file, wrong MIME type, missing export)
+   MUST throw immediately with a readable error.
+   ------------------------------------------------------------
+*/
+
+/*
+   Canvas reset helper.
+   This MUST be a concrete file import (".js") so the browser
+   never falls back to index.html.
+*/
+import { drawState, resetCanvas, resetDrawStateForScript } from "/draw/drawState.js";
+
+/*
+   ParameterControls builder.
+   NOTE: Optional behavior. If a script does not export scriptInfo,
+   no controls are built and the script still runs.
+*/
+import { buildParameterControls } from "/ui/parameterControls.js";
+import { armInteractor, disarmInteractor } from "/ui/interactor.js";
+
+
+/* ===========================================================
+   loadScriptModule(path)
+=========================================================== */
+export async function loadScriptModule(path) {
+
+  if (typeof path !== "string" || path.trim() === "") {
+    throw new Error("loadScriptModule: path must be a non-empty string");
+  }
+
+  let spec = path.trim();
+
+  // normalize to rooted URL
+  if (!spec.startsWith("/")) spec = "/" + spec;
+
+  // remove accidental double slashes
+  while (spec.startsWith("//")) spec = spec.slice(1);
+
+  // cache busting (dev)
+  const bust = "t=" + Date.now();
+  spec = (spec.indexOf("?") >= 0) ? (spec + "&" + bust) : (spec + "?" + bust);
+
+  // probe fetch to avoid Vite index.html masquerading as JS
+  const res = await fetch(spec, { cache: "no-store" });
+
+  const ct = (res.headers.get("content-type") || "").toLowerCase();
+
+  if (!res.ok) {
+    throw new Error(
+      "loadScriptModule: fetch failed " + res.status +
+      " for " + spec +
+      " (content-type: " + ct + ")"
+    );
+  }
+
+  if (ct.indexOf("javascript") === -1 && ct.indexOf("ecmascript") === -1) {
+    const body = await res.text();
+    const snippet = body.slice(0, 200).replace(/\s+/g, " ");
+    throw new Error(
+      "loadScriptModule: non-JS response for " + spec +
+      " (content-type: " + ct + ") snippet: " + snippet
+    );
+  }
+
+  // dynamic ES module import
+  const mod = await import(/* @vite-ignore */ spec);
+
+  if (!mod || typeof mod.runPattern !== "function") {
+    throw new Error(
+      "loadScriptModule: module has no exported runPattern(): " + path
+    );
+  }
+
+  return mod;
+
+} // end loadScriptModule
+
+
+/* ===========================================================
+   loadScriptModuleFromText(text, path)
+   -----------------------------------------------------------
+   Loads script text as a module, as if it were the file at path. Used to
+   run an old saved version of a script (ui/scriptHistory.js).
+
+   The text is loaded from a blob: URL, which cannot resolve the script's
+   imports by itself, so each import is first written out in full:
+     "/draw/x.js"   becomes  http://localhost:5173/draw/x.js
+     "./y.js"       becomes  the same, resolved against path's folder
+   The modules it imports are then the very ones the app has loaded.
+=========================================================== */
+export async function loadScriptModuleFromText(text, path) {
+  const base = window.location.origin + (path.startsWith("/") ? path : "/" + path);
+  const full = String(text).replace(
+    /(\bfrom\s*|\bimport\s*\(\s*|\bimport\s+)(["'])([^"'\n]+)\2/g,
+    (all, head, q, spec) => (spec.startsWith("/") || spec.startsWith("./") || spec.startsWith("../"))
+      ? head + q + new URL(spec, base).href + q
+      : all
+  );
+  const url = URL.createObjectURL(new Blob([full], { type: "text/javascript" }));
+  try {
+    const mod = await import(/* @vite-ignore */ url);
+    if (!mod || typeof mod.runPattern !== "function") {
+      throw new Error("loadScriptModuleFromText: this version has no exported runPattern(): " + path);
+    }
+    return mod;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+} // end loadScriptModuleFromText
+
+
+/* ===========================================================
+   normalizeScriptInfo(mod)
+   -----------------------------------------------------------
+   Ensure scriptInfo vocabulary consistency:
+     - scriptInfo.parameters <-> scriptInfo.params
+=========================================================== */
+function normalizeScriptInfo(mod) {
+
+  if (!mod) throw new Error("normalizeScriptInfo: mod missing");
+
+  const info = mod.scriptInfo;
+  if (!info) return null;
+
+  if (info.params && !info.parameters) {
+    info.parameters = info.params;
+  } else if (info.parameters && !info.params) {
+    info.params = info.parameters;
+  }
+
+  return info;
+
+} // end normalizeScriptInfo
+
+
+/* ===========================================================
+   attachCanvasToRegion(regionId)
+=========================================================== */
+function attachCanvasToRegion(regionId) {
+
+  if (!regionId) throw new Error("attachCanvasToRegion: regionId missing");
+
+  const host = document.getElementById(regionId);
+  if (!host) throw new Error("attachCanvasToRegion: #" + regionId + " not found");
+
+  const canvas = window.drawCanvas;
+  if (!canvas) throw new Error("attachCanvasToRegion: window.drawCanvas missing");
+
+  host.innerHTML = "";
+  host.appendChild(canvas);
+
+  return host;
+
+} // end attachCanvasToRegion
+
+
+/* ===========================================================
+   clearCanvasBackground(color = "#ffffff")
+=========================================================== */
+function clearCanvasBackground(color = "#ffffff") {
+
+  const canvas = window.drawCanvas;
+  if (!canvas) throw new Error("clearCanvasBackground: window.drawCanvas missing");
+
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+} // end clearCanvasBackground
+
+
+/* ===========================================================
+   buildControlsIfPresent(mod, options)
+   -----------------------------------------------------------
+   Builds parameter controls ONLY if scriptInfo exists AND
+   caller requests controls.
+
+   No redraw is forced here. If a script wants redraw-on-control
+   creation, it can set scriptInfo.redrawHandler and the control
+   system will call it via its own onChange wiring..
+
+   IMPORTANT:
+   - Controls must be built into a known region. In Sketchpad,
+     that is #action by convention for canvas scripts.
+=========================================================== */
+
+
+function buildControlsIfPresent(mod, options) {
+
+  if (!mod) throw new Error("buildControlsIfPresent: mod missing");
+  if (!options) throw new Error("buildControlsIfPresent: options missing");
+
+  if (!options.enableControls) return;
+
+  const info = normalizeScriptInfo(mod);
+  if (!info) return; // script has no scriptInfo => no controls
+
+  if (!info.parameters) {
+    throw new Error("buildControlsIfPresent: scriptInfo exists but has no parameters/params");
+  }
+
+  // Ensure parameterControls knows where to render.
+  // Default for canvas scripts is #action.
+  info.targetId = options.controlsRegionId || "action";
+
+  buildParameterControls(info);
+
+} // end buildControlsIfPresent
+
+
+/* ===========================================================
+   executeScriptToCanvas(mod, title, options)
+   ===========================================================
+   Execute a module into the shared canvas.
+
+   DEFAULTS
+   --------
+   - attaches canvas to #sketchpad
+   - resetDrawStateForScript() and resetCanvas() each run
+   - clears white background
+   - runs runPattern() once (compat: may pass ctx)
+   - optionally builds parameterControls if scriptInfo exists
+
+   CONTROLS
+   --------
+   - controlsRegionId defaults to #action
+
+   CONTRACT:
+   - Always calls mod.runPattern() with NO arguments.
+   - Relies on the global 'ctx' getter defined in drawState.js.
+=========================================================== */
+
+export async function executeScriptToCanvas(mod, title, options = {}) {
+
+  if (!mod) throw new Error("executeScriptToCanvas: mod missing");
+
+  const regionId = options.canvasRegionId || "sketchpad";
+
+  // If targeting the main sketchpad, ensure the wrapper is visible
+  if (regionId === "sketchpad") {
+    const wrapper = document.getElementById("sketchpad-wrapper");
+    if (wrapper) wrapper.style.display = "flex";
+  }
+
+  // Ensure the physical canvas is in the right place
+  attachCanvasToRegion(regionId);
+
+  // A fresh start: drawState as it was at load (canvas size kept), then a
+  // cleared canvas. Nothing from the previous script carries over.
+  resetDrawStateForScript();
+  resetCanvas();
+
+  const clearBg = (options.clearBackground !== false);
+  if (clearBg) {
+    // We can use the bare 'ctx' here because of your global getter
+    ctx.fillStyle = options.backgroundColor || "#ffffff";
+    ctx.fillRect(0, 0, drawState.canvasWidth, drawState.canvasHeight);
+  }
+
+  //  SET DEBUG HERE
+  // 1. EXECUTE THE SCRIPT FIRST
+  // This ensures the script's runPattern() populates the points array
+  await mod.runPattern();
+
+  // 2. NORMALIZE scriptInfo to check for interactivity
+  const info = normalizeScriptInfo(mod);
+
+  // 3. THE BURIAL: Arm after execution
+  // Now info.params.points will actually have data in it.
+  if (info && info.interactive === true && info.params?.points) {
+    armInteractor(info);
+  }
+
+  // 4. Build parameter controls
+  buildControlsIfPresent(mod, {
+    enableControls: !!options.enableControls,
+    controlsRegionId: options.controlsRegionId || "action"
+  });
+
+} // end executeScriptToCanvas
+
+
+
+/**
+ * Executes a script module and displays its output as text in the DOM.
+ *
+ * Calls the module's `runPattern()` method to generate HTML content. The
+ * result is inserted into a specified DOM element and returned.
+ *
+ * @async
+ * @param {Object} mod - The script module to execute. Must have a
+ *                       `runPattern()` function.
+ * @param {string} title - The title for the script execution (currently unused).
+ * @param {Object} [options={}] - Optional configuration object.
+ * @param {string} [options.textRegionId="text"] - The DOM element ID where
+ *                                                 output will be rendered.
+ *
+ * @returns {Promise<*>} The output from the executed function (typically a
+ *                       string if HTML was generated).
+ *
+ * @throws {Error} If mod is not provided, if the target DOM element is not found,
+ *                 or if the module has no `runPattern()` method.
+ */
+export async function executeScriptToText(mod, title, options = {}) {
+
+  if (!mod) throw new Error("executeScriptToText: mod missing");
+
+  const regionId = options.textRegionId || "text";
+
+  const text = document.getElementById(regionId);
+  if (!text) throw new Error("executeScriptToText: #" + regionId + " not found");
+
+  text.innerHTML = "";
+
+  // preferred contract
+  if (typeof mod.runPattern === "function") {
+    const out = await mod.runPattern();
+    if (typeof out === "string") {
+      text.innerHTML = out;
+      return out;
+    }
+    text.innerHTML = "<p>(Script executed — no HTML returned)</p>";
+    return out;
+  }
+
+  text.innerHTML = "<p style='color:red'>(No usable output from script)</p>";
+  throw new Error(
+    "executeScriptToText: script has no runPattern()"
+  );
+
+} // end executeScriptToText
+
+/* ===========================================================
+   runScriptByPath(path, mode, options)
+=========================================================== */
+let activeModule = null;
+
+export async function runScriptByPath(path, mode, options = {}) {
+
+  // 1. TEARDOWN: Clear the interaction layer before starting a new script.
+  // This prevents ghost dots from a previous script.
+  disarmInteractor();
+
+  if (activeModule && typeof activeModule.stop === "function") {
+    try {
+      activeModule.stop();
+    } catch (err) {
+      console.warn("runScriptByPath: Error stopping previous module", err);
+    }
+  }
+
+  // options.sourceText: run this text as the script at path (an old saved
+  // version, ui/scriptHistory.js) instead of the file as it is now.
+  const mod = (typeof options.sourceText === "string")
+    ? await loadScriptModuleFromText(options.sourceText, path)
+    : await loadScriptModule(path);
+
+  // Store the new module so we can stop it later
+  activeModule = mod;
+
+  if (mode === "canvas") {
+    return await executeScriptToCanvas(mod, path, options);
+  }
+
+  if (mode === "text") {
+    return await executeScriptToText(mod, path, options);
+  }
+
+  throw new Error("runScriptByPath: invalid mode '" + String(mode) + "'");
+
+} // end runScriptByPath
+

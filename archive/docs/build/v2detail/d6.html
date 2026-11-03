@@ -1,0 +1,127 @@
+<h2>14.0 JOURNALS, RUN HISTORY, NOTES AND LEARN</h2>
+<h3>14.1 The journal file</h3>
+<p>One journal per item, beside documents and never inside them (D-10). One JSON object per line (JSON Lines), added and
+never rewritten, readable in VS Code.</p>
+<pre class="code">journal/scripts/curve-stitch/manyRowsColumns.jsonl
+{"time":"2026-11-02T14:03:11Z","kind":"run","run":"r00041","source":"runs/r00041.js","picture":"runs/r00041.png","changed":"+3 -1 lines"}
+{"time":"2026-11-02T14:05:40Z","kind":"note","text":"Offset 3 makes the middle rows twist. Keep.","about":"r00041"}
+{"time":"2026-11-02T14:06:02Z","kind":"mark","run":"r00041"}
+{"time":"2026-11-02T15:20:00Z","kind":"study","study":"s0007","file":"studies/s0007.json"}
+{"time":"2026-11-02T15:31:12Z","kind":"explanation","about":["r00041","r00042"],"text":"...","approved":true}
+{"time":"2026-11-03T09:00:00Z","kind":"commit","hash":"9f6040d","runs":["r00041","r00043"]}</pre>
+<table class="req">
+<tr><td>DR-14.1</td><td>A journal's folder holds its runs (<tt>runs/rNNNNN.js</tt> and <tt>.png</tt>) and studies (<tt>studies/sNNNN.json</tt>). Run and study numbers are per item, never reused.</td></tr>
+<tr><td>DR-14.2</td><td>Appends go through the service (<tt>journal.append</tt>), which writes the line with a single append call, so a crash cannot damage earlier lines; a torn last line is ignored on read.</td></tr>
+<tr><td>DR-14.3</td><td>Journals are in git like everything else, except <tt>runs/</tt> pictures older than the retention period, which may be thinned (DR-14.6).</td></tr>
+</table>
+<h3>14.2 Run history</h3>
+<pre class="code">on each run of a script (or generator, from Draw):
+  text = the source as loaded;  h = hash(text)
+  if h == the hash of this item's last run: nothing new; done
+  number = next run number
+  write runs/rN.js = text
+  after the first frame: write runs/rN.png = a 240 px picture of the drawing
+  append { kind: "run", run: rN, changed: line diff counts against the last run, error?: the run's error }</pre>
+<table class="req">
+<tr><td>DR-14.4</td><td>Capture is at run time (P-23): every run whose source changed, whether or not the owner saved in VS Code, committed, or marked anything.</td></tr>
+<tr><td>DR-14.5</td><td>The history panel lists runs newest first with their pictures; for any run: Run (draw that version, file untouched), Diff (with the run before), Against now, Restore (replace the file's text, itself a recorded change), Mark, Note.</td></tr>
+<tr><td>DR-14.6</td><td>Retention (O-15): unmarked runs older than the period (default 30 days) are thinned to the first and last of each working session (runs less than 30 minutes apart are one session). Marked runs, and runs a commit entry names, are kept for good.</td></tr>
+<tr><td>DR-14.7</td><td>An old run is executed against today's kernel and draw code; the panel says so, and shows the stored picture beside the new one, so a difference is visible (V1's Script history cannot show the stored picture).</td></tr>
+</table>
+<h3>14.3 Notes</h3>
+<p>One global Notes command opens the journal of whatever is open (script, generator, figure, or the active layer by
+<tt>lid</tt>) with a box to add a note; notes show in the item's history and in the Notes popup beside the header comment.</p>
+<h3>14.4 Learn</h3>
+<pre class="code">Learn request (only when the owner presses for it):
+  what:  { kind: "runs", a: rN, b: rM }         the code diff and both pictures
+       | { kind: "regression", item, change }    the approved and new pictures and geometry summary, and the diff of the code since approval
+       | { kind: "ideabook", image }             the image, and the routines catalogue: "draft a hint"
+  shown first: exactly what will be sent, and to which service (O-13); the owner presses Send or Cancel
+  reply: a draft explanation or draft script, shown in an editor; the owner edits, then Approve or Discard
+  Approve: appends { kind: "explanation", approved: true } (or saves the draft script as a new item, never over an existing one)</pre>
+<table class="req">
+<tr><td>DR-14.8</td><td>Nothing leaves the machine without the owner's press, every time; there is no automatic or background Learn (D-13).</td></tr>
+<tr><td>DR-14.9</td><td>Nothing Learn returns is written to a journal or the library until approved. Discarded drafts are not kept.</td></tr>
+<tr><td>DR-14.10</td><td>A Learn draft script is a hint (section 16.4) or a new playpen script; it never replaces a file the owner wrote.</td></tr>
+</table>
+<h3>14.5 Acceptance tests</h3>
+<table class="req">
+<tr><td>AT-14.1</td><td>Run a script, change one line in VS Code, save, run: the history has two runs, the second's Diff shows the one line, both pictures shown.</td></tr>
+<tr><td>AT-14.2</td><td>Kill the service mid-append: the journal reads back with every complete line.</td></tr>
+<tr><td>AT-14.3</td><td>Learn with no network: the request is refused with a clear message; nothing is written.</td></tr>
+</table>
+
+<h2>15.0 SWEEP</h2>
+<p>FS 6.15. A parameter study in two forms, both acting on the open object (Draw) or the active layer (Figures).</p>
+<pre class="code">values(setting, from, to, count):
+  base = setting.min if defined else 0;  step = setting.step (int: 1)
+  for i in 0..count-1: raw = from + (to - from) * i / (count - 1)
+    v = base + round((raw - base) / step) * step;  clamp to [min, max];  drop repeats
+grid (form 1):     one setting: up to 16 values, 4 across; two settings: values1 across, values2 down, at most 16 cells
+slideshow (form 2): frames = one-setting run, or the two-setting grid in an order (O-12):
+                     "rows" (setting 1 changes fastest) or "snake" (alternate rows reversed, so neighbours differ by one step)
+state machine:     Playing --Pause--&gt; Paused --Play--&gt; Playing;  Paused --Back--&gt; previous frame (stays Paused)
+                   Playing --(frame time 5..10 s)--&gt; next frame;  any --Stop--&gt; Stopped (applies the frame shown)
+                   clicking a grid cell applies that cell</pre>
+<table class="req">
+<tr><td>DR-15.1</td><td>Pictures are made off screen by the renderer (FR-6.11.8), from private evaluations; the open document is not changed until a choice is applied.</td></tr>
+<tr><td>DR-15.2</td><td>Applying is one command ("Sweep: steps 24, offset 3"), undoable.</td></tr>
+<tr><td>DR-15.3</td><td>The seed is held fixed across a sweep of a random generator (FR-6.15.4).</td></tr>
+<tr><td>DR-15.4</td><td>Frame time is a setting, 5 to 10 s, default 7 s; Back during Playing pauses and goes back one frame.</td></tr>
+<tr><td>DR-15.5</td><td>Save as study (FR-6.16.7): the study file holds target, starting settings (a copy), the swept settings and their values, form, order, frame time, seed and the chosen cell; replay offers "as it was" and "as it would look now".</td></tr>
+</table>
+<h3>15.1 Acceptance tests</h3>
+<table class="req">
+<tr><td>AT-15.1</td><td>Sweep Cycloid's factor 2 to 5 in 4 pictures and nodes 60 to 120 in 4: a 4 &times; 4 grid labelled with both values; click a cell: the object takes both values; Undo restores them.</td></tr>
+<tr><td>AT-15.2</td><td>Slideshow at 5 s: Pause holds; Back shows the previous frame; Stop applies the frame shown.</td></tr>
+<tr><td>AT-15.3</td><td>A saved study replayed "as it was" after the figure has changed shows the original pictures.</td></tr>
+</table>
+
+<h2>16.0 REGRESSION, CHECKS, ROBUSTNESS AND IDEABOOK HINTS</h2>
+<h3>16.1 The regression harness</h3>
+<p>V1 has one (<tt>npm run test:regression</tt>, 199 items); V2 is built with it from the first checkpoint (D-9).</p>
+<pre class="code">for each item (generator at defaults, saved figure, legacy script, Ideabook hint):
+  evaluate (or run in the host) twice
+  geometry = every stitch's two ends, rounded to 0.01 document units, per layer, in order
+  fingerprint = sha1(geometry text);  picture = 240 px PNG
+  stable = both runs give the same fingerprint (and, with no geometry, the same picture)
+compare with tests/regression/approved.json + approved/&lt;item&gt;.png:
+  no approved copy: listed as "not yet approved", does not fail
+  unstable: listed, not compared
+  geometry present: changed if the stitch count or fingerprint differs
+  geometry absent (a painting script): changed if more than 0.1 % of pixels differ by more than 8 levels
+  error status changed: changed
+report: tests/regression/report.html, approved and new pictures side by side, changes only
+accept [name]: replace the approved copy of matching items (all if no name); commit tests/regression/</pre>
+<table class="req">
+<tr><td>DR-16.1</td><td>The harness is one command and runs before every review and at every checkpoint; nothing merges with an unexplained change (FR-6.17.2).</td></tr>
+<tr><td>DR-16.2</td><td>For the V1-to-V2 comparison (FR-6.17.4), geometry is compared within a tolerance of 0.5 px per point after aligning bounds, since exact reproduction is not required (D-4); the report lists items outside it for the owner's eye.</td></tr>
+<tr><td>DR-16.3</td><td>Approved copies made on one platform may differ in pictures on another (anti-aliasing, fonts); geometry is the deciding comparison; pictures only for items with no geometry, and a platform's pictures can be re-accepted wholesale.</td></tr>
+</table>
+<h3>16.2 Other checks</h3>
+<table class="small">
+<tr><th>Check</th><th>What it does</th><th>When</th></tr>
+<tr><td>lint</td><td>no implicit globals (V1's lint:globals)</td><td>every commit (hook)</td></tr>
+<tr><td>imports</td><td>every import resolves; no layer imports from above (DR-3.1)</td><td>every commit</td></tr>
+<tr><td>removed code</td><td>exported names before and after; prints what disappeared (I-8)</td><td>every commit, every review</td></tr>
+<tr><td>ids</td><td>every element id looked up exists in the page or is created by code</td><td>every review</td></tr>
+<tr><td>schemas</td><td>every generator, template, connector registers cleanly</td><td>start-up and every review</td></tr>
+<tr><td>documents</td><td>every saved figure passes the integrity check</td><td>every review</td></tr>
+<tr><td>kernel</td><td>pure-function tests (section 4.8), no browser</td><td>every commit</td></tr>
+<tr><td>service</td><td>every request, including refusals (V1's test:node)</td><td>every review</td></tr>
+<tr><td>screens</td><td>tab switches, the commands of each level (V1's test:tabs)</td><td>every review</td></tr>
+</table>
+<h3>16.3 Robustness</h3>
+<table class="req">
+<tr><td>DR-16.4</td><td>Budget (FR-6.18.2): an evaluation may produce at most 500,000 stitches and take at most 2 s of compute per layer (settings); past either it stops, the layer shows "stopped: 1,240,000 stitches asked for; the setting <i>nodes</i> (2,000) is the likely cause", and the rest of the figure draws.</td></tr>
+<tr><td>DR-16.5</td><td>Evaluation of a layer may run in a Web Worker when it is expected to exceed 50 ms (by its last time), so the page stays responsive; results are the same either way.</td></tr>
+<tr><td>DR-16.6</td><td>Kept versions (FR-6.18.4): on each save the previous file is kept as <tt>&lt;name&gt;.v1.json</tt> ... <tt>.v5.json</tt>, the oldest dropped.</td></tr>
+<tr><td>DR-16.7</td><td>Integrity check with repair (FR-6.18.5): listed problems each offer a repair (drop the dangling reference, re-attach to the nearest feature, renumber), applied as one undoable command.</td></tr>
+</table>
+<h3>16.4 Ideabook hints</h3>
+<table class="req">
+<tr><td>DR-16.8</td><td>A hint is a document (FR-6.22.2) stored as <tt>library/ideabook/&lt;category&gt;/hints/&lt;image name&gt;.json</tt>, with a header note: what the image seems to be, what it is built from, what was guessed, and, for a numbered Figure, the StringThing function that drew it.</td></tr>
+<tr><td>DR-16.9</td><td>The link is by name; characters the server will not serve in a file name (<tt>&amp; , # ? % + ;</tt>) are written as <tt>_</tt> (V1's rule).</td></tr>
+<tr><td>DR-16.10</td><td>The Ideabook view shows the image and the hint side by side when the window is wide enough, toggled otherwise; Open as figure copies the hint into a new figure.</td></tr>
+<tr><td>DR-16.11</td><td>V1's 282 hint scripts are converted by the importer (FS 6.10) as its first large test; each converts or is listed with why not.</td></tr>
+</table>

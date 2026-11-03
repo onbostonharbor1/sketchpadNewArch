@@ -1,0 +1,261 @@
+/* ui/setUI.js
+   ------------------------------------------------------------
+   Sketchpad Tab Orchestrator (TabSpec Architecture)
+   ------------------------------------------------------------
+*/
+
+import { reportError } from "/ui/errorReport.js";
+import { HomeTabSpec }     from "/ui/home/home.js";
+import { DrawTabSpec }     from "/ui/draw/draw.js";
+import { PatternsTabSpec } from "/ui/patterns/patterns.js";
+import { GalleryTabSpec }  from "/ui/gallery/gallery.js";
+import { UtilityTabSpec }  from "/ui/utilities/utilities.js";
+import { FiguresTabSpec }  from "/ui/figures/figures.js";
+
+import { clearDivs } from "/ui/uiUtilities.js";
+import { initMenuManager }  from "./menuManager.js";
+import { initOverlay }      from "./overlay.js";
+import { initCanvasLayers } from "./canvasLayerManager.js";
+import { uiState }          from "/ui/uiState.js";
+import { disableAllNextPrevOverlays } from "./nextPrevOverlay.js";
+import { timed }                from "/ui/instrument.js";
+
+const START = "START_APP";
+
+/* ============================================================
+   Tab Registry
+=========================================================== */
+const TabRegistry = {
+  home:      HomeTabSpec,
+  draw:      DrawTabSpec,
+  patterns:  PatternsTabSpec,
+  gallery:   GalleryTabSpec,
+  utilities: UtilityTabSpec,
+  figures:   FiguresTabSpec
+};
+
+/* ============================================================
+   Helpers
+=========================================================== */
+function setActiveTab(tabKey) {
+  const buttons = document.querySelectorAll("#mainTabs .nav-link");
+  buttons.forEach((btn) => {
+    if (!btn.id) return;
+    const key = mapTabIdToKey(btn.id);
+    if (key === tabKey) btn.classList.add("active");
+    else btn.classList.remove("active");
+  });
+}
+
+function mapTabIdToKey(tabId) {
+  const map = {
+    "home-tab":      "home",
+    "draw-tab":      "draw",
+    "patterns-tab":  "patterns",
+    "gallery-tab":   "gallery",
+    "figures-tab":   "figures",
+    "utilities-tab": "utilities"
+  };
+  return map[tabId] || null;
+}
+
+function applyTheme(tabKey) {
+  const wrapper = document.getElementById("wrapper");
+  if (!wrapper) throw new Error("applyTheme: #wrapper missing");
+
+  const themeClasses = [
+    "theme-home", "theme-draw", "theme-patterns",
+    "theme-gallery", "theme-figures", "theme-utilities"
+  ];
+  themeClasses.forEach((cls) => wrapper.classList.remove(cls));
+
+  const themeMap = {
+    home:      "theme-home",
+    draw:      "theme-draw",
+    patterns:  "theme-patterns",
+    gallery:   "theme-gallery",
+    figures:   "theme-figures",
+    utilities: "theme-utilities"
+  };
+
+  const themeClass = themeMap[tabKey];
+  if (themeClass) wrapper.classList.add(themeClass);
+}
+
+/* ============================================================
+   Lifecycle: Restore & Init
+=========================================================== */
+async function restoreTab(tabKey) {
+  const spec = TabRegistry[tabKey];
+  if (!spec || !spec.restore) {
+    throw new Error("restoreTab: missing TabSpec.restore for " + tabKey);
+  }
+  clearDivs();
+  await spec.restore();
+}
+
+async function initTab(tabKey, restored = false) {
+  const spec = TabRegistry[tabKey];
+  if (!spec || !spec.init) {
+    throw new Error("initTab: missing TabSpec.init for " + tabKey);
+  }
+  clearDivs();
+  await spec.init(restored);
+}
+
+/* ============================================================
+   activateTab(tabKey)
+=========================================================== */
+async function activateTab(tab) {
+  let tabKey = tab;
+
+  if (tab === START) {
+    tabKey = "home";
+    if (uiState.home && uiState.home.needsUpdate) {
+      uiState.home.needsUpdate = false;
+      await initTab(tabKey, true);
+    } else {
+      await initTab(tabKey, false);
+    }
+  } else {
+    if (uiState[tabKey] && uiState[tabKey].needsUpdate) {
+      uiState[tabKey].needsUpdate = false;
+      await initTab(tabKey, true);
+    } else {
+      const saved = uiState[tabKey] && uiState[tabKey].saved;
+      if (saved) {
+        await restoreTab(tabKey);
+      } else {
+        await initTab(tabKey, false);
+      }
+    }
+  }
+
+  uiState.activeTab = tabKey;
+  setActiveTab(tabKey);
+}
+
+/* ============================================================
+   setUI(tabName)
+   PUBLIC ENTRY
+============================================================ */
+/* Tab switches run one at a time. Every call takes a ticket number. A call
+   that is still waiting when a newer call arrives is dropped, so clicking
+   several tabs quickly ends on the tab clicked last, with that tab's
+   content, colors and active button. (Before, two switches ran at the same
+   time and could leave one tab's content under another tab's colors.) */
+let activationChain = Promise.resolve();
+let latestTicket    = 0;
+
+export function setUI(tab) {
+  const ticket = ++latestTicket;
+
+  const result = activationChain.then(() => {
+    if (ticket !== latestTicket) return undefined;   // replaced by a newer click
+    return activateWithReport(tab);
+  });
+
+  // One failed switch must not block the ones after it.
+  activationChain = result.catch(() => {});
+
+  return result;
+} // end setUI
+
+async function activateWithReport(tab) {
+  // Stage names the step that was running if something throws, so a
+  // failure at startup says where, not just what.
+  const progress = { stage: "start" };
+  try {
+    await timed("tab switch " + tab, () => runSetUI(tab, progress));
+  } catch (e) {
+    reportError(`Switching to the ${tab} tab (stage "${progress.stage}")`, e);
+    throw e;
+  }
+} // end activateWithReport
+
+
+async function runSetUI(tab, progress) {
+  progress.stage = "disable overlays";
+  disableAllNextPrevOverlays();
+
+  let tabName = (tab === START) ? START : tab;
+
+  if (tabName !== START && !TabRegistry[tabName]) {
+    throw new Error("setUI: unknown tab " + tabName);
+  }
+
+  // 1. Apply theme
+  progress.stage = "apply theme";
+  applyTheme(tabName === START ? "home" : tabName);
+
+  // 2. Activate
+  progress.stage = "activate " + tabName;
+  await activateTab(tabName);
+
+  // 3. Handle launch intents. The target tab's init reads the request and
+  // clears it (Draw: consumeLaunchIfForDraw; Figures: consumeLaunchIfForFigures),
+  // so it must still be pending when that tab activates. If the target never
+  // read it, it is cleared here so it cannot go stale.
+  progress.stage = "launch intent";
+  if (!uiState.launch || uiState.launch.pending !== true) return;
+  const targetTab = uiState.launch.targetTab;
+  // Run the target tab now, inside this switch. (Calling setUI here would
+  // queue behind this very switch; awaiting that would never finish.)
+  if (uiState.activeTab !== targetTab) await runSetUI(targetTab, progress);
+  uiState.launch.pending     = false;
+  uiState.launch.sourceTab   = null;
+  uiState.launch.targetTab   = null;
+  uiState.launch.sourceType  = null;
+  uiState.launch.registryKey = null;
+  uiState.launch.figurePath  = null;
+} // end runSetUI
+
+/* --- Tab Handling Logic --- */
+function handleTabChange(eventOrId) {
+  const tabId =
+    typeof eventOrId === "string"
+      ? eventOrId
+      : (eventOrId && eventOrId.target && eventOrId.target.id);
+
+  // Note: ensure mapTabIdToKey is also available here
+  const tabKey = (typeof mapTabIdToKey === "function") ? mapTabIdToKey(tabId) : tabId;
+  if (!tabKey) return;
+
+  setUI(tabKey);
+}
+/* --------------------------- */
+
+async function onDomContentLoaded() {
+  initMenuManager();
+  initOverlay();
+  initCanvasLayers();
+
+  // 1. Rehydrate all potential stateful tabs from sessionStorage.
+  // Tab state is not rehydrated from sessionStorage on refresh.
+  // All tabs start fresh (cold init) after a page reload.
+
+  // 2. Define tabButtons (This was the missing line causing the error!)
+  const tabButtons = document.querySelectorAll("#mainTabs .nav-link");
+
+  // 3. Wire up the main tab buttons
+  tabButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      handleTabChange(btn.id);
+    });
+  });
+
+  // 4. Determine the landing tab. A failure here would otherwise leave a
+  // blank page, so show the stage that failed (also logged by setUI).
+  try {
+    await setUI(START);
+  } catch (e) {
+    const box = document.getElementById("text");
+    if (box) {
+      box.style.display = "block";
+      box.textContent = "Sketchpad failed to start. See the console for the stage that failed: " + e.message;
+    }
+  }
+}
+
+
+window.addEventListener("DOMContentLoaded", onDomContentLoaded);

@@ -1,0 +1,141 @@
+<h2>1.0 SCOPE</h2>
+<h3>1.1 Identification</h3>
+<p>This document specifies Sketchpad Version 2 (hereafter "V2"), a rebuild of the Sketchpad application described in the
+repository <tt>onbostonharbor1/sketchpad</tt>. Sketchpad Version 1 ("V1") is the application as it stands on branch
+<tt>claude/batch-1</tt>.</p>
+<h3>1.2 System purpose</h3>
+<p>Sketchpad serves two purposes of equal standing, as recorded by the owner on 27 October 2026:</p>
+<ol>
+<li><b>Templates.</b> To produce a printable point template for driving nails into wood for string art.</li>
+<li><b>Sketching.</b> To explore designs by working directly with how objects are represented and how they relate to one
+another. Objects kept because they are interesting to play with (Circular Parabola Multi, Linked Circles) are first-class
+and shall not be treated as clutter.</li>
+</ol>
+<p>Where a design choice in this document trades one purpose against the other, the trade is stated and left to the owner.</p>
+<h3>1.3 Document overview</h3>
+<p>Section 3 describes V1 and the problems V2 must solve. Section 4 states the concept. Section 5 defines the new
+organization and its modules. Section 6 states the functional requirements. Section 7 gives the data flow diagrams.
+Section 8 is the data dictionary. Section 9 maps each V1 component to its V2 replacement. Section 10 is the construction
+plan, built in checkpoints the owner can use and evaluate. Section 11 covers verification. Section 12 lists open decisions
+and items from other evaluations the owner should look at. Section 13 is the glossary. Appendix A traces problems to
+requirements and checkpoints.</p>
+<h3>1.4 Conventions</h3>
+<ul>
+<li>"<b>Shall</b>" states a requirement. "<b>Should</b>" states a recommendation. "<b>May</b>" states an option.</li>
+<li>Requirements are numbered <tt>FR-s.n</tt> by section. Problems are <tt>P-n</tt>. Decisions are <tt>D-n</tt>.
+Checkpoints are <tt>CP-n</tt>. Open items are <tt>O-n</tt>.</li>
+<li>Data flow diagrams follow the Yourdon/DeMarco notation: a circle is a process, a pair of parallel lines open at one end
+is a data store, a shadowed square is an external entity (terminator), and a labelled arrow is a data flow. A terminator or
+store drawn twice carries an extra mark.</li>
+<li>The data dictionary uses DeMarco notation: <tt>=</tt> is composed of, <tt>+</tt> and, <tt>[ | ]</tt> one of,
+<tt>{ }</tt> iterations of, <tt>( )</tt> optional, <tt>* *</tt> comment.</li>
+<li>TBD marks a value the owner has not yet decided.</li>
+</ul>
+
+<h2>2.0 REFERENCED DOCUMENTS</h2>
+<table class="t">
+<tr><th>Ref.</th><th>Title</th><th>Where</th></tr>
+<tr><td>R-1</td><td>Sketchpad: notes for Claude (project rules)</td><td><tt>CLAUDE.md</tt></td></tr>
+<tr><td>R-2</td><td>Sketchpad phases</td><td><tt>PHASES.md</tt></td></tr>
+<tr><td>R-3</td><td>Not done: items from the phase lists, sections 6 and 7</td><td><tt>docs/NOT_DONE.md</tt></td></tr>
+<tr><td>R-4</td><td>Sketchpad: Architecture Rethink (staged)</td><td><tt>docs/Architecture-Rethink.pdf</tt></td></tr>
+<tr><td>R-5</td><td>Sketchpad: Rethink from Scratch</td><td><tt>docs/Rethink-From-Scratch.pdf</tt></td></tr>
+<tr><td>R-6</td><td>Sketchpad Version 2: Architecture (19 pp.)</td><td>supplied by the owner</td></tr>
+<tr><td>R-7</td><td>Sketchpad Version 2 Proposal (17 pp.)</td><td>supplied by the owner</td></tr>
+<tr><td>R-8</td><td>Backlog Triage and Figures Tab Spec, draft 3, with the owner's answers (23 Oct 2026)</td><td>supplied by the owner</td></tr>
+<tr><td>R-9</td><td>Review table, main to batch-1</td><td><tt>docs/TEST_TABLE_main-to-batch-1.md</tt></td></tr>
+</table>
+
+<h2>3.0 CURRENT SYSTEM AND PROBLEM STATEMENT</h2>
+<h3>3.1 Description of Version 1</h3>
+<p>V1 is a browser application in plain JavaScript modules, served by Vite on port 5173, with a local Node service on port
+5174 that performs every file write. It has six tabs: Home, Draw, Patterns, Figures, Gallery and Utilities. About 27,000
+lines are the owner's own code (excluding <tt>gallery/</tt>, <tt>patterns/</tt> and the vendored TinyMCE). The library holds
+14 registered Draw objects and about 185 pattern and gallery scripts.</p>
+<p>V1 began as a program that runs a drawing script on a canvas. Since Phase 6 it has grown into a geometry editor:
+objects on layers, discs on infrastructure lines, welds, layer transforms and saving. Much of the work since has gone into
+adapting the script runner to that editor. V2 starts from the editor and keeps the script runner as one of its uses.</p>
+<h3>3.2 What V1 does well, and V2 shall keep</h3>
+<ul>
+<li>One file per drawable object, each small and readable, with a header comment the Notes popup shows.</li>
+<li>Controls declared beside the settings and built by the app, used about 1,200 times across the library.</li>
+<li>A single drawing choke point (<tt>drawLine</tt>), and the rule that draw code is separate from the interface.</li>
+<li>Permanent object names, stable layer numbers, and stacking order kept separate from numbering.</li>
+<li>Layer transforms (move and turn without rewriting the shape), and infrastructure as a named account of where discs go.</li>
+<li><tt>categories.js</tt>: a list builder with no knowledge of manifests or tabs. The best-isolated module in V1.</li>
+<li>Gallery scripts as a playpen, never promoted as-is; a local Node service with its path-safety module.</li>
+</ul>
+<h3>3.3 Problems</h3>
+<p>Each problem below is stated with the evidence found in V1. Section 9 and Appendix A show how V2 resolves each one.</p>
+<table class="t">
+<tr><th>No.</th><th>Problem</th><th>Evidence in V1</th></tr>
+<tr><td>P-1</td><td>Geometry exists only while it is being painted.</td><td><tt>drawLine</tt> is both the choke point and the paint call. Bounds are collected as a side effect; <tt>infrastructure()</tt> repeats what <tt>draw()</tt> knows; thumbnails borrow the main canvas.</td></tr>
+<tr><td>P-2</td><td>Draw objects are shared singletons holding live state.</td><td>Draw, Figures and Patterns share one set of settings. Figures works around it with <tt>Object.create</tt>, under which any field an instance forgets is silently read from the shared original.</td></tr>
+<tr><td>P-3</td><td>Settings, handle copies and derived values share one object, and all are saved.</td><td><tt>params</tt> holds <tt>pt1</tt>, a <tt>points[]</tt> mirror indexed by position, and a computed <tt>midpoint</tt>. A saved file can disagree with itself.</td></tr>
+<tr><td>P-4</td><td><tt>update()</tt> guesses what was dragged.</td><td>Parabola compares midpoints to decide; array entries must be changed in place because the interactor holds references; <tt>if (incoming.lineWidth)</tt> ignores a value of 0.</td></tr>
+<tr><td>P-5</td><td>Handles are not declared.</td><td>Weld code finds handles by comparing coordinates to a millionth of a pixel (<tt>findHandleIndex</tt>); <tt>cornerPartners()</tt> exists to compensate.</td></tr>
+<tr><td>P-6</td><td>Welds keep copies in step after every move.</td><td>The propagation walk with four special cases (729 lines before the split). Both bugs found in Phase 8 use were here.</td></tr>
+<tr><td>P-7</td><td>No undo.</td><td>Delete Layer warns that it cannot be undone. The October triage deferred undo (G5).</td></tr>
+<tr><td>P-8</td><td>Three kinds of state share one object.</td><td><tt>uiState.figures.tabs[id]</tt> holds the figure, live instances, the saved snapshot, mode and selection. Choosing a layer reorders the stack and needed a special rule not to mark the figure changed.</td></tr>
+<tr><td>P-9</td><td>Tab switching follows a decision order of flags.</td><td><tt>needsUpdate</tt>, then <tt>init(true)</tt>, else <tt>saved</tt> then <tt>restore</tt>, else <tt>init(false)</tt>. No tab's <tt>save()</tt> is ever called.</td></tr>
+<tr><td>P-10</td><td>Manifests are stored copies of facts that live in the folders.</td><td>Start-up rebuilds, missing-file checks, the Home alert bar, the title-overwrite bug. Figures loads its own manifests, bypassing <tt>ManifestManager</tt>.</td></tr>
+<tr><td>P-11</td><td>The file and Node boundaries are bypassed.</td><td>15 direct <tt>fetch()</tt> calls outside <tt>fileLayer</tt>; 10 UI modules call <tt>nodeDispatch</tt> with paths they build.</td></tr>
+<tr><td>P-12</td><td>Scripts share global state.</td><td>Scripts read <tt>ctx</tt>, <tt>drawState</tt> and <tt>window</tt> names; two scripts fail after about 100 earlier runs.</td></tr>
+<tr><td>P-13</td><td>Adding a script or object is not immediate.</td><td>A new script appears after a restart or Rebuild; a new Draw object needs an edit to <tt>drawRegistry.js</tt>. <tt>boxes.js</tt> is loaded but silently absent.</td></tr>
+<tr><td>P-14</td><td>Controls have drifted into overlapping conventions.</td><td>Separate <tt>params</tt> and <tt>controls</tt> blocks; widget names instead of types; <tt>color</tt> and <tt>colorPicker</tt>; three keys for the widget name; widgets write settings directly; a router guesses the tab.</td></tr>
+<tr><td>P-15</td><td>No real units and no true-scale output.</td><td>Coordinates are canvas pixels. Print aids (Phase 9) are not built.</td></tr>
+<tr><td>P-16</td><td>Vocabulary and menus are inconsistent.</td><td>"Overlay" has three meanings. Each tab builds its menus differently (eight <tt>*MenuCmds.js</tt> files).</td></tr>
+<tr><td>P-17</td><td>Object metadata is decorative.</td><td>Seven fields read by nothing; <tt>version</tt> drives nothing; no migration exists for saved data.</td></tr>
+<tr><td>P-18</td><td>Parametric and non-parametric drawings use separate code.</td><td><tt>drawParametrics.js</tt> stands apart; <tt>createNodes</tt> (even spacing, bias, jitter) serves ellipses only.</td></tr>
+<tr><td>P-19</td><td>Adapting a foreign script is manual.</td><td>Lifting constants into controls is done by hand per script, producing <tt>scriptInfo</tt>, a second format that still needs promotion.</td></tr>
+</table>
+
+<h2>4.0 CONCEPT OF THE NEW SYSTEM</h2>
+<h3>4.1 The central idea</h3>
+<p>Underneath every line Sketchpad draws is an ordered array of points, and the lines are a rule for joining entries of
+that array. V2 is built around that fact. A <b>path</b> is an array of points with a flag saying whether it closes on
+itself. Every drawing is made in four steps: <b>make</b> one or more paths, <b>shape</b> them, <b>connect</b> them into
+stitches, and <b>find</b> the named points on them. Parametric curves are simply one kind of maker, so the distinction
+between parametric and non-parametric drawings disappears below the maker (P-18).</p>
+<p>Three things are kept strictly apart:</p>
+<ol>
+<li><b>Kernel</b>: the geometry code. Values in, values out. No canvas, no page, no state.</li>
+<li><b>Generators</b>: one file per drawable object or script, declaring its settings and returning geometry.
+Generators replace both the Draw registry and the script formats.</li>
+<li><b>Documents</b>: plain JSON describing what was made from generators: layers, the point table, welds,
+transforms. No code and no derived values.</li>
+</ol>
+<p>Drawing, hit-testing, thumbnails, welds and printing all read geometry as data (P-1). Every change to a document
+is a named command (P-7). The folders are the truth, and indexes are worked out from them (P-10, P-13).</p>
+<h3>4.2 Decisions recorded with the owner</h3>
+<table class="t">
+<tr><th>No.</th><th>Decision</th></tr>
+<tr><td>D-1</td><td>V2 is a rebuild from scratch, done on its own branch. V1 remains usable throughout.</td></tr>
+<tr><td>D-2</td><td>The iPad is used for review only. No touch authoring, browser storage or offline editing is required.</td></tr>
+<tr><td>D-3</td><td>A weld is a shared point number held in a point table. The owner's rule of 23 October 2026, decision 8.</td></tr>
+<tr><td>D-4</td><td>V2 need not reproduce V1 output exactly. The approved V2 output becomes the baseline.</td></tr>
+<tr><td>D-5</td><td>The Draw registry objects are redone completely.</td></tr>
+<tr><td>D-6</td><td>Adding a script or object by saving a file, with no other step, is a defining feature.</td></tr>
+<tr><td>D-7</td><td>Draw functions stay separate from the interface. V2 sharpens this into kernel and render.</td></tr>
+</table>
+<h3>4.3 Assumptions (agreed in discussion, open to change)</h3>
+<table class="t">
+<tr><th>No.</th><th>Assumption</th></tr>
+<tr><td>A-1</td><td>The six tabs remain, over one common engine (the "one workspace" alternative was withdrawn).</td></tr>
+<tr><td>A-2</td><td>Plain JavaScript modules, no framework, no build step. JSDoc type comments are optional.</td></tr>
+<tr><td>A-3</td><td>Undo by whole-document snapshots, not paired apply and undo functions.</td></tr>
+<tr><td>A-4</td><td>Explicit redraws after each command, not a publish and subscribe store (the October triage rejected an event bus, D2).</td></tr>
+<tr><td>A-5</td><td>Two Parabola corner handles remain independent until the owner welds them.</td></tr>
+<tr><td>A-6</td><td>Playpen scripts may still paint with a raw canvas context, inside the script host.</td></tr>
+</table>
+<h3>4.4 Earlier answers reconsidered</h3>
+<p>In October, before Figures existed, the owner ruled out several things that V2 now includes. Those answers protected
+working code; a rebuild changes that premise. They are listed so they are reconsidered deliberately, not silently reversed.</p>
+<table class="t">
+<tr><th>October item</th><th>Answer then</th><th>V2</th></tr>
+<tr><td>G5 Undo</td><td>Deferred</td><td>Included (FR-6.6)</td></tr>
+<tr><td>Spec decision 14</td><td>No schema versioning</td><td>Versioned format with migrations (FR-6.5.6)</td></tr>
+<tr><td>Spec decision 2</td><td>Canvas pixels only</td><td>Real units for output (FR-6.11)</td></tr>
+<tr><td>G1 SVG export</td><td>Eliminated</td><td>SVG and PDF output (FR-6.11)</td></tr>
+<tr><td>B12, B16, B22 state machine, declarative engine, declarative templates</td><td>Deferred</td><td>Documents and commands cover their intent</td></tr>
+</table>

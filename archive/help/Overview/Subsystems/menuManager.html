@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>menuManager.js — The Caption Menu</title>
+  <link rel="stylesheet" href="/help/help_treatise.css" />
+</head>
+<body>
+
+<h1>menuManager.js — The Caption Menu</h1>
+
+<p class="note">Rewritten 27 October 2026 against the current code. The Help-item builder the earlier page
+described has moved to <code>help.js</code> (menuManager still offers it under the same name), it now
+walks a nested help manifest, and a missing page gives a "Create Help" item instead of a grayed one. The
+unused imports the old page pointed out are gone. Tooltips are new.</p>
+
+<p><code>menuManager</code> shows the small drop-down that opens from a caption bar's "v" button. It shows
+whatever list it is given; each tab decides what is in its menu.</p>
+
+<h2>Using it</h2>
+<pre>menuManager.open(items, anchorElement)
+
+items: [ { label, onClick, disabled?, tooltip? }, ... ]</pre>
+<p>Tabs build their menu fresh every time "v" is pressed, so an item's enabled state is always current.
+Most items come from small makers in <code>menuCmds.js</code>: <code>makeHelpItem</code>,
+<code>makeNotesItem</code>, <code>makeShowScriptItem</code>, <code>makeEditManifestItem</code>,
+<code>makeArchiveItem</code>, <code>makeThumbnailItem</code>.</p>
+
+<h2>What open() does</h2>
+<ol>
+<li>Refuses to run before <code>initMenuManager()</code> (called once by <code>setUI.js</code> at start-up).</li>
+<li>Checks the list: an array; every item has a string label; every enabled item has an
+  <code>onClick</code>. A bad list throws rather than drawing a broken menu.</li>
+<li>Closes any menu already open: there is only ever one.</li>
+<li>Builds a <code>div.caption-menu</code> with one <code>div.caption-menu-item</code> per item; a disabled item
+  gets the <code>disabled</code> class and no click; <code>tooltip</code> becomes the hover text. Clicking an
+  enabled item closes the menu, then runs it.</li>
+<li>Adds it to <code>#wrapper</code>, 4 px below the anchor.</li>
+<li>Closes on a press outside it (other than on the anchor) or on Escape; both listeners are removed when it
+  closes.</li>
+</ol>
+
+<h2>The object</h2>
+<p><code>menuManager</code> = <code>{ open, close, clear, createMenuItem, buildHelpItem, isReady }</code>.
+<code>clear</code> is another name for <code>close</code>; <code>createMenuItem(label, onClick, disabled)</code>
+makes one item.</p>
+
+<h2>The Help item: buildHelpItem(tabName, helpKey, options)</h2>
+<p>Lives in <code>help.js</code>. It reads <code>/help/manifest.json</code> (once, then cached), which is a
+nested object: tab, then subfolders, then a list of page names. It walks down
+<code>[tabName, ...options.subdirs]</code> (or <code>options.path</code>) and looks for <code>helpKey</code> in the
+list it reaches.</p>
+<ul>
+<li>Found: a <strong>Help</strong> item that opens <code>/help/&lt;tab&gt;/&lt;subdirs&gt;/&lt;helpKey&gt;.html</code> in the
+  help overlay.</li>
+<li>Not found: a <strong>Create Help</strong> item that opens an empty editor for that path.</li>
+</ul>
+<p><code>makeHelpItem(tab, key)</code> in <code>menuCmds.js</code> wraps this, and gives a grayed "Help" when there
+is no key at all (Figures, for instance, passes none yet).</p>
+<p>The help manifest is written by <code>node/generateHelpManifest.mjs</code>, which scans <code>/help</code>.</p>
+
+</body>
+</html>

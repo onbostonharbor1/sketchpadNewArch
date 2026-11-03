@@ -1,0 +1,12 @@
+[
+  {
+    "filename": "validateDrawRegistry",
+    "path": "validateDrawRegistry.js",
+    "title": "Validate Draw Registry"
+  },
+  {
+    "filename": "checkFigureFiles",
+    "path": "checkFigureFiles.js",
+    "title": "Check Figure Files"
+  }
+]

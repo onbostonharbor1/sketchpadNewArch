@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>overlay.js — Help, Notes and Panel Overlays</title>
+  <link rel="stylesheet" href="/help/help_treatise.css" />
+</head>
+<body>
+
+<h1>overlay.js — Help, Notes and Panel Overlays</h1>
+
+<p class="note">Rewritten 27 October 2026 against the current code. The canvas layers (interaction, bbox,
+nodes, guides) that the earlier page described here have moved to <code>canvasLayerManager.js</code>. This
+file now handles only the panel overlays, and it has gained the Notes popup and an Edit button on help
+pages.</p>
+
+<p>A panel overlay is an HTML panel shown over the app: a help page, a form, a debug panel, a file's notes.
+They all appear in one floating container (<code>#overlayContainer</code>, with a title bar and a close
+button) and take turns using it.</p>
+
+<h2>overlayManager</h2>
+<p>A small object (also on <code>window.overlayManager</code> for older code) with a list of named panels:</p>
+<table>
+<tr><th>Method</th><th>Does</th></tr>
+<tr><td><code>register(name, element)</code></td><td>adds a panel under a name</td></tr>
+<tr><td><code>show(name, html)</code></td><td>fills the panel and shows it. <strong>Also disarms the interactor</strong>, so handles
+  cannot be dragged under an open overlay.</td></tr>
+<tr><td><code>hide(name)</code></td><td>hides it, keeping its contents</td></tr>
+<tr><td><code>clearLayer(name)</code></td><td>empties and hides one panel</td></tr>
+<tr><td><code>clearAll()</code></td><td>empties and hides every panel (not the canvas layers)</td></tr>
+</table>
+<p>Unknown names throw.</p>
+
+<h2>initOverlay()</h2>
+<p>Called once at start-up (<code>setUI.js</code>). Registers <code>#overlay-help</code>, <code>#overlay-forms</code> and
+<code>#overlay-debug</code> as "help", "forms" and "debug", and wires the close button: it removes any
+per-overlay sizing from the panel, hides the container, and clears every panel. Missing elements throw at
+start-up.</p>
+
+<h2>Help pages: showHelpOverlay(helpPath, titleText, options)</h2>
+<ul>
+<li>Fetches the page; a failed fetch throws with the status.</li>
+<li>Keeps only the page's <code>&lt;body&gt;</code> and shows it in the "help" panel, under a toolbar.</li>
+<li>The overlay's title is the page's own <code>&lt;title&gt;</code>; failing that, <code>titleText</code>;
+  failing that, the file name.</li>
+<li>The toolbar has an <strong>Edit</strong> button (unless <code>allowEdit: false</code>) that opens the page in
+  the TinyMCE editor (<code>helpEditor.js</code>, loaded the first time a page is edited).</li>
+<li>With <code>createIfMissing: true</code> it skips the fetch and opens an empty editor, for writing a page
+  that does not exist yet.</li>
+</ul>
+
+<h2>Notes: showNotesOverlay(titleText, notesText, actions)</h2>
+<p>The Notes item in a caption menu shows a source file's header comments here, in the same panel and
+style as help. <code>actions</code> become toolbar buttons (Show Script, Open in VS Code); a button's handler
+may return a message, which is shown in a status line. <code>closeNotesOverlay()</code> closes it.</p>
+
+<h2>Small helpers</h2>
+<p><code>showHelp(text)</code> and <code>hideHelp()</code> show or hide a short text in the help panel.
+<code>openOverlay(html)</code> and <code>closeOverlay()</code> are older names for the same thing.</p>
+
+<h2>Related</h2>
+<ul>
+<li><code>canvasLayerManager.js</code>: the four overlay canvases stacked over the drawing (see "Point
+  Dragging" and the interactor page).</li>
+<li><code>help.js</code>: the help manifest, the help home page, the Help menu item. <code>helpTree.js</code>: the tree and page pane. <code>helpEditor.js</code>: the TinyMCE editor.</li>
+</ul>
+
+</body>
+</html>

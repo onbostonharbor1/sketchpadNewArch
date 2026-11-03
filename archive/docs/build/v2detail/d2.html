@@ -1,0 +1,163 @@
+<h2>3.0 ARCHITECTURE</h2>
+<h3>3.1 Layers and call rules</h3>
+<p>V2 has five layers. A layer may call only the layers below it. Data, not calls, crosses upward.</p>
+[[FIG structure_chart | Structure chart: the layers and who may call whom]]
+<table class="small">
+<tr><th>Layer</th><th>Contents</th><th>May call</th><th>Must not</th></tr>
+<tr><td>5 Screens</td><td>Tabs, panels, menus built from the commands table, the canvas element</td><td>4, 3 (read only), 2 (render)</td><td>change a document except through a command</td></tr>
+<tr><td>4 Commands</td><td>The commands table; each command takes a document and returns a new one</td><td>3, 1</td><td>touch the page or the canvas</td></tr>
+<tr><td>3 Documents and session</td><td>Document model, point table, evaluation, session state, history</td><td>1</td><td>paint, or know about tabs</td></tr>
+<tr><td>2 Renderers and output</td><td>Canvas, SVG, PDF, nail list, thumbnails</td><td>1 (types only)</td><td>evaluate geometry, read session</td></tr>
+<tr><td>1 Kernel and generators</td><td>Paths, makers, shapers, connectors, finders; generator files</td><td>nothing above</td><td>use the page, the canvas, time, randomness without a seed, or any state</td></tr>
+</table>
+<table class="req">
+<tr><td>DR-3.1</td><td>A check (part of the import check, FR-6.17) shall read every module's imports and fail if a module imports from a layer above its own. Layer is given by folder.</td></tr>
+<tr><td>DR-3.2</td><td>The Node service is outside the layers; only the storage module of layer 3 and the catalog may call it, through named requests (section 9).</td></tr>
+</table>
+<h3>3.2 Folders</h3>
+<pre class="code">sketchpad/
+  kernel/        paths.js, makers/, shapers/, connectors/, finders/      layer 1, pure
+  generators/    one file per generator (circle.js, parabola.js, lattice.js ...)
+  templates/     one file per template (rectangle.js, ruler.js ...)
+  documents/     model.js, points.js, evaluate.js, migrate.js, checks.js   layer 3
+  session/       session.js, history.js
+  commands/      table.js, one file per family (layers.js, points.js, sweep.js ...)
+  render/        canvas.js, svg.js, pdf.js, nails.js, thumbnails.js       layer 2
+  screens/       one folder per tab, plus panels/ and menus.js            layer 5
+  host/          the script host (iframe page and adapter)
+  service/       the Node service (requests, watcher, paths)
+  library/       the owner's content: figures/, scripts/, ideabook/, help/
+  journal/       journals, one file per item (section 14)
+  tests/         regression/, kernel/, service/, screens/
+  vendor/        outside libraries, pinned</pre>
+<p>Library content is kept apart from code so that the code can be replaced, and the content kept, without mixing the two.</p>
+
+<h2>4.0 THE KERNEL</h2>
+<h3>4.1 Types</h3>
+<pre class="code">// A point. z defaults to 0 (D-11).
+Point   = { x: number, y: number, z?: number }
+
+// A path: points in order, and whether the last joins the first.
+Path    = { pts: Point[], closed: boolean, name?: string }
+
+// A stitch: one thread, from a to b. src names where each end came from.
+Stitch  = { a: Point, b: Point, src?: { pathA: string, i: number, pathB: string, j: number } }
+
+// What a generator returns. Nothing in it is a function; it can be saved as JSON.
+Geometry = {
+  paths:    { [name: string]: Path },     // the infrastructure: where nails can go
+  stitches: Stitch[],                     // the threads
+  points:   { [name: string]: Point },    // named points: handles, features
+  bounds:   { x0, y0, x1, y1 },
+  style:    { color, lineWidth, alpha? }  // per stitch overrides allowed: Stitch.style
+}</pre>
+<table class="req">
+<tr><td>DR-4.1</td><td>Kernel functions shall take values and return new values; they shall never change their arguments. A test shall freeze every argument (<tt>Object.freeze</tt>, deeply) and call each kernel function with it.</td></tr>
+<tr><td>DR-4.2</td><td>Kernel functions shall not read <tt>window</tt>, <tt>document</tt>, a canvas, the clock, or <tt>Math.random</tt>. Randomness comes from a seed argument through the kernel's own generator (DR-4.12).</td></tr>
+<tr><td>DR-4.3</td><td>Every kernel function shall have defaults for every setting (D-15), and shall return a result for any input of the right type, however odd, except where the result is undefined (a path of zero points cannot be joined), in which case it returns an empty result and a note (DR-4.4), never throws.</td></tr>
+<tr><td>DR-4.4</td><td>A kernel function may return notes beside its value: <tt>{ value, notes: ["arm 2 has 12 points, arm 1 has 20: joined the first 12"] }</tt>. Notes are shown in the layer's status, not as errors.</td></tr>
+</table>
+<h3>4.2 Makers</h3>
+<p>A maker returns a path. Signature: <tt>maker(settings) &rarr; Path</tt>. Settings are listed with their defaults.</p>
+<table class="small">
+<tr><th>Maker</th><th>Settings (default)</th><th>Result</th></tr>
+<tr><td>line</td><td>a {0,0}, b {100,0}, n 10</td><td>n+1 evenly spaced points, open</td></tr>
+<tr><td>circle</td><td>center {0,0}, r 100, ry = r, n 24, start -90&deg;, turn 0&deg;, spacing "angle" | "arc"</td><td>n points, closed. "arc" spaces evenly by arc length (V1's createNodes), which matters for ellipses</td></tr>
+<tr><td>arc</td><td>center, r 100, from 0&deg;, to 180&deg;, n 10</td><td>n+1 points, open</td></tr>
+<tr><td>polygon</td><td>center, r 100, sides 3, perSide 10, turn 0&deg;</td><td>points along the edges, corners once each, closed</td></tr>
+<tr><td>star</td><td>center, R 100, r 40, n 5, turn 0&deg;</td><td>2n corners, tips at R, notches at r, closed</td></tr>
+<tr><td>zigzag</td><td>center, width 500, height 150, teeth 6</td><td>2&middot;teeth+1 corners, open</td></tr>
+<tr><td>spiral</td><td>center, r0 10, r1 200, turns 3, n 120, kind "archimedean" | "log"</td><td>n+1 points, open</td></tr>
+<tr><td>parametric</td><td>fx(t), fy(t) as expressions, t0, t1, n, sampling "even-t" | "even-length" | "adaptive"</td><td>see 4.6</td></tr>
+<tr><td>roulette</td><td>center, R 150, r 52 (negative: outside), d 60, turns 13, steps 600, dChange 0 per turn</td><td>hypotrochoid or epitrochoid; dChange varies the pen distance as it draws (FR-6.19.4)</td></tr>
+<tr><td>points</td><td>pts: Point[]</td><td>the given points (for hand-placed nails)</td></tr>
+</table>
+[[FIG makers_figure | Makers: the same path made several ways]]
+<h3>4.3 Shapers</h3>
+<p>A shaper takes a path and returns a path: <tt>shaper(path, settings) &rarr; Path</tt>.</p>
+<table class="small">
+<tr><th>Shaper</th><th>Settings (default)</th><th>Effect</th></tr>
+<tr><td>trim</td><td>from 0, to = length</td><td>keep a run of points</td></tr>
+<tr><td>reverse</td><td>&mdash;</td><td>run backwards</td></tr>
+<tr><td>rotateStart</td><td>k 0</td><td>start at point k (closed paths)</td></tr>
+<tr><td>resample</td><td>n, by "count" | "length"</td><td>new points spaced evenly along the old</td></tr>
+<tr><td>jitter</td><td>amount 0, seed 1, mode "radial" | "both"</td><td>repeatable wobble (FR-6.2.4)</td></tr>
+<tr><td>bias</td><td>amount 0</td><td>crowd points toward one end (V1's spacingBias)</td></tr>
+<tr><td>transform</td><td>angle, tx, ty, scale, about</td><td>move, turn, scale</td></tr>
+<tr><td>mirror</td><td>axis (two points)</td><td>reflect</td></tr>
+<tr><td>simplify</td><td>tolerance 0.25 px</td><td>drop points that change nothing (Ramer&ndash;Douglas&ndash;Peucker)</td></tr>
+</table>
+[[FIG shapers_figure | Shapers applied to one path]]
+<h3>4.4 Connectors</h3>
+<p>A connector takes one or two paths and returns stitches: <tt>connector(a, b?, settings) &rarr; Stitch[]</tt>. The family is
+pluggable (FR-6.2.5a): each connector is a file in <tt>kernel/connectors/</tt>. Notation: a<sub>i</sub> is point i of path a,
+n<sub>a</sub> its length.</p>
+<table class="small">
+<tr><th>Connector</th><th>Rule</th><th>Settings (default)</th><th>Notes</th></tr>
+<tr><td>pairwise</td><td>a<sub>i</sub> &ndash; b<sub>i+offset</sub> for i = from, from+every, &hellip; &lt; to</td><td>offset 0, every 1, from 0, to n<sub>a</sub>, reverse false (b run backwards), wrap false</td><td>V1's <tt>stitcher</tt> is offset 0; past b's end without wrap: stop, with a note</td></tr>
+<tr><td>corner</td><td>pairwise on line(a&rarr;c, n) and line(c&rarr;b, n)</td><td>a, c, b, n 15</td><td>the classic curve stitch</td></tr>
+<tr><td>skip</td><td>a<sub>i</sub> &ndash; a<sub>(i+s) mod n</sub></td><td>s 1, wrap true, from, to</td><td>replaces V1's three chord functions</td></tr>
+<tr><td>growingSkip</td><td>a<sub>i</sub> &ndash; a<sub>round(i + s0 + i&middot;g) mod n</sub></td><td>s0 30, g 0.4</td><td>curls and teardrops (14 of the owner's boards)</td></tr>
+<tr><td>timesTable</td><td>a<sub>i</sub> &ndash; a<sub>round(i&middot;k) mod n</sub>, skipping j = i</td><td>k 2 (negative and fractional allowed)</td><td>k=2 cardioid, 3 nephroid, &minus;2 deltoid, &minus;1 parallel chords</td></tr>
+<tr><td>allPairs</td><td>a<sub>i</sub> &ndash; a<sub>j</sub>, i &lt; j</td><td>&mdash;</td><td>Mystic Rose; n(n&minus;1)/2 stitches: budget-checked</td></tr>
+<tr><td>ring</td><td>a<sub>i</sub> &ndash; a<sub>i+1</sub></td><td>closed</td><td>outlines</td></tr>
+<tr><td>mirror</td><td>a<sub>i</sub> &ndash; a<sub>n&minus;1&minus;i</sub></td><td>&mdash;</td><td></td></tr>
+<tr><td>linked</td><td>among several paths, by link style pairwise | ring | all</td><td>style "pairwise"</td><td>Linked Circles</td></tr>
+<tr><td>fan</td><td>every a<sub>i</sub> to one point p</td><td>p</td><td>bursts, cones, wheels</td></tr>
+</table>
+[[FIG connectors_figure | Connectors: four ways of joining the same points]]
+<table class="req">
+<tr><td>DR-4.5</td><td>Each stitch shall carry <tt>src</tt>: the path names and indices of its two ends. Printing (nail numbering, colour cycle FR-6.11.9) and hit-testing read it.</td></tr>
+<tr><td>DR-4.6</td><td>When two paths of different lengths are joined pairwise, the default shall be to join the shorter's length and note it; a setting <tt>match: "resample"</tt> resamples the longer to the shorter (FR-6.2.6).</td></tr>
+</table>
+<h3>4.5 Composite makers</h3>
+<p>Built from the above, and proven by the 282 Ideabook hints (FR-6.2.5b). Each returns Geometry.</p>
+<table class="small">
+<tr><th>Composite</th><th>Construction</th></tr>
+<tr><td>starOfCorners(center, r, n, steps, inner 0, twist 0, turn 0)</td><td>tips t<sub>k</sub> on a circle of radius r; for each k a corner stitch from t<sub>k</sub> to t<sub>k+1</sub> bending round c<sub>k</sub>, the centre when inner = 0, otherwise a point on a circle of radius inner at the half-angle between the tips, moved round by twist. n=4, inner 0: the four-pointed star; inner &gt; 0: long thin points; twist: pinwheel blades.</td></tr>
+<tr><td>polygonCornerStitch(corners, steps, full false)</td><td>at every corner a corner stitch between the mid-points of its two edges, or with full the whole edges (corner to corner), leaving the round or elliptical holes of many boards.</td></tr>
+<tr><td>segmentStitch(a1, a2, b1, b2, steps)</td><td>pairwise on line(a1&rarr;a2) and line(b1&rarr;b2).</td></tr>
+<tr><td>zigzagStitch(path, steps, colors)</td><td>a corner stitch at every inner corner of a path.</td></tr>
+<tr><td>offsetRings(center, r, n, rings, shrink, offset, drift)</td><td>rings of nails each pairwise-joined to the next with an offset, the centres drifting: nested spirals.</td></tr>
+<tr><td>pursuit(start, &hellip;)</td><td>section 13.6.</td></tr>
+</table>
+<h3>4.6 Parametric sampling</h3>
+<p>V1 samples a parametric curve at Loops &times; 60 even steps in t (4,500 points at the default), all drawn and all searched (I-3).
+V2 samples adaptively.</p>
+<pre class="code">sampleAdaptive(f, t0, t1, tol = 0.25 px, maxDepth = 14):
+  start with 64 even steps in t
+  for each interval [ta, tb]:
+    m = f((ta+tb)/2);  e = distance from m to the chord f(ta)-f(tb)
+    if e &gt; tol and depth &lt; maxDepth: split the interval and recurse
+  then simplify (RDP, tol) and, if a nail count n is asked for, resample by length to n</pre>
+<table class="req">
+<tr><td>DR-4.7</td><td>For the default Parametrics settings, the sampled path shall have at most 720 points (V1's infrastructure limit) and draw within 0.5 px of the 4,500-point curve.</td></tr>
+<tr><td>DR-4.8</td><td>"Nails" (infrastructure) and "drawing" (the visible curve) may use different samplings of the same curve; a nail count is the owner's choice, a drawing tolerance is not.</td></tr>
+</table>
+<h3>4.7 Finders</h3>
+<p>A finder takes geometry and returns named points: <tt>finder(geometry, settings) &rarr; { [feature]: Point }</tt>.</p>
+<table class="small">
+<tr><th>Finder</th><th>Feature names</th><th>Rule</th></tr>
+<tr><td>ends</td><td><tt>start &lt;path&gt;</tt>, <tt>end &lt;path&gt;</tt></td><td>first and last points</td></tr>
+<tr><td>middles</td><td><tt>mid &lt;path&gt;</tt></td><td>half way by length</td></tr>
+<tr><td>extremes</td><td><tt>top|bottom|left|right &lt;path&gt;</tt></td><td>by coordinate</td></tr>
+<tr><td>lobeTips</td><td><tt>tip &lt;path&gt; #k</tt></td><td>a point farther from the curve's centre than its neighbours by at least 1.5 px within 3 points either side (V1 G-12), numbered by angle from the top, clockwise</td></tr>
+<tr><td>cusps</td><td><tt>cusp &lt;path&gt; #k</tt></td><td>a turn sharper than 100&deg; between consecutive segments</td></tr>
+<tr><td>intersections</td><td><tt>cross &lt;pathA&gt;.&lt;pathB&gt; #k</tt></td><td>section 13.7</td></tr>
+</table>
+<table class="req">
+<tr><td>DR-4.9</td><td>Feature numbering shall be stable under small changes: numbered by angle about the path's centroid from straight up, clockwise, so that moving a handle a little does not renumber.</td></tr>
+<tr><td>DR-4.10</td><td>Where two features coincide within 0.5 px, the more telling wins: intersection, cusp, tip, middle (V1 G-11).</td></tr>
+<tr><td>DR-4.11</td><td>A curve's intersections with itself shall be offered only when asked for (they run to thousands on a dense curve, V1 G-10).</td></tr>
+<tr><td>DR-4.12</td><td>The kernel's random source shall be a small seeded generator (Park&ndash;Miller, 16807 mod 2<sup>31</sup>&minus;1), so the same seed gives the same numbers in every browser.</td></tr>
+</table>
+<h3>4.8 Acceptance tests for the kernel</h3>
+<table class="req">
+<tr><td>AT-4.1</td><td>circle(n 36) + timesTable(k 2) gives 35 stitches whose envelope is a cardioid (checked against the cardioid's equation within 1 px at 36 sample angles).</td></tr>
+<tr><td>AT-4.2</td><td>corner(a, c, b, n 15) gives 16 stitches; stitch i joins a + (c&minus;a)&middot;i/15 to c + (b&minus;c)&middot;i/15.</td></tr>
+<tr><td>AT-4.3</td><td>jitter with seed 7, then seed 8, then seed 7 again: the first and third results are identical to the last bit.</td></tr>
+<tr><td>AT-4.4</td><td>Every kernel function, called with frozen arguments, does not throw and does not change them (DR-4.1).</td></tr>
+<tr><td>AT-4.5</td><td>pairwise with arms of 12 and 20 points joins 12 and returns one note naming both lengths.</td></tr>
+<tr><td>AT-4.6</td><td>Feature numbers of a rose's lobe tips do not change when the rose is turned by 1&deg; (DR-4.9).</td></tr>
+<tr><td>AT-4.7</td><td>allPairs on 400 points (79,800 stitches) completes inside the budget of DR-17.1 or stops with the budget message (FR-6.18.2).</td></tr>
+</table>

@@ -1,0 +1,77 @@
+<h2>1.0 ABOUT THIS DOCUMENT</h2>
+<h3>1.1 Purpose</h3>
+<p>This document is the detailed specification of Sketchpad Version 2 ("V2"). It expands every requirement of the
+functional specification, SPV2-FS-001 Revision B ("the FS"), to the level at which it could be built and tested: the exact
+data formats, every interface between parts, the algorithms, the limits, the error cases, and an acceptance test for each
+requirement. It is written to be read by people who have not seen Sketchpad, so that they can analyse the design, find
+its weaknesses, and say where it should change before construction starts.</p>
+<p>Where the FS says <i>what</i>, this document says <i>how exactly</i> and <i>how we will know</i>. Where the two differ, the FS
+governs and this document is in error; please report it.</p>
+<h3>1.2 How to read it</h3>
+<ul>
+<li>Section 2 is the context: who the owner is, what he makes, and the constraints the design must respect. Read it first; much
+of the design follows from it.</li>
+<li>Sections 3 to 16 specify the parts, in the order data flows through them: the kernel, generators and settings, documents,
+commands, session, storage, the script host, rendering and output, and then the cross-cutting parts (commands table, errors,
+Sweep, journals, regression, robustness).</li>
+<li>Section 17 gives the non-functional requirements; section 18 the migration from V1; section 19 the construction and test
+plan; section 20 the risks and the questions for analysts; section 21 the requirement index.</li>
+</ul>
+<h3>1.3 Conventions</h3>
+<p>As in the FS: "shall" is a requirement, "should" a recommendation, "may" an option. Requirement numbers are those of the FS
+(FR-s.n). Detailed requirements added here are numbered DR-s.n by section of this document. Acceptance tests are AT-s.n.
+Risks are K-n; analyst questions are Q-n. Data structures are given as JSON with comments (<tt>//</tt>), which JSON itself does
+not allow; the files themselves carry none. Interfaces are given as JavaScript signatures. Lengths are in millimetres unless
+said otherwise; canvas coordinates are in pixels, y downward.</p>
+<h3>1.4 What is settled and what is not</h3>
+<p>Decisions recorded with the owner are D-1 to D-15 in the FS (section 4.2). Open items are O-1 to O-16 (FS section 12). This
+document does not settle open items; where a design depends on one, both branches are specified and marked.</p>
+
+<h2>2.0 CONTEXT AND CONSTRAINTS</h2>
+<h3>2.1 The owner and the work</h3>
+<p>The owner is a retired technical writer and an old-time Unix maintenance programmer (Xerox, Sun, Stellar, TotalView,
+NobleNet). Sketchpad is the first program he has written in twelve years; much of it is relearning. He reads every line he
+keeps, so the code must be plain and readable rather than clever. He works on Windows in VS Code, reviews from an iPad, and
+uses AI assistants to write code under his rules. Earlier assistants failed him in two ways the design must guard against:
+deleting code unrelated to the change in hand, and taking a shortcut to the result instead of using the pattern that already
+existed.</p>
+<p>He makes string art: thread wound between nails driven into a board, the threads' envelope forming curves. The classic
+construction is the <i>corner stitch</i>: two lines of nails meeting at a corner, nail i of one joined to nail i of the other,
+which draws a parabola. His aim is original work rather than formulaic craft. Sketchpad has two purposes of equal standing
+(FS 1.2):</p>
+<ol>
+<li><b>Templates.</b> A printable, true-scale point template for driving the nails.</li>
+<li><b>Sketching.</b> A place to explore designs cheaply by working with how objects are represented and how they relate.
+Making exploration cheap is a major function (D-8).</li>
+</ol>
+<h3>2.2 History in brief</h3>
+<table class="small">
+<tr><th>Stage</th><th>What it was</th><th>What it taught</th></tr>
+<tr><td>StringThing (to late 2025)</td><td>One 4,900-line HTML file: a single <tt>StringThing</tt> settings object with about 30 defaulted fields, 42 numbered tests switched on by uncommenting a line, and the numbered Figures of the owner's ideabook.</td><td>Separate the definition of a drawing from how it is drawn. Declare little, default everything, draw whatever is asked (D-15). A point may be referred to by number (<tt>new Point(n)</tt>), the seed of the V2 point table.</td></tr>
+<tr><td>Manager (2 weeks)</td><td>A manager of StringThing instances.</td><td>A dead end: managing more copies of a design that cannot grow does not help.</td></tr>
+<tr><td>Sketchpad v.1</td><td>A UI model from the owner's workflow (Draw, Patterns, Gallery, Utilities), a draw registry, manifests.</td><td>The tabs have barely changed since.</td></tr>
+<tr><td>Sketchpad v.2 ("V1" in these documents)</td><td>Subsystems, categories, Home; then Figures (layers, discs, welds, transforms), print aids, magic points; then error reporting, regression tests and Ideabook hints (November 2026).</td><td>The UI held; the drawing side, never rethought, is straining (FS 3.3).</td></tr>
+</table>
+<p>The owner's own numbering calls the rebuild Sketchpad 3 (O-11). These documents keep "V1" and "V2".</p>
+<h3>2.3 Constraints</h3>
+<table class="req">
+<tr><td>DR-2.1</td><td>Plain JavaScript ES modules. No framework, no build step, no transpiler, no TypeScript (A-2). A dev server (Vite) may serve files; the code must also run from a plain static server for read-only review.</td></tr>
+<tr><td>DR-2.2</td><td>A local Node service (one process, one port) performs every file write. The browser never writes files.</td></tr>
+<tr><td>DR-2.3</td><td>Windows is the primary platform; macOS and Linux shall also work (the owner may work from a borrowed Mac or a Linux USB drive). Paths shall be handled with the platform's path module, never by string joining with "/".</td></tr>
+<tr><td>DR-2.4</td><td>Works offline (FR-6.18.7). No CDN at run time.</td></tr>
+<tr><td>DR-2.5</td><td>Readable code: one file per idea, a header comment saying what it does (read by the Notes popup), names that say what they are, no cleverness for its own sake. A function longer than about 60 lines should be split unless splitting hides the idea.</td></tr>
+<tr><td>DR-2.6</td><td>No implicit globals. Shared state is declared in a state object (FS 6.7).</td></tr>
+<tr><td>DR-2.7</td><td>The iPad is for review only (D-2): reading documents and the running app; no authoring.</td></tr>
+<tr><td>DR-2.8</td><td>Everything is in git; small, described commits; a branch per phase, reviewed by the owner before merge.</td></tr>
+</table>
+<h3>2.4 Scale</h3>
+<table class="small">
+<tr><th>Item</th><th>V1 today</th><th>V2 design point</th></tr>
+<tr><td>Owner's code (excluding scripts and vendored libraries)</td><td>about 27,000 lines</td><td>should be smaller for the same function</td></tr>
+<tr><td>Draw objects (generators)</td><td>14</td><td>50, added by file</td></tr>
+<tr><td>Pattern and gallery scripts</td><td>185</td><td>500</td></tr>
+<tr><td>Ideabook images / hints</td><td>about 650 / 282</td><td>2,000 / 1,000</td></tr>
+<tr><td>Layers in one figure</td><td>up to about 20</td><td>100</td></tr>
+<tr><td>Points (nails) in one figure</td><td>a few hundred</td><td>5,000</td></tr>
+<tr><td>Lines drawn for one figure</td><td>up to about 20,000</td><td>200,000 within the time budget of DR-17.1</td></tr>
+</table>

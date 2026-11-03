@@ -1,0 +1,21 @@
+@page { size: Letter; margin: 0.85in 0.9in 0.85in 0.9in; }
+body { font-family: "Bitstream Charter", Georgia, serif; font-size: 10.8pt; line-height: 1.5; color: #111; margin: 0; }
+tt, pre { font-family: "Courier 10 Pitch", "Courier New", monospace; } tt { font-size: 9.8pt; }
+h2 { font-size: 17pt; font-weight: bold; margin: 0 0 12px; break-before: page; break-after: avoid; }
+h3 { font-size: 12pt; margin: 18px 0 6px; break-after: avoid; }
+p { margin: 0 0 9px; } ul, ol { margin: 0 0 9px; padding-left: 1.5em; } li { margin: 3px 0; }
+table { border-collapse: collapse; width: 100%; margin: 6px 0 12px; font-size: 9.6pt; }
+th, td { border: 0.7px solid #555; padding: 3px 7px; vertical-align: top; text-align: left; }
+th { background: #ebe8e1; } tr { break-inside: avoid; }
+pre.code { font-size: 8.6pt; line-height: 1.32; border: 0.7px solid #555; padding: 8px 10px; margin: 8px 0 4px; white-space: pre; break-inside: avoid; background: #faf9f6; }
+pre .ln { color: #888; }
+.fig { margin: 12px 0 16px; text-align: center; break-inside: avoid; }
+.fig svg { display: block; margin: 0 auto; }
+.cap { font-size: 9.4pt; font-weight: bold; margin-top: 5px; text-align: center; }
+.box { border: 0.8px solid #000; background: #f4f2ec; padding: 8px 12px; margin: 8px 0 12px; font-size: 10pt; }
+.cover { text-align: center; padding-top: 170px; }
+.ctitle { font-size: 38pt; font-weight: bold; line-height: 1.15; margin-bottom: 22px; }
+.csub { font-size: 16pt; font-style: italic; margin-bottom: 60px; }
+.cmeta { font-size: 11pt; line-height: 1.7; }
+.toc { font-size: 10.4pt; } .toc div { display: flex; } .toc .t3 { padding-left: 1.8em; font-size: 10pt; }
+.toc .fill { flex: 1; border-bottom: 1px dotted #000; margin: 0 6px 5px; }

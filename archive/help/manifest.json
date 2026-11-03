@@ -1,0 +1,108 @@
+{
+  "root": [
+    "Index"
+  ],
+  "draw": [
+    "inEllipse",
+    "inverseStar",
+    "linkedCircles",
+    "parabola"
+  ],
+  "figures": [],
+  "gallery": {
+    "Ideabook": {
+      "3D": [],
+      "generative": [],
+      "ideas": [],
+      "ok": [],
+      "possible": [],
+      "Pursuit": [],
+      "scans": [],
+      "To Build": [],
+      "working": []
+    },
+    "Patterns": {
+      "PursuitPatterns": [],
+      "ScanPatterns": []
+    },
+    "Scripts": {
+      "Curve Stitch": [],
+      "Elliptical": [
+        "ellipseDemo.js"
+      ],
+      "Experimental": [],
+      "General parametric": [],
+      "Generative": [],
+      "Multiple": [],
+      "Named parametric": [],
+      "Pursuit": [],
+      "Rose": [],
+      "Spiral": [],
+      "Unicorns": []
+    }
+  },
+  "home": [],
+  "Overview": {
+    "Design Notes": [
+      "coding_simplicity",
+      "ConvertToGallery",
+      "dataFlow",
+      "drawRegistry",
+      "figuresUndo",
+      "runPattern",
+      "sketchpadArchitecture"
+    ],
+    "Subsystems": [
+      "caption",
+      "categories",
+      "fileLayer",
+      "GROUPING_SYSTEM_GUIDE",
+      "interactor",
+      "manifest",
+      "menuManager",
+      "nodeLayer",
+      "overlay",
+      "parameterControls",
+      "parameterControls2",
+      "pointDragging",
+      "scriptRunner",
+      "setUI",
+      "ui_utilities",
+      "uiState"
+    ],
+    "Tabs": [
+      "draw",
+      "figures",
+      "gallery",
+      "home",
+      "patterns",
+      "utilities"
+    ]
+  },
+  "patterns": {
+    "builds": [
+      "firstBuild"
+    ],
+    "circles": [],
+    "curve_stitch": [],
+    "figures": [],
+    "fundamental": [],
+    "imported": [],
+    "parametric": [],
+    "polar": [],
+    "pursuit": [],
+    "spirals": [],
+    "stuff": [],
+    "unicorn": []
+  },
+  "utilities": {
+    "Lab": {
+      "Backgrounds": [],
+      "Color": []
+    },
+    "Tools": {
+      "Backgrounds": [],
+      "Stuff": []
+    }
+  }
+}

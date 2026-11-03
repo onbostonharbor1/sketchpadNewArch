@@ -1,0 +1,168 @@
+<h2>10.0 CONSTRUCTION PLAN</h2>
+<h3>10.1 Method</h3>
+<p>V2 is built in nine checkpoints on the version-2 branch. Each checkpoint is a working build that the owner can start
+on the PC and use, not a progress report. Work stops at each checkpoint for the owner's evaluation; the next begins only on
+the owner's word, as with V1 phases. V1 stays usable throughout. Each checkpoint ends with its tests passing and the
+owner's approval, at which point its output becomes the baseline (D-4).</p>
+[[FIG roadmap | Checkpoints and their order]]
+<h3>10.2 Before CP-0: feature lists</h3>
+<p>For each of the 14 Draw objects, a one-page feature list is drafted from V1: controls, each handle and what it does,
+infrastructure, and special behaviour (the Multi handle that separates copies; Linked Circles' three link styles; Chords
+in Ellipse's five modes). The owner corrects them. They record what each object is for, not what it outputs.</p>
+
+<h3>10.3 Checkpoints</h3>
+<table class="cp">
+<tr><th colspan="2">CP-0 &nbsp; SKELETON</th></tr>
+<tr><td>Built</td><td>The <tt>app2/</tt> folder; one Node process serving the page and the requests; Bootstrap, Tab lifecycle, Panels, Library view; Storage (read only) and Catalog reading the existing folders; the call-rule check (FR-6.1.4).</td></tr>
+<tr><td>You evaluate</td><td>Start V2 beside V1. Click through the six tabs. Each category list shows your real patterns, gallery scripts and images by name. Nothing runs yet.</td></tr>
+<tr><td>Accepted when</td><td>Every category V1 shows is present; switching tabs leaves nothing behind; the call-rule check passes.</td></tr>
+<tr><td>Not yet</td><td>Drawing, scripts, thumbnails, saving.</td></tr>
+</table>
+<table class="cp">
+<tr><th colspan="2">CP-1 &nbsp; KERNEL BENCH</th></tr>
+<tr><td>Built</td><td>The kernel (paths, makers, shapers, connectors, finders); the canvas renderer; a Utilities page, the <i>kernel bench</i>, with controls to choose a maker, chain shapers and pick a connector; Node tests for the kernel.</td></tr>
+<tr><td>You evaluate</td><td>Make a circle of 36 points and connect by multiply 2 (a cardioid), then by all pairs. Make a rose with parametric, compare even t with even spacing. Add jitter, change the seed, change it back: the same picture returns. Trim, reverse, start at 4.</td></tr>
+<tr><td>Accepted when</td><td>You can build each of Figure 8's four pictures on the bench, and the shapers behave as you expect.</td></tr>
+<tr><td>Not yet</td><td>Generators, handles, documents.</td></tr>
+</table>
+<table class="cp">
+<tr><th colspan="2">CP-2 &nbsp; GENERATORS AND CONTROLS</th></tr>
+<tr><td>Built</td><td>The generator format and its load check; the settings schema and Controls; handles on the canvas through Interaction; the folder watcher. Generators: Line, Parabola, Circular Parabola Multi, Linked Circles. The Draw tab using them.</td></tr>
+<tr><td>You evaluate</td><td>Open each object in Draw: sliders, number boxes, reset; drag handles; nudge with arrow keys. Save a copy of <tt>parabola.js</tt> under a new id with a change: it appears in Draw within two seconds. Edit it in VS Code and save: the open drawing redraws with your settings kept. Break a file on purpose: it shows a badge, the rest load.</td></tr>
+<tr><td>Accepted when</td><td>The four objects match their feature lists; adding a generator needs nothing but saving the file.</td></tr>
+<tr><td>Not yet</td><td>Undo, saving, figures.</td></tr>
+</table>
+<table class="cp">
+<tr><th colspan="2">CP-3 &nbsp; DOCUMENT, COMMANDS AND UNDO</th></tr>
+<tr><td>Built</td><td>Document, Commands and History, Session, Storage writes; the format-2 file; Save, Save As (one form), open; the unsaved indicator; the remaining ten generators.</td></tr>
+<tr><td>You evaluate</td><td>In Draw, change settings and drag: Ctrl+Z undoes a whole slider movement or drag in one step; Ctrl+Y redoes. Save; undo back past the save and forward again: the indicator follows. Switch tabs and return: history is still there. Open the saved file in VS Code and read it.</td></tr>
+<tr><td>Accepted when</td><td>All 14 objects match their feature lists; undo never leaves a wrong picture; saved files contain no derived values.</td></tr>
+<tr><td>Not yet</td><td>Layers, welds, scripts.</td></tr>
+</table>
+<table class="cp">
+<tr><th colspan="2">CP-4 &nbsp; FIGURES</th></tr>
+<tr><td>Built</td><td>The Figures tab: layers, layer strip, identity colours, transforms, the point table, shared-point welds, attachments, discs, the Evaluator's ordering, break apart, nesting, roles; the commands table for Figures.</td></tr>
+<tr><td>You evaluate</td><td>Build the <i>hard test figure</i>: two copies of one object; a hidden layer; a deleted layer; a moved and a turned layer; a free disc and an anchored disc; a corner tied within one layer; a weld across two layers; a line attached to a circle. Drag everything. Undo everything. Save, close, reopen. Try to make an attachment loop.</td></tr>
+<tr><td>Accepted when</td><td>Every item of the hard test figure behaves, survives save and reopen, and undoes in one step per gesture; the loop is refused with a clear message.</td></tr>
+<tr><td>Not yet</td><td>Scripts, output.</td></tr>
+</table>
+<table class="cp">
+<tr><th colspan="2">CP-5 &nbsp; SCRIPT HOST</th></tr>
+<tr><td>Built</td><td>The isolated frame; the legacy adapter; the recorder; error badges and time limit; reports and thumbnails on first sight; Patterns and Gallery running scripts.</td></tr>
+<tr><td>You evaluate</td><td>Run a dozen of your scripts in any order, including the two that failed after about 100 runs in V1, <tt>arcsAndInner</tt>, <tt>voronoi</tt> and an animated one. Leave an animation: it stops. Read a report. Place a recorded script in a figure as a frozen layer.</td></tr>
+<tr><td>Accepted when</td><td>Run order no longer matters; a broken script cannot affect another; every legacy script is classified as runs, adapted, preview only, or blocked, with a reason, in a migration ledger.</td></tr>
+<tr><td>Not yet</td><td>The importer.</td></tr>
+</table>
+<table class="cp">
+<tr><th colspan="2">CP-6 &nbsp; IMPORTER</th></tr>
+<tr><td>Built</td><td>The importer with levels 1 to 3 and the review panel; New script and Import.</td></tr>
+<tr><td>You evaluate</td><td>Take <tt>OverlappingStars.js</tt> through Level 1 and compare the proposal with the V1 hand adaptation. Adjust ranges, accept, and check the original is kept. Take one simple script through Level 3 and insert it into a figure.</td></tr>
+<tr><td>Accepted when</td><td>Level 1 proposals need only small corrections on your test scripts; nothing is ever rewritten without your approval.</td></tr>
+<tr><td>Not yet</td><td>Output.</td></tr>
+</table>
+<table class="cp">
+<tr><th colspan="2">CP-7 &nbsp; OUTPUT</th></tr>
+<tr><td>Built</td><td>Units and scale; output preview; SVG; true-scale PDF with scale bar and 100 mm calibration line; nail list; spacing check; tiling if wanted (O-7).</td></tr>
+<tr><td>You evaluate</td><td>Set the scale for a figure. Print the PDF at actual size on your printer and measure the calibration line with a ruler. Check the nail list against the drawing. Set a nail diameter and see close pairs highlighted.</td></tr>
+<tr><td>Accepted when</td><td>The printed 100 mm line measures 100 mm; a weld group prints as one nail; the template is usable on a board.</td></tr>
+<tr><td>Not yet</td><td>Home, Utilities, Help parity.</td></tr>
+</table>
+<table class="cp">
+<tr><th colspan="2">CP-8 &nbsp; PARITY AND CUT-OVER</th></tr>
+<tr><td>Built</td><td>Home with status views; Utilities (tools and lab); Help in Markdown; thumbnails for all items; the parity ledger complete.</td></tr>
+<tr><td>You evaluate</td><td>Use V2 for a week of real work. List anything V1 did that V2 does not.</td></tr>
+<tr><td>Accepted when</td><td>The ledger shows every V1 item accounted for and you choose to retire V1.</td></tr>
+<tr><td>Then</td><td>V2 is merged; <tt>app2/</tt> becomes the application; V1's code is removed in a separate, reviewable commit.</td></tr>
+</table>
+
+<h2>11.0 VERIFICATION</h2>
+<table class="req">
+<tr><td>FR-11.1</td><td>Kernel, evaluator, commands, history, schema and storage shall have Node tests that run in seconds without a browser.</td></tr>
+<tr><td>FR-11.2</td><td>Tests shall check meaning before pictures: path lengths, stitch end points, bounds, attachment positions, weld coincidence, undo restoring every partner.</td></tr>
+<tr><td>FR-11.3</td><td>Each generator shall have, once the owner approves it, stored reference geometry and a reference picture. Later changes shall be compared with these; a deliberate change updates them.</td></tr>
+<tr><td>FR-11.4</td><td>A browser test shall cover each screen's wiring and each checkpoint's evaluation steps that can be automated.</td></tr>
+<tr><td>FR-11.5</td><td>Script tests shall run scripts in random order to prove run order no longer matters.</td></tr>
+<tr><td>FR-11.6</td><td>Tests that save shall use a scratch copy, never the owner's library (V1's <tt>SKETCHPAD_ROOT</tt> rule kept).</td></tr>
+<tr><td>FR-11.7</td><td>Physical output shall be accepted only by a measured print (CP-7).</td></tr>
+</table>
+
+<h2>12.0 OPEN DECISIONS AND ITEMS TO LOOK AT</h2>
+<h3>12.1 Decisions needed from the owner</h3>
+<table class="t small">
+<tr><th>No.</th><th>Decision</th><th>Needed by</th></tr>
+<tr><td>O-1</td><td>Units for new documents (mm or inches), and how a V1 drawing's scale is set: one measurement you supply, as R-7 recommends, rather than a fixed guess.</td><td>CP-3</td></tr>
+<tr><td>O-2</td><td>Whether coincident points that are not welded print as one nail or two.</td><td>CP-7</td></tr>
+<tr><td>O-3</td><td>Nail diameter and minimum clearance for the spacing check.</td><td>CP-7</td></tr>
+<tr><td>O-4</td><td>Whether to use Acorn, a small outside JavaScript parser kept in <tt>vendor/</tt>, for the importer. It is code you did not write; writing a parser instead would be far worse.</td><td>CP-6</td></tr>
+<tr><td>O-5</td><td>Whether lists need hand-set order or hidden entries (fields in the metadata file).</td><td>CP-0</td></tr>
+<tr><td>O-6</td><td>Whether choosing a layer should still bring it to the front.</td><td>CP-4</td></tr>
+<tr><td>O-7</td><td>Board sizes, and therefore whether tiling across sheets is needed.</td><td>CP-7</td></tr>
+<tr><td>O-8</td><td>What Parametrics may drag (it has no handles in V1), and whether <tt>boxes.js</tt> comes across at all.</td><td>CP-3</td></tr>
+<tr><td>O-9</td><td>The Sweep tool (Phase 13) has no definition on record. R-7 suggests a parameter study: a grid of drawings over a range of one setting.</td><td>after CP-8</td></tr>
+<tr><td>O-10</td><td>Crossings as nail points (October item I2): finders can name them; whether they print is your call.</td><td>CP-7</td></tr>
+</table>
+<h3>12.2 From the other evaluations: worth your attention</h3>
+<p>Four evaluations were considered (R-5, R-6, R-7, and the staged rethink R-4). Most of their substance is in this
+specification. These items are not, or are only in part, and are worth a look.</p>
+<table class="t small">
+<tr><th>Source</th><th>Item</th><th>Why it matters</th><th>Status here</th></tr>
+<tr><td>R-7</td><td><b>The physical acceptance test</b>: print at actual size and measure a calibration line.</td><td>The only real proof a template is right; a screen preview cannot prove it.</td><td><b>Adopted</b> (CP-7). Look at R-7 p. 12.</td></tr>
+<tr><td>R-7</td><td><b>The hard test figure</b> and the migration ledger.</td><td>A single pretty shape exercises nothing; the ledger accounts for all 185 scripts.</td><td><b>Adopted</b> (CP-4, CP-5).</td></tr>
+<tr><td>R-7</td><td><b>Snap versus attach</b>: snapping aligns once; attaching persists.</td><td>Both are useful and easy to confuse; the difference should be visible.</td><td>Partly. Attach is specified; a one-time snap is <b>worth deciding</b>.</td></tr>
+<tr><td>R-7</td><td>Deterministic results and residual-error reporting.</td><td>Identical edits must give identical results. With ordered evaluation this is natural; reporting where an attachment could not be placed matters.</td><td>Adopted in FR-6.5.9.</td></tr>
+<tr><td>R-7</td><td>Browser storage, crash recovery, revision conflicts, touch authoring, portable bundles.</td><td>Valuable for authoring on many devices.</td><td><b>Set aside</b> by D-2 (iPad for review only). Revisit only if that changes.</td></tr>
+<tr><td>R-6</td><td><b>Output engines</b> beyond PDF: plotter (HPGL), laser or vinyl cutter, CNC drilling, DXF for CAD.</td><td>A plotter could draw stitch lines; a CNC router could drill the holes. Each engine is one file once geometry is data.</td><td><b>Worth a look</b>. Not specified; add any you would use (R-6 section 10).</td></tr>
+<tr><td>R-6</td><td><b>Type checking without a build</b>: <tt>// @ts-check</tt> and JSDoc comments, so VS Code underlines wrong property names as you type.</td><td>Catches the misspelled-field class of error; files stay plain JavaScript.</td><td><b>Worth a look</b>. Optional under A-2.</td></tr>
+<tr><td>R-6</td><td>One Node process serving both the page and the requests.</td><td>One window, one port, one command.</td><td>Adopted in CP-0.</td></tr>
+<tr><td>R-6</td><td>3D string art (cylinders, spheres, tubes) as a later phase.</td><td>Linked Circles already suggests tubes and rings; purpose 2.</td><td>Not specified. A separate project if wanted.</td></tr>
+<tr><td>R-4</td><td>Staged evolution of V1 instead of a rebuild.</td><td>Lower risk, nothing stops working.</td><td>Superseded by D-1. R-6's step table remains a fallback route.</td></tr>
+<tr><td>R-8</td><td>October items deferred then: blend modes (L1), background as a layer (L2, N14), hover information (B20), a context bar (O1), node metadata (L9).</td><td>Some fit naturally now: background is the image role; node metadata is a field on a point-table entry.</td><td><b>Worth a look</b> before CP-4.</td></tr>
+</table>
+
+<h2>13.0 GLOSSARY</h2>
+<table class="t">
+<tr><td><b>Attachment</b></td><td>A point-table entry that lies on another layer's path; one-way.</td></tr>
+<tr><td><b>Catalog</b></td><td>The index of library items, worked out from the folders.</td></tr>
+<tr><td><b>Checkpoint</b></td><td>A working build the owner evaluates before work continues.</td></tr>
+<tr><td><b>Command</b></td><td>A named change to a document; the only way a document changes.</td></tr>
+<tr><td><b>Connector</b></td><td>A kernel rule joining path points into stitches.</td></tr>
+<tr><td><b>Disc</b></td><td>A numbered point placed on a layer: free, or anchored to a path (an attachment).</td></tr>
+<tr><td><b>Document</b></td><td>Plain JSON describing a drawing or figure; saved; undoable.</td></tr>
+<tr><td><b>Finder</b></td><td>A kernel rule naming points on a path by feature.</td></tr>
+<tr><td><b>Generator</b></td><td>One file describing one drawable object or script: meta, settings schema, build or run.</td></tr>
+<tr><td><b>Handle</b></td><td>A draggable setting of type point; it names a point in the point table.</td></tr>
+<tr><td><b>Kernel</b></td><td>The geometry code: values in, values out, no state, no painting.</td></tr>
+<tr><td><b>Maker</b></td><td>A kernel rule producing a path: line, circle, parametric curve and so on.</td></tr>
+<tr><td><b>Panel</b></td><td>A side area of the page. Replaces one meaning of V1's "overlay".</td></tr>
+<tr><td><b>Path</b></td><td>An ordered array of points, open or closed.</td></tr>
+<tr><td><b>Point table</b></td><td>The document's list of numbered points; welds are shared entries.</td></tr>
+<tr><td><b>Renderer</b></td><td>The only code that paints: canvas, SVG, PDF, nail list.</td></tr>
+<tr><td><b>Session</b></td><td>View state: selection, mode, zoom. Not saved, not undone.</td></tr>
+<tr><td><b>Shaper</b></td><td>A kernel rule turning a path into another path.</td></tr>
+<tr><td><b>Weld</b></td><td>Two handles naming one point (shared), or a handle attached to a path.</td></tr>
+</table>
+
+<h2 class="nonum">APPENDIX A. TRACEABILITY</h2>
+<table class="t">
+<tr><th>Problem</th><th>Requirements</th><th>Checkpoint</th></tr>
+<tr><td>P-1 geometry while painting</td><td>FR-6.2.9, 6.3.4, 6.11.1, 6.11.8</td><td>CP-1, CP-2</td></tr>
+<tr><td>P-2 shared singletons</td><td>FR-6.3.1, 6.5.7</td><td>CP-2</td></tr>
+<tr><td>P-3 mixed settings</td><td>FR-6.4.1, 6.5.7</td><td>CP-3</td></tr>
+<tr><td>P-4 guessing drags</td><td>FR-6.3.5, 6.3.6, 6.4.4</td><td>CP-2</td></tr>
+<tr><td>P-5 undeclared handles</td><td>FR-6.3.5 to 6.3.7</td><td>CP-2</td></tr>
+<tr><td>P-6 weld propagation</td><td>FR-6.5.1 to 6.5.5</td><td>CP-4</td></tr>
+<tr><td>P-7 no undo</td><td>FR-6.6.1 to 6.6.8</td><td>CP-3</td></tr>
+<tr><td>P-8 mixed state</td><td>FR-6.7.1 to 6.7.4</td><td>CP-3, CP-4</td></tr>
+<tr><td>P-9 tab flags</td><td>FR-6.7.5, 6.7.6</td><td>CP-0</td></tr>
+<tr><td>P-10 manifests</td><td>FR-6.8.1 to 6.8.4</td><td>CP-0, CP-2</td></tr>
+<tr><td>P-11 bypassed boundaries</td><td>FR-6.1.4, 6.8.5</td><td>CP-0</td></tr>
+<tr><td>P-12 shared script state</td><td>FR-6.10.1 to 6.10.3</td><td>CP-5</td></tr>
+<tr><td>P-13 adding items</td><td>FR-6.9.1 to 6.9.8</td><td>CP-2</td></tr>
+<tr><td>P-14 controls</td><td>FR-6.4.1 to 6.4.8</td><td>CP-2</td></tr>
+<tr><td>P-15 units and output</td><td>FR-6.5.8, 6.11.4 to 6.11.7</td><td>CP-7</td></tr>
+<tr><td>P-16 menus and words</td><td>FR-6.12.2, 6.12.3</td><td>CP-4, CP-8</td></tr>
+<tr><td>P-17 metadata</td><td>FR-6.3.2, 6.3.3, 6.5.6</td><td>CP-2, CP-3</td></tr>
+<tr><td>P-18 parametric divide</td><td>FR-6.2.2, 6.2.3, 6.2.8</td><td>CP-1</td></tr>
+<tr><td>P-19 manual adaptation</td><td>FR-6.10.5 to 6.10.10</td><td>CP-6</td></tr>
+</table>
+<p class="endmark">END OF DOCUMENT</p>

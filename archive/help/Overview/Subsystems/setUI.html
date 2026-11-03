@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>setUI.js — Switching Tabs</title>
+  <link rel="stylesheet" href="/help/help_treatise.css" />
+</head>
+<body>
+
+<h1>setUI.js — Switching Tabs</h1>
+
+<p class="note">Rewritten 27 October 2026 against the current code. Changes since the earlier page: a third
+signal, <code>needsUpdate</code>, now comes first; <code>restore</code> clears the regions too (the old page
+said it did not); start-up also sets up the canvas layers; errors name the stage that failed. And one thing
+the old page implied but the code never does: <code>setUI</code> does not call any tab's <code>save()</code>.</p>
+
+<p><code>setUI.js</code> is the switchboard for the six main tabs. It renders nothing itself. It decides how a
+tab should be brought up, then hands over to that tab's <em>TabSpec</em>.</p>
+
+<h2>The routing table</h2>
+<pre>TabRegistry = { home, draw, patterns, gallery, utilities, figures }</pre>
+<p>Each value is a TabSpec with at least <code>init(restored)</code> and <code>restore()</code>.</p>
+
+<h2>setUI(tab): what happens on a tab click</h2>
+<ol>
+<li>Turn off any Prev/Next overlay.</li>
+<li>Reject an unknown tab name.</li>
+<li>Write the tab name to session storage (<code>sketchpad.lastActiveTab</code>; nothing reads it back at
+  present).</li>
+<li>Apply the tab's theme class to <code>#wrapper</code>, before anything is built, so new DOM is styled
+  right away.</li>
+<li><code>activateTab(tab)</code>: init or restore (below).</li>
+<li>If a launch intent is pending (<code>uiState.launch.pending</code>), clear the pending flag first, then
+  call <code>setUI(targetTab)</code> unless it is already active. Clearing first prevents a loop.</li>
+</ol>
+<p>Each step records its name; if anything throws, the console says which step it was.</p>
+
+<h2>activateTab: init or restore</h2>
+<pre>if  uiState[tab].needsUpdate      -> clear it, clearDivs(), init(true)
+elif uiState[tab].saved            -> clearDivs(), restore()
+else                               -> clearDivs(), init(false)
+then uiState.activeTab = tab, highlight its button</pre>
+<ul>
+<li><strong>needsUpdate</strong> is set on every tab by <code>syncSystemStateAfterRebuild()</code> after a
+  Rebuild &amp; Validate, so each tab reloads its manifests the next time it is shown.</li>
+<li><strong>saved</strong> is whatever the tab itself has written there. <code>setUI</code> never calls
+  <code>save()</code>.</li>
+<li>Both paths start with <code>clearDivs()</code> (<code>uiUtilities.js</code>, reading the table in <code>regions.js</code>).</li>
+</ul>
+
+<h2>Which tabs actually restore</h2>
+<table>
+<tr><th>Tab</th><th>Who sets <code>saved</code></th><th>Result</th></tr>
+<tr><td>Home</td><td>pre-filled in <code>uiState.js</code></td><td>always <code>restore()</code></td></tr>
+<tr><td>Patterns</td><td>the tab, from its first init on</td><td><code>restore()</code> after the first visit</td></tr>
+<tr><td>Gallery</td><td>the tab, from its first init on</td><td><code>restore()</code> after the first visit</td></tr>
+<tr><td>Draw</td><td>nobody</td><td>always <code>init(false)</code>, which itself returns to the open subtab</td></tr>
+<tr><td>Utilities</td><td>nobody (<code>saveUtilityState</code> is never called)</td><td>always <code>init(false)</code></td></tr>
+<tr><td>Figures</td><td>nobody</td><td>always <code>init(false)</code>, which returns to the open figure</td></tr>
+</table>
+<p>Either way, every tab comes back to what it showed, because each keeps its state in <code>uiState</code>
+as you work. The real difference is only which function rebuilds the screen. The end-of-work list in
+<code>PHASES.md</code> (items 4 and 6) proposes settling on one convention.</p>
+
+<h2>Start-up</h2>
+<p>On <code>DOMContentLoaded</code>: set up the menu manager, the panel overlays and the canvas layers; wire
+each main tab button to <code>setUI</code>; then <code>setUI("START_APP")</code>, which brings up Home (with
+<code>init</code>). If start-up fails, the message goes into <code>#text</code> so the page is not just blank.
+A page reload always starts fresh: nothing is read back from session storage.</p>
+
+<h2>The launch intent</h2>
+<p>One tab can ask for another to open with context, without calling it directly. Home does this for
+built-in Draw objects: it fills <code>uiState.launch</code> (pending, source, target, type, registry key) and
+calls <code>setUI("draw")</code>. Draw's init reads the intent, clears it, and opens the object.</p>
+
+</body>
+</html>

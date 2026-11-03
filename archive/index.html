@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sketchpad Layout</title>
+
+    <!-- ===========================================================
+       DIV STRUCTURE  (this file is the single source of truth)
+       -----------------------------------------------------------
+       Every region below is written in this file. Tabs fill these
+       regions and clear them (clearDivs() in ui/uiUtilities.js);
+       they do not create new regions. The exceptions are listed
+       under "Built by code" at the end, so they are not a surprise.
+
+       wrapper
+         ├── tabs                       the top tab buttons (#mainTabs: home-tab, draw-tab,
+         │                              patterns-tab, figures-tab, gallery-tab, utilities-tab)
+         └── content
+              ├── control               the left column
+              │     ├── button               holds #commandsButton (permanent;
+              │     │                        per-tab extras carry class tab-extra)
+              │     ├── buttonSeparator
+              │     ├── interface-controls
+              │     └── action               parameter controls, thumbnails
+              ├── main                  the right column
+              │     ├── subtabs
+              │     ├── caption
+              │     ├── errorBar             every tab: errors since the page loaded, until
+              │     │                        dismissed (ui/errorReport.js); not cleared on a
+              │     │                        tab switch; hidden when there are none
+              │     ├── alertBar             Home only: a summary of the last manifest check
+              │     │                        when it found problems; hidden otherwise
+              │     ├── text
+              │     └── sketchpad-wrapper    hidden until a tab shows it
+              │           ├── figure-sidebar     Figures only; hidden otherwise
+              │           └── sketchpad-container
+              │                 └── sketchpad-stack
+              │                       ├── sketchpad              a div that
+              │                       │                          hosts the canvas
+              │                       └── canvasOverlayLayers
+              │                             ├── interaction-layer  (canvas)
+              │                             ├── bbox-layer         (canvas)
+              │                             ├── nodes-layer        (canvas)
+              │                             └── guides-layer       (canvas)
+              └── offcanvasPanel        side panel (Bootstrap offcanvas)
+                    ├── offcanvas-header
+                    └── offcanvas-body
+
+       overlayContainer                 Help / Notes / forms / debug popups
+         ├── overlayBackground          dimmed clickable backdrop
+         └── overlayPanel
+               ├── overlayHeader
+               │     ├── overlayTitle
+               │     └── overlayClose (x)
+               └── overlayContent
+                     ├── overlay-help
+                     ├── overlay-forms
+                     ├── overlay-debug
+                     └── overlay-nextprev
+
+       Built by code (not written here). These are content wrappers or
+       popups, created inside a region that is emptied each time a tab
+       is left, so they cannot be permanent children of that region:
+         • canvas#sharedCanvas        draw/drawState.js, appended to #sketchpad
+         • #categories                ui/categories.js, inside the region a tab
+                                      names (usually #text)
+         • #drawControls              ui/controls/rendering/renderer.js, inside #action
+         • popup menus                ui/menuManager.js, appended to #wrapper
+         • button#ideabookRunScript   ui/caption.js (extraButtons), in #caption on an
+                                      Ideabook image: Run script / Show image
+       ============================================================ -->
+
+    <link rel="stylesheet" href="./css/base.css" />
+    <link rel="stylesheet" href="./css/wrapper.css" />
+    <link rel="stylesheet" href="./css/themes.css" />
+    <link rel="stylesheet" href="./css/tabs.css" />
+    <link rel="stylesheet" href="./css/categories.css" />
+    <link rel="stylesheet" href="./css/offcanvas.css" />
+    <link rel="stylesheet" href="./css/parameterControls.css" />
+    <link rel="stylesheet" href="./css/overlay.css" />
+    <link rel="icon" href="data:,">
+
+    </head>
+
+  <body>
+    <div id="wrapper">
+      <div id="tabs">
+        <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="home-tab" type="button"
+                    role="tab">
+              Home
+            </button>
+          </li>
+
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="draw-tab" type="button" role="tab">
+              Draw
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="patterns-tab" type="button"
+                    role="tab">
+              Patterns
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="figures-tab" type="button"
+                    role="tab">
+              Figures
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="gallery-tab" type="button"
+                    role="tab">
+              Gallery
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="utilities-tab" type="button"
+                    role="tab">
+              Utilities
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div id="content">
+        <div id="control">
+          <div id="button">
+            <button id="commandsButton" class="cmdButton" type="button">
+              Commands </button>
+          </div>
+
+          <div id="buttonSeparator"></div>
+
+          <div id="interface-controls"></div>
+
+          <div id="action">TBD</div>
+        </div>
+
+        <div id="main">
+          <div id="subtabs">TBD</div>
+          <div id="caption">TBD</div>
+          <div id="errorBar" style="display: none;"></div>
+          <div id="alertBar" style="display: none;"></div>
+          <div id="text">TBD</div>
+          <div id="sketchpad-wrapper">
+
+            <div id="figure-sidebar" style="display: none;"></div>
+
+            <div id="sketchpad-container">
+              <div id="sketchpad-stack">
+                <div id="sketchpad">TBD</div>
+
+                <div id="canvasOverlayLayers">
+                  <canvas id="interaction-layer" style="display: none;"></canvas>
+                  <canvas id="bbox-layer" style="display: none;"></canvas>
+                  <canvas id="nodes-layer" style="display: none;"></canvas>
+                  <canvas id="guides-layer" style="display: none;"></canvas>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+</div>
+
+<div id="offcanvasPanel" class="offcanvas offcanvas-end" tabindex="-1">
+  <div class="offcanvas-header">
+    <h6 class="offcanvas-title">TBD</h6>
+    <button type="button" class="btn-close" aria-label="Close">
+      TBD
+    </button>
+  </div>
+  <div class="offcanvas-body">TBD</div>
+</div>
+</div>
+</div>
+
+
+
+<!-- Overlay Container (Help / Notes / Debug ONLY) -->
+<div id="overlayContainer" style="display:none;">
+  <div id="overlayBackground"></div>
+  <div id="overlayPanel">
+    <div id="overlayHeader">
+      <span id="overlayTitle"></span>
+      <button id="overlayClose">×</button>
+    </div>
+
+    <div id="overlayContent">
+      <div id="overlay-help" class="overlay-layer" style="display:none;"></div>
+      <div id="overlay-forms" class="overlay-layer" style="display:none;"></div>
+      <div id="overlay-debug" class="overlay-layer" style="display:none;"></div>
+      <div id="overlay-nextprev" class="overlay-layer" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Files from the "Draw" side -->
+<script type="module" src="/main.js"></script>
+</body>
+
+    </html>

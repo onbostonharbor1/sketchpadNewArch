@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gallery Tab — How It Works</title>
+  <link rel="stylesheet" href="/help/help_treatise.css" />
+</head>
+<body>
+
+<h1>Gallery Tab — How It Works</h1>
+
+<p class="note">Rewritten 27 October 2026 against the current code. The earlier page described a single
+<code>gallery.js</code> and listed risks found in a pasted copy; the tab is now five files under
+<code>ui/gallery/</code>, scripts run through the shared script runner, and the manifests come from the shared
+manifest system.</p>
+
+<p>Gallery is a browser over three collections, or <em>domains</em>: <strong>Ideabook</strong> and
+<strong>Patterns</strong> (images) and <strong>Scripts</strong> (scripts that draw). Each has its own subtab of
+category frames. Choosing an item opens one shared Results subtab, labeled <em>Images</em> or
+<em>Drawings</em>, with Prev/Next.</p>
+
+<h2>The files</h2>
+<table>
+<tr><th>File</th><th>Owns</th></tr>
+<tr><td><code>gallery.js</code></td><td><code>GalleryTabSpec</code>, <code>GalleryController</code>; init / restore / save;
+  loading the three domains' manifests</td></tr>
+<tr><td><code>galleryNav.js</code></td><td>the three domain subtabs and the Results subtab; the category views</td></tr>
+<tr><td><code>galleryResults.js</code></td><td>showing an image (with thumbnails) or running a script; Prev/Next;
+  normalizing entry paths</td></tr>
+<tr><td><code>galleryMenuCmds.js</code></td><td>caption ("category: title", Prev/Next, menu) and its commands (Help, Show
+  Script, Notes, Edit Manifest, Archive); the Commands panel</td></tr>
+<tr><td><code>galleryState.js</code></td><td>current domain, category, list and index</td></tr>
+</table>
+
+<h2>Where the content comes from</h2>
+<pre>/gallery/&lt;Domain&gt;/directoryRegistry.json        the list of categories
+/gallery/&lt;Domain&gt;/&lt;Category&gt;/manifest.json      the items in one category
+/gallery/&lt;Domain&gt;/&lt;Category&gt;/images/thumb_&lt;filename&gt;.png</pre>
+<p><code>ensureGalleryCacheLoaded()</code> asks the shared manifest system for
+<code>gallery/Ideabook</code>, <code>gallery/Patterns</code> and <code>gallery/Scripts</code>.
+<code>getGalleryCache()</code> returns the three category maps from <code>manifest.getCategoryMap()</code>.
+(<code>galleryState.js</code> still declares a <code>galleryCache</code> variable; the lookups no longer use it.)</p>
+
+<h2>State</h2>
+<pre>uiState.gallery.saved = {
+  view:     "categories" | "results",
+  domain:   "Ideabook" | "Patterns" | "Scripts",
+  category: string | null,
+  index:    number | null
+}</pre>
+<p>The tab rewrites <code>saved</code> every time you move, so <code>setUI.js</code> uses <code>restore()</code> when
+you return, and Gallery reopens exactly where it was. Gallery remembers one Results context only: the
+Results subtab always means "the last thing chosen". <code>saved</code> also goes to session storage, but
+<code>rehydrateGalleryState()</code>, which would read it back after a page reload, is not called.</p>
+<p>The module state in <code>galleryState.js</code> (current list and index) drives Prev/Next. It is written
+together with <code>saved</code> by the same functions, so the two stay in step.</p>
+
+<h2>Results</h2>
+<ul>
+<li><strong>Images</strong> (Ideabook, Patterns): the image in <code>#text</code>, a thumbnail grid of the
+  category in <code>#action</code> with the current one marked; clicking a thumbnail shows it.</li>
+<li><strong>Drawings</strong> (Scripts): <code>/gallery/Scripts/&lt;category&gt;/&lt;filename&gt;</code> is run with
+  <code>runScriptByPath()</code> into <code>#sketchpad</code>, controls enabled. No thumbnail grid.</li>
+</ul>
+<p>Prev and Next move within the current category's list.</p>
+
+<h2>Restore details</h2>
+<ul>
+<li>If the remembered category has vanished (after a rebuild), Gallery falls back to that domain's
+  categories.</li>
+<li>An index past the end is pulled back to the last item.</li>
+</ul>
+
+<h2>Leftovers and shims</h2>
+<ul>
+<li><code>normalizeGalleryEntryPath()</code> strips a leading <code>Category/</code> from entry paths that
+  include it. A manifest rule ("paths are relative to the category folder") is not enforced yet; this
+  covers older entries.</li>
+</ul>
+
+</body>
+</html>

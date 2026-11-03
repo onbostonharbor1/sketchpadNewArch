@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>interactor.js — Handles You Can Drag</title>
+  <link rel="stylesheet" href="/help/help_treatise.css" />
+</head>
+<body>
+
+<h1>interactor.js — Handles You Can Drag</h1>
+
+<p class="note">Rewritten 27 October 2026 against the current code. Since the earlier page: the handle
+presets changed (radius 5, grab range 10, red), handles can be selected and nudged with the arrow keys,
+they follow a layer's transform, the Figures centroid can take a press first, every move goes through one
+function (<code>moveHandle</code>) with before and after hooks for welds, and only the left button grabs.
+For the whole picture of dragging in Sketchpad (handles, discs, layers, welds) see "Point Dragging".</p>
+
+<p><code>interactor.js</code> draws an object's handles (its <code>params.points</code>) on the
+"interaction" overlay canvas and lets you drag them. One object is armed at a time. Draw, Figures and
+interactive scripts all use it.</p>
+
+<h2>Presets</h2>
+<table>
+<tr><th>PointPickerPresets</th><th>Value</th><th>Meaning</th></tr>
+<tr><td><code>handleRadius</code></td><td>5</td><td>drawn size of a handle, canvas pixels</td></tr>
+<tr><td><code>hitTolerance</code></td><td>10</td><td>how close a press must be to grab one</td></tr>
+<tr><td><code>idleColor</code></td><td><code>#C91A09</code></td><td>red: a handle at rest</td></tr>
+<tr><td><code>activeColor</code></td><td><code>#FE8A18</code></td><td>orange: hovered, dragged or selected</td></tr>
+</table>
+
+<h2>The public functions</h2>
+<ul>
+<li><strong>armInteractor(instance)</strong>: disarms any previous object, then starts listening for this
+  one. Does nothing if the object has no <code>params.points</code>. Also on <code>window</code>.</li>
+<li><strong>disarmInteractor()</strong>: removes the listeners, clears and hides the interaction canvas. Also
+  on <code>window</code>.</li>
+<li><strong>refreshInteractor()</strong>: redraws the armed object's handles; used when something moves them
+  without going through the interactor (the Figures centroid).</li>
+</ul>
+
+<h2>What the armed object may supply</h2>
+<table>
+<tr><th>Property</th><th>Used for</th></tr>
+<tr><td><code>params.points</code></td><td>the handles themselves, in object space (required)</td></tr>
+<tr><td><code>update(params)</code></td><td>called after each move so the object rebuilds its geometry</td></tr>
+<tr><td><code>redrawHandler()</code></td><td>called after each move to redraw (Figures sets this); without it the Draw
+  tab's active subtab is redrawn, or the object's own <code>draw()</code></td></tr>
+<tr><td><code>getTransform()</code></td><td>the layer's transform (Figures). Handles are shown and hit in canvas space and
+  stored in object space</td></tr>
+<tr><td><code>yieldTo(x, y)</code></td><td>true if the press belongs to something above the handles (the Figures centroid)</td></tr>
+<tr><td><code>beforeMove()</code>, <code>afterMove()</code></td><td>called around every move (Figures welds)</td></tr>
+</table>
+
+<h2>The mouse and keys</h2>
+<ul>
+<li><strong>Left press</strong> within 10 px of a handle: that handle is dragged and also becomes the
+  <em>selected</em> handle (orange, with a black outer ring). A press elsewhere clears the selection. If
+  <code>yieldTo</code> says the press belongs to something else, the handles stay out of it. Other buttons are
+  ignored.</li>
+<li><strong>Move</strong> while dragging: the handle is put exactly under the pointer (there is no "still a
+  click" margin here; the smallest movement moves it). While not dragging, hovering turns a handle orange.</li>
+<li><strong>Release</strong>: the drag ends; the selection stays.</li>
+<li><strong>Arrow keys</strong>: move the selected handle 1 px (10 with Shift), in canvas directions. Ignored
+  while the keyboard is in a text box, slider or list.</li>
+</ul>
+<p>Listeners are on <code>window</code>, not the canvas, so a drag that strays off the canvas keeps going. All
+four are registered with one <code>AbortController</code>; disarming is one <code>abort()</code>.</p>
+
+<h2>moveHandle(i, x, y): the one place a handle moves</h2>
+<ol>
+<li><code>beforeMove()</code>, if supplied.</li>
+<li>Canvas (x, y) to object space through <code>getTransform()</code>; write into <code>points[i]</code>.</li>
+<li><code>onUpdate</code>: the object's <code>update()</code>, then its redraw.</li>
+<li><code>afterMove()</code>, if supplied.</li>
+</ol>
+<p>Dragging and the arrow keys both go through it, so anything that has to react to a handle (welds)
+hooks in one place.</p>
+
+<h2>Things worth knowing</h2>
+<ul>
+<li>The object's handle array is changed in place; the object reads it back in its own
+  <code>update()</code>. Objects that keep extra handles in that array (a Line's or Parabola's midpoint) decide
+  in <code>update()</code> what a moved midpoint means (they slide the whole line).</li>
+<li>Showing any panel overlay (help, forms) disarms the interactor (<code>overlayManager.show</code>).</li>
+</ul>
+
+</body>
+</html>

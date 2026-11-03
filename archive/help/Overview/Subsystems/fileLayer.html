@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>fileLayer.js — Reading Files and Building Paths</title>
+  <link rel="stylesheet" href="/help/help_treatise.css" />
+</head>
+<body>
+
+<h1>fileLayer.js — Reading Files and Building Paths</h1>
+
+<p class="note">Rewritten 27 October 2026 against the current code. The main changes since the earlier page:
+every path is now absolute (<code>/patterns/...</code>; the old <code>../patterns/...</code> forms are gone and a
+relative path is refused), <code>exists()</code> uses GET instead of HEAD, and the path helpers have been
+adopted by <code>manifest.js</code>.</p>
+
+<p><code>fileLayer</code> is the browser's read-only way to reach files through the local web server, plus one
+place where paths are built so every tab builds them the same way. It knows nothing about tabs, the
+screen, or what the files mean. (Writing files is the Node service's job; see <code>nodeLayer.js</code>.)</p>
+
+<h2>Reading</h2>
+<table>
+<tr><th>Function</th><th>Returns</th><th>On failure</th></tr>
+<tr><td><code>exists(path)</code></td><td>true if a GET succeeds</td><td>false (and a console error); a relative path
+  is an error, also reported as false</td></tr>
+<tr><td><code>loadText(path)</code></td><td>the text</td><td><code>null</code></td></tr>
+<tr><td><code>loadJSON(path)</code></td><td>the parsed JSON</td><td><code>null</code> (bad JSON included)</td></tr>
+<tr><td><code>listDirectory(path)</code></td><td>the <code>href</code> values of a server directory listing</td><td><code>[]</code></td></tr>
+<tr><td><code>helpExists(tab, item)</code></td><td><code>exists("/help/&lt;tab&gt;/&lt;item&gt;.html")</code></td><td>false</td></tr>
+</table>
+<div class="callout"><strong>A trap with exists().</strong> The Vite development server answers an unknown path
+with <code>index.html</code> and status 200, so <code>exists()</code> can say true for a file that is not there. That
+is why the Home tab reads its manifest directly instead of letting the manifest system probe for a
+directory registry that does not exist, and why <code>scriptRunner.js</code> checks the content type before
+importing a script.</div>
+<p><code>listDirectory</code> depends on the server producing an HTML listing. Its one caller is a
+<code>drawRegistry</code> branch in <code>manifest.get()</code> that nothing reaches (no code asks for
+<code>manifest.get("drawRegistry")</code>), and that branch would find nothing anyway: it passes a relative path
+and filters the returned strings for an <code>isDirectory</code> field they do not have.</p>
+
+<h2>Building paths: fileLayer.path</h2>
+<table>
+<tr><th>Helper</th><th>Gives</th></tr>
+<tr><td><code>directoryRegistry(basedir)</code></td><td><code>/&lt;basedir&gt;/directoryRegistry.json</code></td></tr>
+<tr><td><code>categoryManifest(basedir, category)</code></td><td><code>/&lt;basedir&gt;/&lt;category&gt;/manifest.json</code></td></tr>
+<tr><td><code>flatManifest(basedir)</code></td><td><code>/&lt;basedir&gt;/manifest.json</code></td></tr>
+<tr><td><code>helpHtml(tab, item)</code></td><td><code>/help/&lt;tab&gt;/&lt;item&gt;.html</code></td></tr>
+<tr><td><code>script(tab, item)</code></td><td><code>/&lt;tab&gt;/&lt;item&gt;.js</code></td></tr>
+<tr><td><code>patternScript(category, file)</code></td><td><code>/patterns/&lt;category&gt;/&lt;file&gt;.js</code></td></tr>
+<tr><td><code>galleryScript(file)</code></td><td><code>/gallery/Scripts/&lt;file&gt;.js</code></td></tr>
+<tr><td><code>utilityScript(category, file)</code></td><td><code>/utilities/&lt;category&gt;/&lt;file&gt;.js</code></td></tr>
+</table>
+<p>The script helpers take a name with or without <code>.js</code> and always give exactly one.</p>
+<p>In practice only the three manifest helpers are used (by <code>manifest.js</code>). The tabs still write their
+own script and help paths inline (for example <code>`/patterns/${category}/${filename}.js`</code> in
+<code>patternsDisplay.js</code>). Moving them onto these helpers is unfinished work, not a problem: the paths
+agree.</p>
+
+<h2>Removed 31 October 2026</h2>
+<p><code>normalizeHelpPath</code>, <code>normalizeScriptPath</code>, <code>normalizePatternPath</code>, <code>normalizeGalleryScript</code> and <code>normalizeUtilityPath</code> each just called the matching <code>path</code> helper. Nothing called them. They are gone; use the <code>path</code> helpers directly.</p>
+
+</body>
+</html>

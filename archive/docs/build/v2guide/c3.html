@@ -1,0 +1,44 @@
+<h2>Part 3. The new design, from the top down</h2>
+<h3>Cycle 1. The whole in one picture</h3>
+<p>Version 2 runs left to right in four stages (Figure 5). <b>Files</b> hold the generators (one file per drawable
+object or script) and your saved work. A <b>document</b> records what you made: which generators, with which settings,
+where, and which points they share. The document is turned into <b>geometry</b>: paths, stitch lines and named points, all
+as plain data. Geometry becomes <b>output</b>: the screen, a thumbnail, or a printed template.</p>
+<p>You change the document and nothing else, by commands: drag, slide, weld, undo. Under the geometry stage sits the
+<b>kernel</b>, the small vocabulary every drawing is written in. Part 4 is about that vocabulary.</p>
+[[FIG cycle1 | Cycle 1: files, document, geometry, output]]
+<p>Three things are kept strictly apart. The <b>kernel</b> is geometry only: values in, values out, no canvas and no
+memory. <b>Generators</b> describe objects and hold no state. <b>Documents</b> are plain data and hold no code. Most of
+Part 2's weaknesses come from these three being mixed.</p>
+
+<h3>Cycle 2. The blocks</h3>
+<p>Figure 6 opens up the four stages into the blocks that do the work. Arrows show which block uses which; none points
+upward.</p>
+[[FIG cycle2 | Cycle 2: the blocks]]
+<p><b>What you touch.</b> The <i>screens</i> are the six tabs you know. <i>Interaction</i> is the one place mouse and keys
+are understood: it works out what is under the cursor and turns a gesture into a command. <i>Controls</i> builds sliders
+and boxes from an object's settings. The <i>commands table</i> holds every menu item and button in one list. The
+<i>library view</i> is today's category list builder, kept as it is.</p>
+<p><b>What keeps track.</b> <i>Commands and history</i> is the only way the document changes; it keeps a copy of the document
+before each change, which is what makes undo work. <i>Session</i> holds what you are looking at (selection, mode, zoom),
+which is never saved and never undone. The <i>document</i> is what you made.</p>
+<p><b>The drawing model</b> (shaded). The <i>evaluator</i> turns the document into geometry, layer by layer, using the
+<i>generators</i> and the <i>kernel</i>. The <i>renderers</i> are the only code that paints: screen, thumbnail, SVG,
+PDF.</p>
+<p><b>Files and scripts.</b> The <i>script host</i> runs each script in its own sealed room, so nothing carries over.
+<i>Catalog and storage</i> is the only door to files: the lists you see are worked out from the folders, so there is
+nothing to rebuild or keep in step. The <i>Node service</i> does the writing and watches the folders.</p>
+
+<h3>Cycle 3. Three actions, followed through the blocks</h3>
+<p><b>Dragging a handle.</b> Figure 7 follows one drag on a Parabola layer whose corner another layer is attached to.
+Look at step 4: the drag changes one entry in the point table, and nothing else. Everything after that is recomputed from
+the document, which is why nothing can be left out of step.</p>
+[[FIG walk_drag | Dragging a handle, block by block]]
+<p><b>Adding a script.</b> You save a file into a library folder. The Node service notices, reads the file's description
+without running it, and tells the open program, which adds the item to its list (Figure 8). Edit the file in VS Code and
+save again, and an open drawing reruns with your settings kept.</p>
+[[FIG dynamic_add | Adding a script by saving a file]]
+<p><b>Undo.</b> Before each command, the whole document is copied onto the history (Figure 9). Undo puts the previous copy
+back; redo moves forward again. "Unsaved changes" just means you are not at the position where you last saved. Undo back
+to it, and the figure is clean again.</p>
+[[FIG undo_stack | The history: one copy of the document per step]]

@@ -1,0 +1,50 @@
+{
+  // === Editor appearance ===
+ "editor.autoIndent": "full",
+  "editor.fontSize": 14,
+  "editor.formatOnSave": false,
+  "editor.formatOnPaste": false,
+  "editor.formatOnType": false,
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.wordWrap": "on",
+  "editor.minimap.enabled": false,
+  "workbench.iconTheme": "material-icon-theme",
+  "workbench.colorTheme": "Light Modern",
+
+  // === Files & saving ===
+  "files.autoSave": "off",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.exclude": {
+    "**/.git": true,
+    "**/node_modules": true,
+    "**/dist": true
+  },
+
+  // === Emacs integration ===
+ // "emacs-mcx.cursorStyle": "line",
+ // "emacs-mcx.showMarkInStatusBar": true,
+ // "emacs-mcx.useMetaPrefixEscape": false,
+
+  // === JavaScript / TypeScript ===
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "eslint.format.enable": true,
+
+
+  // === Terminal ===
+  "terminal.integrated.shellIntegration.enabled": true,
+  "terminal.integrated.scrollback": 5000,
+
+  // === Local history (Sketchpad's Script history reads it) ===
+  // VS Code keeps a copy of a file at each save; the default is 50 per file,
+  // a few hours of save-run-change work. Script history in Sketchpad
+  // (caption menu v) lists these copies, so keep more of them.
+  "workbench.localHistory.maxFileEntries": 500,
+
+  // === Misc ===
+  "window.zoomLevel": 0,
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false
+}

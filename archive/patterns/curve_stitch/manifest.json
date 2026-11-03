@@ -1,0 +1,67 @@
+[
+  {
+    "filename": "inverseCurved",
+    "path": "inverseCurved.js",
+    "title": "Circular Inverse Star"
+  },
+  {
+    "filename": "circularParabolaInnerStar",
+    "path": "circularParabolaInnerStar.js",
+    "title": "Circular Parabola & Inner Star"
+  },
+  {
+    "filename": "curvedArcsInnerStar",
+    "path": "curvedArcsInnerStar.js",
+    "title": "curvedArcsInnerStar.js"
+  },
+  {
+    "filename": "fourInverseStar",
+    "path": "fourInverseStar.js",
+    "title": "Four Inverse Stars"
+  },
+  {
+    "filename": "innerStar",
+    "path": "innerStar.js",
+    "title": "Inner Star"
+  },
+  {
+    "filename": "manyParabolas",
+    "path": "manyParabolas.js",
+    "title": "Many Parabolas"
+  },
+  {
+    "filename": "regularCorners",
+    "path": "regularCorners.js",
+    "title": "Regular Polycon Corners"
+  },
+  {
+    "filename": "regularPolygon",
+    "path": "regularPolygon.js",
+    "title": "Regular Polygon"
+  },
+  {
+    "filename": "regularTouching",
+    "path": "regularTouching.js",
+    "title": "Regular Polygon Touching"
+  },
+  {
+    "filename": "twistedBentArms",
+    "path": "twistedBentArms.js",
+    "title": "Twisted & Bent Parabola"
+  },
+  {
+    "filename": "twoParabolas",
+    "path": "twoParabolas.js",
+    "title": "Two Parabolas"
+  },
+  {
+    "filename": "twoMoreParabolas",
+    "path": "twoMoreParabolas.js",
+    "title": "Two Parabolas & Twist"
+  },
+  {
+    "filename": "twoPolygons",
+    "path": "twoPolygons.js",
+    "title": "twoPolygons"
+  }
+]

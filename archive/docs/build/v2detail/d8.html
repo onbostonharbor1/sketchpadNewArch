@@ -1,0 +1,58 @@
+<h2>20.0 RISKS AND QUESTIONS FOR ANALYSIS</h2>
+<h3>20.1 Risks</h3>
+<table class="small">
+<tr><th>No.</th><th>Risk</th><th>Likelihood / effect</th><th>Mitigation in this design</th></tr>
+<tr><td>K-1</td><td>The rebuild takes long enough that V1 and V2 drift, and the owner maintains two programs.</td><td>High / high</td><td>Checkpoints each usable on their own; V1 frozen except fixes; regression copies tie the two; cut-over only at CP-8.</td></tr>
+<tr><td>K-2</td><td>The kernel's abstraction (paths, connectors) does not fit some of the owner's playful objects, and they lose what made them interesting.</td><td>Medium / high</td><td>Feature lists agreed per object before rewriting (FR-6.3.9); playpen scripts stay as scripts; Circular Parabola (Multi) and Linked Circles named as tests of the kernel.</td></tr>
+<tr><td>K-3</td><td>Readability is lost to generality: a kernel of many small parts is harder to follow than V1's one-file-per-object.</td><td>Medium / high</td><td>DR-2.5, DR-5.5, DR-17.3; a generator fits on a screen; kernel parts are named for what they draw.</td></tr>
+<tr><td>K-4</td><td>Evaluation is too slow for dragging large figures without a framework's tricks.</td><td>Medium / medium</td><td>Per-layer memoisation (DR-6.6), workers (DR-16.5), budgets (DR-16.4); measured from CP-1.</td></tr>
+<tr><td>K-5</td><td>Snapshot undo uses too much memory on large figures.</td><td>Low / medium</td><td>Structural sharing; limits in DR-7.2.</td></tr>
+<tr><td>K-6</td><td>Feature names (tips, intersections) renumber unexpectedly, and discs jump.</td><td>Medium / high for templates</td><td>Angle numbering (DR-4.9); tracking with a 5 px rule and a "lost" state (13.7, DR-6.3); rule-based definitions later (DR-13.5).</td></tr>
+<tr><td>K-7</td><td>The iframe host breaks scripts that reach into the page in ways the survey missed.</td><td>Medium / low</td><td>The ledger (DR-9.7); preview-only and blocked are legitimate outcomes.</td></tr>
+<tr><td>K-8</td><td>An AI assistant building V2 repeats past failures: deleting unrelated code, shortcutting existing patterns.</td><td>High / high</td><td>The removed-code check on every commit; layer import check; the owner's review per branch; this document as the pattern to follow.</td></tr>
+<tr><td>K-9</td><td>Learn leaks work or invites unreviewed changes.</td><td>Low / medium</td><td>DR-14.8 to 14.10.</td></tr>
+<tr><td>K-10</td><td>True-scale output is wrong on a particular printer.</td><td>Medium / high</td><td>Calibration line on every print (DR-10.5); SVG for a known-good path.</td></tr>
+</table>
+<h3>20.2 Questions for analysts</h3>
+<p>The owner would most value an outside view on these. Each names the sections it concerns.</p>
+<table class="small">
+<tr><th>No.</th><th>Question</th><th>Sections</th></tr>
+<tr><td>Q-1</td><td>Is "paths, shapers, connectors, finders" the right kernel? What common string-art constructions would it express badly?</td><td>4, 13</td></tr>
+<tr><td>Q-2</td><td>Is a weld as a shared point number, with attachments as one-way references, sufficient, or will the owner need two-way constraints (a point on two curves at once)?</td><td>6</td></tr>
+<tr><td>Q-3</td><td>Is whole-document snapshot undo adequate at the stated scale, or should commands record inverse operations?</td><td>7</td></tr>
+<tr><td>Q-4</td><td>Can per-layer memoisation and workers meet DR-17.1 in plain JavaScript, or is a different drawing approach (WebGL, OffscreenCanvas) needed for large figures?</td><td>6.2, 16.3, 17</td></tr>
+<tr><td>Q-5</td><td>Is the iframe host the right isolation for legacy scripts, versus a Worker with a canvas proxy, given that 88 scripts paint with a bare context?</td><td>9</td></tr>
+<tr><td>Q-6</td><td>Is "folders are the truth" with small metadata files robust on Windows with VS Code editing the same files (watcher reliability, partial writes, case-insensitive names)?</td><td>8</td></tr>
+<tr><td>Q-7</td><td>How should feature names stay stable as shapes change? Is angle numbering plus tracking enough, or is a different identity (topological, by construction) needed?</td><td>4.7, 13.7</td></tr>
+<tr><td>Q-8</td><td>Is the regression design (geometry fingerprints, picture fallback, accept per item) the right balance of strictness and noise?</td><td>16.1</td></tr>
+<tr><td>Q-9</td><td>What does the design make hard that the owner will probably want next (3D boards, plotters, image to thread, layered mounting)?</td><td>10, 13.8</td></tr>
+<tr><td>Q-10</td><td>Where is the design over-built for one person's hobby tool, and what could be dropped without loss?</td><td>all</td></tr>
+<tr><td>Q-11</td><td>Is the checkpoint order right? Would a different order give the owner something usable sooner?</td><td>19</td></tr>
+<tr><td>Q-12</td><td>Readability: does any part of this design force code the owner will find hard to read, and is there a plainer way?</td><td>2.3, 5, 17</td></tr>
+</table>
+<h3>20.3 What an analyst should not need to settle</h3>
+<p>The open items of FS 12 (O-1 to O-16) are the owner's decisions: names, sizes, colours, retention, which AI service. An
+analyst may comment, but the design is written to work with any answer.</p>
+
+<h2>21.0 REQUIREMENT INDEX</h2>
+<p>Each FS requirement area, and where this document details it.</p>
+<table class="small">
+<tr><th>FS</th><th>Subject</th><th>This document</th></tr>
+<tr><td>6.1</td><td>General</td><td>2.3, 3, 17</td></tr>
+<tr><td>6.2</td><td>Kernel</td><td>4</td></tr>
+<tr><td>6.3, 6.4</td><td>Generators, settings</td><td>5</td></tr>
+<tr><td>6.5</td><td>Documents, point table, welds</td><td>6</td></tr>
+<tr><td>6.6, 6.7</td><td>Commands, undo, session</td><td>7</td></tr>
+<tr><td>6.8, 6.9</td><td>Catalog, storage, adding by saving</td><td>8</td></tr>
+<tr><td>6.10</td><td>Script host, ingestion</td><td>9</td></tr>
+<tr><td>6.11</td><td>Rendering, output</td><td>10</td></tr>
+<tr><td>6.12, 6.13</td><td>Menus, commands at three levels</td><td>11</td></tr>
+<tr><td>6.14</td><td>Errors</td><td>12</td></tr>
+<tr><td>6.15</td><td>Sweep</td><td>15</td></tr>
+<tr><td>6.16</td><td>Journals, Learn</td><td>14</td></tr>
+<tr><td>6.17, 6.18</td><td>Regression, robustness</td><td>16.1 to 16.3</td></tr>
+<tr><td>6.19 to 6.21</td><td>Exploration, templates, intersections</td><td>13</td></tr>
+<tr><td>6.22</td><td>Ideabook hints</td><td>16.4</td></tr>
+<tr><td>10, 11</td><td>Construction, verification</td><td>19, and the AT- tables throughout</td></tr>
+</table>
+<div class="endmark">END OF DOCUMENT</div>

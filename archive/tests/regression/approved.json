@@ -1,0 +1,1395 @@
+{
+ "/gallery/Scripts/Curve Stitch/arcsAndInner.js": {
+  "lines": 552,
+  "fingerprint": "5ccaac09c43beef1",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Curve_Stitch_arcsAndInner.js.png"
+ },
+ "/gallery/Scripts/Curve Stitch/curveStitch.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Curve_Stitch_curveStitch.js.png"
+ },
+ "/gallery/Scripts/Curve Stitch/joinedParabs.js": {
+  "lines": 160,
+  "fingerprint": "1770896054bc5f05",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Curve_Stitch_joinedParabs.js.png"
+ },
+ "/gallery/Scripts/Curve Stitch/manyJoinedParabs.js": {
+  "lines": 160,
+  "fingerprint": "91b765639a748725",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Curve_Stitch_manyJoinedParabs.js.png"
+ },
+ "/gallery/Scripts/Curve Stitch/manyRowsColumns.js": {
+  "lines": 160,
+  "fingerprint": "d1f1bdc08b0f4d48",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Curve_Stitch_manyRowsColumns.js.png"
+ },
+ "/gallery/Scripts/Curve Stitch/ovalBoat.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Curve_Stitch_ovalBoat.js.png"
+ },
+ "/gallery/Scripts/Curve Stitch/overlappingStars1.js": {
+  "lines": 314,
+  "fingerprint": "0cbcbfc6ba97a8c5",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Curve_Stitch_overlappingStars1.js.png"
+ },
+ "/gallery/Scripts/Curve Stitch/polygonCorner.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Curve_Stitch_polygonCorner.js.png"
+ },
+ "/gallery/Scripts/Curve Stitch/tractrix.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Curve_Stitch_tractrix.js.png"
+ },
+ "/gallery/Scripts/Curve Stitch/weaving.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Curve_Stitch_weaving.js.png"
+ },
+ "/gallery/Scripts/Curves/cissoidDiocles.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Curves_cissoidDiocles.js.png"
+ },
+ "/gallery/Scripts/Curves/cissoidSimplified.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Curves_cissoidSimplified.js.png"
+ },
+ "/gallery/Scripts/Curves/nicodemus.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Curves_nicodemus.js.png"
+ },
+ "/gallery/Scripts/Elliptical/ellipseCurveStitching.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Elliptical_ellipseCurveStitching.js.png"
+ },
+ "/gallery/Scripts/Elliptical/generativeModulated.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Elliptical_generativeModulated.js.png"
+ },
+ "/gallery/Scripts/Elliptical/modulatdCircle2.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Elliptical_modulatdCircle2.js.png"
+ },
+ "/gallery/Scripts/Envelopes/chladni.js": {
+  "lines": 575,
+  "fingerprint": "9ce017e5c54e8bfd",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Envelopes_chladni.js.png"
+ },
+ "/gallery/Scripts/Envelopes/cycloidLike.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Envelopes_cycloidLike.js.png"
+ },
+ "/gallery/Scripts/Envelopes/harmongraph.js": {
+  "lines": 2000,
+  "fingerprint": "63706d456f5ebd4d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Envelopes_harmongraph.js.png"
+ },
+ "/gallery/Scripts/Envelopes/parabolas.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Envelopes_parabolas.js.png"
+ },
+ "/gallery/Scripts/Envelopes/rotaryHarmonograph.js": {
+  "lines": 3999,
+  "fingerprint": "5c4fc489c157486e",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Envelopes_rotaryHarmonograph.js.png"
+ },
+ "/gallery/Scripts/Envelopes/superformula.js": {
+  "lines": 501,
+  "fingerprint": "782a35afc2eae664",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Envelopes_superformula.js.png"
+ },
+ "/gallery/Scripts/Envelopes/superformulaFamilies.js": {
+  "lines": 601,
+  "fingerprint": "6e23119032cccaeb",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Envelopes_superformulaFamilies.js.png"
+ },
+ "/gallery/Scripts/Experimental/concentricCircles.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Experimental_concentricCircles.js.png"
+ },
+ "/gallery/Scripts/Experimental/maurer.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Experimental_maurer.js.png"
+ },
+ "/gallery/Scripts/Experimental/variedEllipse.js": {
+  "lines": 219,
+  "fingerprint": "7bb289251246e7bb",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Experimental_variedEllipse.js.png"
+ },
+ "/gallery/Scripts/General parametric/3Lobed.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_General_parametric_3Lobed.js.png"
+ },
+ "/gallery/Scripts/General parametric/strophoid.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_General_parametric_strophoid.js.png"
+ },
+ "/gallery/Scripts/Generative/barnsleyFern.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": false,
+  "picture": "gallery_Scripts_Generative_barnsleyFern.js.png"
+ },
+ "/gallery/Scripts/Generative/boat.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Generative_boat.js.png"
+ },
+ "/gallery/Scripts/Generative/butterfly.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Generative_butterfly.js.png"
+ },
+ "/gallery/Scripts/Generative/lorenzAttractor.js": {
+  "lines": 7999,
+  "fingerprint": "73a1585cd8e977f6",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Generative_lorenzAttractor.js.png"
+ },
+ "/gallery/Scripts/Generative/phyllotaxisSpirals.js": {
+  "lines": 750,
+  "fingerprint": "5484253f9bfc4c68",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Generative_phyllotaxisSpirals.js.png"
+ },
+ "/gallery/Scripts/Generative/voronoi.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "Failed to fetch dynamically imported module: http://localhost:5173/gallery/Scripts/Generative/voronoi.js?import&t=1793639499718",
+  "stable": false,
+  "picture": "gallery_Scripts_Generative_voronoi.js.png"
+ },
+ "/gallery/Scripts/Multiple/fourParabolicLike.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Multiple_fourParabolicLike.js.png"
+ },
+ "/gallery/Scripts/Multiple/manyParametric.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Multiple_manyParametric.js.png"
+ },
+ "/gallery/Scripts/Multiple/parametricSketcher.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Multiple_parametricSketcher.js.png"
+ },
+ "/gallery/Scripts/Multiple/roseAndLissajous.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Multiple_roseAndLissajous.js.png"
+ },
+ "/gallery/Scripts/Named parametric/LISSAJOUS100.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_LISSAJOUS100.js.png"
+ },
+ "/gallery/Scripts/Named parametric/cardiodFromCircles.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_cardiodFromCircles.js.png"
+ },
+ "/gallery/Scripts/Named parametric/cochleoid.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_cochleoid.js.png"
+ },
+ "/gallery/Scripts/Named parametric/epicycloid.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_epicycloid.js.png"
+ },
+ "/gallery/Scripts/Named parametric/epitrochoid.js": {
+  "lines": 751,
+  "fingerprint": "8cba6c1a0070e26e",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_epitrochoid.js.png"
+ },
+ "/gallery/Scripts/Named parametric/epitrochoid1.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_epitrochoid1.js.png"
+ },
+ "/gallery/Scripts/Named parametric/epitrochoid_good.js": {
+  "lines": 751,
+  "fingerprint": "8cba6c1a0070e26e",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_epitrochoid_good.js.png"
+ },
+ "/gallery/Scripts/Named parametric/hypocycloid.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_hypocycloid.js.png"
+ },
+ "/gallery/Scripts/Named parametric/hypocycloidEvolute.js": {
+  "lines": 2402,
+  "fingerprint": "842ea2068a09ef37",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_hypocycloidEvolute.js.png"
+ },
+ "/gallery/Scripts/Named parametric/hypocycloidMany.js": {
+  "lines": 3000,
+  "fingerprint": "b4784dd686efb0f5",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_hypocycloidMany.js.png"
+ },
+ "/gallery/Scripts/Named parametric/hypotrochoid.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_hypotrochoid.js.png"
+ },
+ "/gallery/Scripts/Named parametric/hypotrochoid1.js": {
+  "lines": 628,
+  "fingerprint": "a6d4f3f268aeccba",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_hypotrochoid1.js.png"
+ },
+ "/gallery/Scripts/Named parametric/hypotrochoidInteractive.js": {
+  "lines": 3702,
+  "fingerprint": "73ac3469d16ba943",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_hypotrochoidInteractive.js.png"
+ },
+ "/gallery/Scripts/Named parametric/lissajois1.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_lissajois1.js.png"
+ },
+ "/gallery/Scripts/Named parametric/lissajous.js": {
+  "lines": 800,
+  "fingerprint": "5449a7f01276bdf2",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_lissajous.js.png"
+ },
+ "/gallery/Scripts/Named parametric/lissajous3.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_lissajous3.js.png"
+ },
+ "/gallery/Scripts/Named parametric/lissajous4.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_lissajous4.js.png"
+ },
+ "/gallery/Scripts/Named parametric/lissajous5.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_lissajous5.js.png"
+ },
+ "/gallery/Scripts/Named parametric/lissajousCurveStitch.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_lissajousCurveStitch.js.png"
+ },
+ "/gallery/Scripts/Named parametric/roseCurve.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_roseCurve.js.png"
+ },
+ "/gallery/Scripts/Named parametric/roseCurveInterative.js": {
+  "lines": 62,
+  "fingerprint": "7507f087f4279775",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_roseCurveInterative.js.png"
+ },
+ "/gallery/Scripts/Named parametric/roseCurvesMany.js": {
+  "lines": 2000,
+  "fingerprint": "a800146ef3020122",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_roseCurvesMany.js.png"
+ },
+ "/gallery/Scripts/Named parametric/roseRhodena.js": {
+  "lines": 502,
+  "fingerprint": "b26eb7e57f8958ba",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Named_parametric_roseRhodena.js.png"
+ },
+ "/gallery/Scripts/Pursuit/copilot1.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Pursuit_copilot1.js.png"
+ },
+ "/gallery/Scripts/Pursuit/copilotAnimation.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Pursuit_copilotAnimation.js.png"
+ },
+ "/gallery/Scripts/Pursuit/pursuit.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Pursuit_pursuit.js.png"
+ },
+ "/gallery/Scripts/Pursuit/pursuit2.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Pursuit_pursuit2.js.png"
+ },
+ "/gallery/Scripts/Pursuit/pursuit3.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Pursuit_pursuit3.js.png"
+ },
+ "/gallery/Scripts/Pursuit/pursuit4.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Pursuit_pursuit4.js.png"
+ },
+ "/gallery/Scripts/Pursuit/pursuitDynamic5.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Pursuit_pursuitDynamic5.js.png"
+ },
+ "/gallery/Scripts/Pursuit/pursuitMice.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Pursuit_pursuitMice.js.png"
+ },
+ "/gallery/Scripts/Pursuit/pursuitStatic5.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Pursuit_pursuitStatic5.js.png"
+ },
+ "/gallery/Scripts/Pursuit/pusuitSurface.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Pursuit_pusuitSurface.js.png"
+ },
+ "/gallery/Scripts/Rose/rose.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Rose_rose.js.png"
+ },
+ "/gallery/Scripts/Spiral/golden.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Spiral_golden.js.png"
+ },
+ "/gallery/Scripts/Spiral/nautilus2.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Spiral_nautilus2.js.png"
+ },
+ "/gallery/Scripts/Spiral/nautilusInteractive.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Spiral_nautilusInteractive.js.png"
+ },
+ "/gallery/Scripts/Spiral/polygonalSpiral.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Spiral_polygonalSpiral.js.png"
+ },
+ "/gallery/Scripts/Unicorns/bezierBlossom.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Unicorns_bezierBlossom.js.png"
+ },
+ "/gallery/Scripts/Unicorns/curveStitchEditor.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Unicorns_curveStitchEditor.js.png"
+ },
+ "/gallery/Scripts/Unicorns/radialPetals.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Unicorns_radialPetals.js.png"
+ },
+ "/gallery/Scripts/Unicorns/ribbon1.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Unicorns_ribbon1.js.png"
+ },
+ "/gallery/Scripts/Unicorns/ribbon2.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "gallery_Scripts_Unicorns_ribbon2.js.png"
+ },
+ "/gallery/Scripts/Unicorns/ribbonAnimated.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": false,
+  "picture": "gallery_Scripts_Unicorns_ribbonAnimated.js.png"
+ },
+ "/patterns/builds/OverlappingStars.js": {
+  "lines": 314,
+  "fingerprint": "a8cf779a18a60088",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_builds_OverlappingStars.js.png"
+ },
+ "/patterns/builds/firstBuild.js": {
+  "lines": 208,
+  "fingerprint": "5f5c9a57fed9be6d",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_builds_firstBuild.js.png"
+ },
+ "/patterns/builds/parabolasWithinCircles.js": {
+  "lines": 252,
+  "fingerprint": "1d90dbdf14dacb48",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_builds_parabolasWithinCircles.js.png"
+ },
+ "/patterns/circles/armsInCircles.js": {
+  "lines": 382,
+  "fingerprint": "681c0d0bd3d5a11b",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_circles_armsInCircles.js.png"
+ },
+ "/patterns/circles/circle.js": {
+  "lines": 200,
+  "fingerprint": "0741317187dc508c",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_circles_circle.js.png"
+ },
+ "/patterns/circles/cycloid.js": {
+  "lines": 480,
+  "fingerprint": "8701f2f22ec61ee6",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_circles_cycloid.js.png"
+ },
+ "/patterns/circles/cycloid0209_152200.js": {
+  "lines": 480,
+  "fingerprint": "39f5e60c6cdcc950",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_circles_cycloid0209_152200.js.png"
+ },
+ "/patterns/circles/ellipseEndTaper.js": {
+  "lines": 169,
+  "fingerprint": "ba8d046fc372b1ab",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_circles_ellipseEndTaper.js.png"
+ },
+ "/patterns/circles/ellipseFull.js": {
+  "lines": 200,
+  "fingerprint": "f417fa2596d9afa5",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_circles_ellipseFull.js.png"
+ },
+ "/patterns/circles/ellipseStartEnd.js": {
+  "lines": 169,
+  "fingerprint": "d9b9e026db7072c2",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_circles_ellipseStartEnd.js.png"
+ },
+ "/patterns/circles/ellipseStartTaper.js": {
+  "lines": 169,
+  "fingerprint": "fa203235e14a8b24",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_circles_ellipseStartTaper.js.png"
+ },
+ "/patterns/circles/ellipseTaper.js": {
+  "lines": 169,
+  "fingerprint": "7c39a76531844a49",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_circles_ellipseTaper.js.png"
+ },
+ "/patterns/circles/gradientCircularParabola.js": {
+  "lines": 924,
+  "fingerprint": "6339d8e27c03fb85",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_circles_gradientCircularParabola.js.png"
+ },
+ "/patterns/circles/linesInThree.js": {
+  "lines": 971,
+  "fingerprint": "c06b244dd82da8db",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_circles_linesInThree.js.png"
+ },
+ "/patterns/circles/skippingNegative.js": {
+  "lines": 269,
+  "fingerprint": "537c8cb94fe07533",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_circles_skippingNegative.js.png"
+ },
+ "/patterns/circles/skippingPositive.js": {
+  "lines": 149,
+  "fingerprint": "106d8c8a853d7553",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_circles_skippingPositive.js.png"
+ },
+ "/patterns/circles/threeEllipses.js": {
+  "lines": 624,
+  "fingerprint": "605a421d2ba54ea9",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_circles_threeEllipses.js.png"
+ },
+ "/patterns/circles/twoEllipses.js": {
+  "lines": 958,
+  "fingerprint": "81ec2bf1325b9dbe",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_circles_twoEllipses.js.png"
+ },
+ "/patterns/circles/whirlsInCircle.js": {
+  "lines": 600,
+  "fingerprint": "825ec824fde0cd3c",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_circles_whirlsInCircle.js.png"
+ },
+ "/patterns/curve_stitch/circularParabolaInnerStar.js": {
+  "lines": 332,
+  "fingerprint": "2f1ac15b1ba91c82",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_curve_stitch_circularParabolaInnerStar.js.png"
+ },
+ "/patterns/curve_stitch/curvedArcsInnerStar.js": {
+  "lines": 552,
+  "fingerprint": "53ffb0792859b50a",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_curve_stitch_curvedArcsInnerStar.js.png"
+ },
+ "/patterns/curve_stitch/fourInverseStar.js": {
+  "lines": 840,
+  "fingerprint": "78cce1a4966fe2cd",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_curve_stitch_fourInverseStar.js.png"
+ },
+ "/patterns/curve_stitch/innerStar.js": {
+  "lines": 126,
+  "fingerprint": "d879aeb2a9a23ea9",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_curve_stitch_innerStar.js.png"
+ },
+ "/patterns/curve_stitch/inverseCurved.js": {
+  "lines": 372,
+  "fingerprint": "5b36e27a4449fe08",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_curve_stitch_inverseCurved.js.png"
+ },
+ "/patterns/curve_stitch/manyParabolas.js": {
+  "lines": 460,
+  "fingerprint": "039123201102eae4",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_curve_stitch_manyParabolas.js.png"
+ },
+ "/patterns/curve_stitch/regularCorners.js": {
+  "lines": 63,
+  "fingerprint": "49e4c98e6453fc5f",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_curve_stitch_regularCorners.js.png"
+ },
+ "/patterns/curve_stitch/regularPolygon.js": {
+  "lines": 84,
+  "fingerprint": "4eeca560ded83adf",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_curve_stitch_regularPolygon.js.png"
+ },
+ "/patterns/curve_stitch/regularTouching.js": {
+  "lines": 84,
+  "fingerprint": "868b180815534801",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_curve_stitch_regularTouching.js.png"
+ },
+ "/patterns/curve_stitch/twistedBentArms.js": {
+  "lines": 41,
+  "fingerprint": "a01d289a0a955f88",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_curve_stitch_twistedBentArms.js.png"
+ },
+ "/patterns/curve_stitch/twoMoreParabolas.js": {
+  "lines": 42,
+  "fingerprint": "0157488893a30a0e",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_curve_stitch_twoMoreParabolas.js.png"
+ },
+ "/patterns/curve_stitch/twoParabolas.js": {
+  "lines": 22,
+  "fingerprint": "811a72d9d737155e",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_curve_stitch_twoParabolas.js.png"
+ },
+ "/patterns/curve_stitch/twoPolygons.js": {
+  "lines": 312,
+  "fingerprint": "fdfabe806eead9b1",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_curve_stitch_twoPolygons.js.png"
+ },
+ "/patterns/figures/circleInSquare.js": {
+  "lines": 352,
+  "fingerprint": "26fb2def3e3e2f2c",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_figures_circleInSquare.js.png"
+ },
+ "/patterns/figures/complicatedParabolas.js": {
+  "lines": 126,
+  "fingerprint": "41ddc1c701b6aeb6",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_figures_complicatedParabolas.js.png"
+ },
+ "/patterns/figures/lotsInCircles.js": {
+  "lines": 651,
+  "fingerprint": "adfb1031e4abef43",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_figures_lotsInCircles.js.png"
+ },
+ "/patterns/figures/lotsOfParabs.js": {
+  "lines": 684,
+  "fingerprint": "7b7ebb7a49a74cee",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_figures_lotsOfParabs.js.png"
+ },
+ "/patterns/figures/moreInCircles.js": {
+  "lines": 900,
+  "fingerprint": "52e414bb321f4784",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_figures_moreInCircles.js.png"
+ },
+ "/patterns/fundamental/radiate.js": {
+  "lines": 21,
+  "fingerprint": "354faabbf4ad8fd0",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_fundamental_radiate.js.png"
+ },
+ "/patterns/fundamental/radiateInBlues.js": {
+  "lines": 107,
+  "fingerprint": "0eca57e1a549617c",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_fundamental_radiateInBlues.js.png"
+ },
+ "/patterns/fundamental/radiateInCircle.js": {
+  "lines": 460,
+  "fingerprint": "77991dad46c72c60",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_fundamental_radiateInCircle.js.png"
+ },
+ "/patterns/parametric/param10.js": {
+  "lines": 6030,
+  "fingerprint": "7f66ce6bd085beb5",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param10.js.png"
+ },
+ "/patterns/parametric/param11.js": {
+  "lines": 6030,
+  "fingerprint": "1a8c9d3596b157a7",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param11.js.png"
+ },
+ "/patterns/parametric/param12.js": {
+  "lines": 6030,
+  "fingerprint": "4202138343e49a52",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param12.js.png"
+ },
+ "/patterns/parametric/param13.js": {
+  "lines": 6030,
+  "fingerprint": "7e719f997541f68e",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param13.js.png"
+ },
+ "/patterns/parametric/param14.js": {
+  "lines": 6030,
+  "fingerprint": "7e21c2109d3f72a6",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param14.js.png"
+ },
+ "/patterns/parametric/param15.js": {
+  "lines": 6030,
+  "fingerprint": "84156ca4070bf044",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param15.js.png"
+ },
+ "/patterns/parametric/param16.js": {
+  "lines": 6030,
+  "fingerprint": "c92a0e71aed96038",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param16.js.png"
+ },
+ "/patterns/parametric/param17.js": {
+  "lines": 6030,
+  "fingerprint": "9bbf8cb6b510bac6",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param17.js.png"
+ },
+ "/patterns/parametric/param18.js": {
+  "lines": 154,
+  "fingerprint": "f14be7deb169f81b",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param18.js.png"
+ },
+ "/patterns/parametric/param19.js": {
+  "lines": 6030,
+  "fingerprint": "9bbf8cb6b510bac6",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param19.js.png"
+ },
+ "/patterns/parametric/param2.js": {
+  "lines": 1451,
+  "fingerprint": "3608d78f23617f4a",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param2.js.png"
+ },
+ "/patterns/parametric/param20.js": {
+  "lines": 6030,
+  "fingerprint": "2e0949c6f37c51f9",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param20.js.png"
+ },
+ "/patterns/parametric/param21.js": {
+  "lines": 6030,
+  "fingerprint": "a0a4fad7968abd09",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param21.js.png"
+ },
+ "/patterns/parametric/param22.js": {
+  "lines": 6030,
+  "fingerprint": "db5d316accef5c9b",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param22.js.png"
+ },
+ "/patterns/parametric/param23.js": {
+  "lines": 6030,
+  "fingerprint": "ee4f363b65b479f9",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param23.js.png"
+ },
+ "/patterns/parametric/param25.js": {
+  "lines": 6030,
+  "fingerprint": "7f66ce6bd085beb5",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param25.js.png"
+ },
+ "/patterns/parametric/param26.js": {
+  "lines": 6027,
+  "fingerprint": "5406eaa75dfbe9dd",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param26.js.png"
+ },
+ "/patterns/parametric/param27.js": {
+  "lines": 6030,
+  "fingerprint": "ed00a2b2d93ad5c7",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param27.js.png"
+ },
+ "/patterns/parametric/param29.js": {
+  "lines": 41,
+  "fingerprint": "70e490187da5dde6",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param29.js.png"
+ },
+ "/patterns/parametric/param3.js": {
+  "lines": 1451,
+  "fingerprint": "8a79fa63ab7d4797",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param3.js.png"
+ },
+ "/patterns/parametric/param30.js": {
+  "lines": 6030,
+  "fingerprint": "00695b48635510b8",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param30.js.png"
+ },
+ "/patterns/parametric/param4.js": {
+  "lines": 6030,
+  "fingerprint": "504e5e24481761c2",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param4.js.png"
+ },
+ "/patterns/parametric/param5.js": {
+  "lines": 3015,
+  "fingerprint": "3e8a82aee9d22084",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param5.js.png"
+ },
+ "/patterns/parametric/param6.js": {
+  "lines": 3015,
+  "fingerprint": "9956540e2ae513b9",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param6.js.png"
+ },
+ "/patterns/parametric/param7.js": {
+  "lines": 3015,
+  "fingerprint": "b3543208265501e4",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param7.js.png"
+ },
+ "/patterns/parametric/param8.js": {
+  "lines": 6030,
+  "fingerprint": "b53ba90f346098c5",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param8.js.png"
+ },
+ "/patterns/parametric/param9.js": {
+  "lines": 1021,
+  "fingerprint": "a57e04046c174582",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_parametric_param9.js.png"
+ },
+ "/patterns/polar/polar1.js": {
+  "lines": 377,
+  "fingerprint": "6b669439982b3cb5",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_polar_polar1.js.png"
+ },
+ "/patterns/polar/polar10.js": {
+  "lines": 600,
+  "fingerprint": "4c8f4dabeab4301c",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_polar_polar10.js.png"
+ },
+ "/patterns/polar/polar11.js": {
+  "lines": 600,
+  "fingerprint": "77c58b61b1469250",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_polar_polar11.js.png"
+ },
+ "/patterns/polar/polar12.js": {
+  "lines": 600,
+  "fingerprint": "87e431448d18546f",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_polar_polar12.js.png"
+ },
+ "/patterns/polar/polar13.js": {
+  "lines": 600,
+  "fingerprint": "c22929e63e310fc5",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_polar_polar13.js.png"
+ },
+ "/patterns/polar/polar14.js": {
+  "lines": 377,
+  "fingerprint": "92aed6c600ee65ba",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_polar_polar14.js.png"
+ },
+ "/patterns/polar/polar15.js": {
+  "lines": 60,
+  "fingerprint": "09746c542c672a05",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_polar_polar15.js.png"
+ },
+ "/patterns/polar/polar16.js": {
+  "lines": 600,
+  "fingerprint": "67b3a252c0bda510",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_polar_polar16.js.png"
+ },
+ "/patterns/polar/polar17.js": {
+  "lines": 600,
+  "fingerprint": "02cd8e2271879531",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_polar_polar17.js.png"
+ },
+ "/patterns/polar/polar2.js": {
+  "lines": 377,
+  "fingerprint": "c2740d2e15a651fa",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_polar_polar2.js.png"
+ },
+ "/patterns/polar/polar3.js": {
+  "lines": 600,
+  "fingerprint": "530b3cf4af713c27",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_polar_polar3.js.png"
+ },
+ "/patterns/polar/polar4.js": {
+  "lines": 220,
+  "fingerprint": "a2bfa7ba09ecf394",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_polar_polar4.js.png"
+ },
+ "/patterns/polar/polar5.js": {
+  "lines": 600,
+  "fingerprint": "21d7cc9a4b2a1e40",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_polar_polar5.js.png"
+ },
+ "/patterns/polar/polar6.js": {
+  "lines": 600,
+  "fingerprint": "4e7af55901774b53",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_polar_polar6.js.png"
+ },
+ "/patterns/polar/polar7.js": {
+  "lines": 377,
+  "fingerprint": "4780df403ea02c88",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_polar_polar7.js.png"
+ },
+ "/patterns/polar/polar8.js": {
+  "lines": 600,
+  "fingerprint": "b97d1135e694f2f8",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_polar_polar8.js.png"
+ },
+ "/patterns/polar/polar9.js": {
+  "lines": 377,
+  "fingerprint": "79f765186dc4a328",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_polar_polar9.js.png"
+ },
+ "/patterns/pursuit/rabbitStart.js": {
+  "lines": 27,
+  "fingerprint": "e554e446e74ddb34",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_pursuit_rabbitStart.js.png"
+ },
+ "/patterns/spirals/cruciform.js": {
+  "lines": 372,
+  "fingerprint": "e45feda5ec959c4a",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_spirals_cruciform.js.png"
+ },
+ "/patterns/spirals/fermatSpiral.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_spirals_fermatSpiral.js.png"
+ },
+ "/patterns/spirals/funnyEuler.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_spirals_funnyEuler.js.png"
+ },
+ "/patterns/spirals/funnyTriangle.js": {
+  "lines": 124,
+  "fingerprint": "76e88f1e21dd1ca1",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_spirals_funnyTriangle.js.png"
+ },
+ "/patterns/spirals/logSpiral.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_spirals_logSpiral.js.png"
+ },
+ "/patterns/spirals/pureSpiralB.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_spirals_pureSpiralB.js.png"
+ },
+ "/patterns/spirals/spiralInBox.js": {
+  "lines": 124,
+  "fingerprint": "02b1bfca0d2990a2",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_spirals_spiralInBox.js.png"
+ },
+ "/patterns/spirals/spiralInBoxRotated.js": {
+  "lines": 124,
+  "fingerprint": "9f8a7d6554db1825",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_spirals_spiralInBoxRotated.js.png"
+ },
+ "/patterns/spirals/theodorusSpiral.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_spirals_theodorusSpiral.js.png"
+ },
+ "/patterns/stuff/joiningPoints.js": {
+  "lines": 108,
+  "fingerprint": "bd9b6581b315491a",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_stuff_joiningPoints.js.png"
+ },
+ "/patterns/stuff/sineWave.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_stuff_sineWave.js.png"
+ },
+ "/patterns/stuff/sineWavePoints.js": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_stuff_sineWavePoints.js.png"
+ },
+ "/patterns/unicorn/crossHair.js": {
+  "lines": 4,
+  "fingerprint": "8facc490dd47a3cf",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_unicorn_crossHair.js.png"
+ },
+ "/patterns/unicorn/drawInSquare.js": {
+  "lines": 226,
+  "fingerprint": "0e18edec00588f25",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_unicorn_drawInSquare.js.png"
+ },
+ "/patterns/unicorn/linkedCircles.js": {
+  "lines": 80,
+  "fingerprint": "610afd484271b723",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_unicorn_linkedCircles.js.png"
+ },
+ "/patterns/unicorn/multipleCycloids.js": {
+  "lines": 1200,
+  "fingerprint": "621fbd68d7170e93",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_unicorn_multipleCycloids.js.png"
+ },
+ "/patterns/unicorn/mysticRose.js": {
+  "lines": 190,
+  "fingerprint": "0bf21a6cf84831b4",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_unicorn_mysticRose.js.png"
+ },
+ "/patterns/unicorn/mysticRoseEllipse.js": {
+  "lines": 190,
+  "fingerprint": "ca5582b5d877b066",
+  "error": "",
+  "stable": true,
+  "picture": "patterns_unicorn_mysticRoseEllipse.js.png"
+ },
+ "draw:circularParabola": {
+  "lines": 310,
+  "fingerprint": "146d4132867221de",
+  "error": "",
+  "stable": true,
+  "picture": "draw_circularParabola.png"
+ },
+ "draw:circularParabolaMulti": {
+  "lines": 2232,
+  "fingerprint": "2e0ffe2945fa3b2f",
+  "error": "",
+  "stable": true,
+  "picture": "draw_circularParabolaMulti.png"
+ },
+ "draw:cycloid": {
+  "lines": 480,
+  "fingerprint": "39f5e60c6cdcc950",
+  "error": "",
+  "stable": true,
+  "picture": "draw_cycloid.png"
+ },
+ "draw:drawLine": {
+  "lines": 1,
+  "fingerprint": "bd1d44afaded34f0",
+  "error": "",
+  "stable": true,
+  "picture": "draw_drawLine.png"
+ },
+ "draw:inEllipse": {
+  "lines": 219,
+  "fingerprint": "3430fc95100581da",
+  "error": "",
+  "stable": true,
+  "picture": "draw_inEllipse.png"
+ },
+ "draw:inverseStar": {
+  "lines": 210,
+  "fingerprint": "a1844789c7e78753",
+  "error": "",
+  "stable": true,
+  "picture": "draw_inverseStar.png"
+ },
+ "draw:linkedCircles": {
+  "lines": 80,
+  "fingerprint": "610afd484271b723",
+  "error": "",
+  "stable": true,
+  "picture": "draw_linkedCircles.png"
+ },
+ "draw:mysticRose": {
+  "lines": 190,
+  "fingerprint": "3991c1487f84cfca",
+  "error": "",
+  "stable": true,
+  "picture": "draw_mysticRose.png"
+ },
+ "draw:mysticRoseEllipse": {
+  "lines": 190,
+  "fingerprint": "c12fd8a60f13ae3e",
+  "error": "",
+  "stable": true,
+  "picture": "draw_mysticRoseEllipse.png"
+ },
+ "draw:parabola": {
+  "lines": 21,
+  "fingerprint": "a203b7dce01d5c03",
+  "error": "",
+  "stable": true,
+  "picture": "draw_parabola.png"
+ },
+ "draw:parametrics": {
+  "lines": 0,
+  "fingerprint": "da39a3ee5e6b4b0d",
+  "error": "autoFit: #sharedCanvas not found",
+  "stable": true,
+  "picture": "draw_parametrics.png"
+ },
+ "draw:radiate": {
+  "lines": 22,
+  "fingerprint": "f6fc711613b2b80e",
+  "error": "",
+  "stable": true,
+  "picture": "draw_radiate.png"
+ },
+ "draw:regularPolygon": {
+  "lines": 105,
+  "fingerprint": "5c4b12a83c723119",
+  "error": "",
+  "stable": true,
+  "picture": "draw_regularPolygon.png"
+ },
+ "draw:regularPursuit": {
+  "lines": 105,
+  "fingerprint": "1867e8e144ea293c",
+  "error": "",
+  "stable": true,
+  "picture": "draw_regularPursuit.png"
+ }
+}

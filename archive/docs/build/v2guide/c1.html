@@ -1,0 +1,29 @@
+<h2>Part 1. Sketchpad today</h2>
+<h3>1.1 The pieces and how they connect</h3>
+<p>Sketchpad today is six tabs over a shared pool of memory. Each tab reads and writes two shared state objects,
+<tt>uiState</tt> and <tt>drawState</tt>. Under them sit three kinds of drawing code:
+<ul>
+<li>the 14 Draw registry objects;</li>
+<li>the Figures code, which arranges registry objects as layers;</li>
+<li>the script runner, which runs the pattern and gallery scripts.</li>
+</ul>
+All three end in the same place: the drawing helpers in <tt>draw/</tt> and <tt>classes/</tt>, which finish in
+<tt>drawLine</tt>, which paints onto the canvas. A separate Node program does every file write and keeps the manifests (the
+lists of what is in each folder) up to date.</p>
+[[FIG v1_map | Sketchpad today: six tabs over shared memory, three kinds of drawing code, one canvas]]
+<h3>1.2 How a drawing gets onto the screen</h3>
+<p>Take the Parabola in the Draw tab. Its settings live in <tt>params</tt>: the four arm ends, the step count, the colour, and
+also <tt>points[0..5]</tt>, a second copy of the end points that the drag code uses. When you move a slider or drag a red
+dot, <tt>update()</tt> compares the copies to work out which point you moved, rebuilds its live objects (a <tt>Line</tt> and
+a <tt>StringThing</tt>), and <tt>draw()</tt> calls the helpers, which call <tt>drawLine</tt> once per stitch.</p>
+<p>Two things in Figure 2 matter for what follows. The first is that the stitches never exist as a list anywhere: each one
+is computed and painted in the same moment, inside <tt>drawLine</tt>. The second is that when Phase 7d needed to know where
+discs could go, the only way was to add <tt>infrastructure()</tt>, a second description of the same shape, which has to be
+kept in agreement with <tt>draw()</tt> by hand.</p>
+[[FIG v1_drawing | One drawing, today: settings, a guess, live objects, and painting]]
+<h3>1.3 How Figures holds layers and welds</h3>
+<p>A figure today is an array of layers plus a parallel array of live objects, one per layer. Each layer's object keeps its
+own copy of its handle positions. A weld is a list of discs that ought to sit at the same spot. Because each layer holds its
+own copy of that spot, a drag on one layer has to be followed by work to bring the others along, as Figure 3 shows. That work
+is the propagation walk: four special cases, plus conflicts refused partway through a drag.</p>
+[[FIG v1_welds | A drag on a welded layer, today]]

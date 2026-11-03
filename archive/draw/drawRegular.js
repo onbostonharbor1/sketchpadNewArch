@@ -1,0 +1,415 @@
+/* ====================================================================
+CREATION & DRAWING ROUTINES
+--------------------------------------------------------------------
+createArms(thing, lines)
+- Converts an array of Line objects into "arms" (arrays of Points)
+  by subdividing each line based on numSteps or numNodes.
+
+createLinesFromNodesMiddle(nodes, midpoint)
+- Generates a set of radial Lines connecting a shared central
+  midpoint to each Point in a provided nodes array.
+
+createLinesFromNodesOuter(nodes)
+- Generates a set of boundary Lines by connecting consecutive nodes
+  in a loop (0 to 1, 1 to 2, ... last to 0).
+
+createParab(arm1, arm2) / createParabs(thing, arms1, arms2)
+- High-level wrappers for the stitcher; createParabs iterates
+  through two sets of arms to build a collection of parabolas.
+
+drawManyParabs(thing, parabs)
+- Iterates through an array of pre-stitched parabolas and renders
+  each one using the current style settings.
+
+drawParab(thing, pts)
+- The workhorse for single parabolas. It constructs two arms from
+  input points, applies optional line transforms (like flexing),
+  stitches them, and renders the result.
+
+drawCircularParabola(thing)
+- Generates the complex "Circular Parabola" pattern by stitching
+  radial center-to-perimeter arms with arc-segments along the
+  circumference in both directions.
+
+drawInnerStar(thing)
+- Creates a star-burst pattern by stitching radial arms to their
+  immediate neighbors, reversing the direction of the second arm
+  to create the characteristic star-point pinch.
+
+drawInverseStar(thing)
+- Combines radial center-to-node arms with outer perimeter arms
+  to create an "inside-out" star pattern in both directions.
+
+drawRegularPolygon(thing)
+- Connects consecutive outer boundary arms with curve-stitching
+  to fill the perimeter of a regular polygon with parabolas.
+
+drawRegularPolygonCorner(th
+- Creates parabolas anchored at each polygon vertex; it subdivides
+  the outer edges and stitches the two segments meeting at the node.
+
+drawRegularPolygonTouch(thing)
+- A variation of polygon stitching where pairs of adjacent outer
+  boundary arms are stitched together in a sequence.
+====================================================================
+*/
+
+
+import { drawState } from "/draw/drawState.js";
+import { createNodes } from "/draw/createNodes.js";
+import { Line, Point, StringThing }       from "../classes/classes.js";
+import {  drawLines, drawParabs, drawNodes,
+	 ptsOnLine, stitcher, getPreviousIndex }            from "./drawUtilities.js";
+
+function createArms(thing, lines) {
+  const arms = [];
+  for (let i = 0; i < lines.length; i++) {
+    let temp = ptsOnLine(thing,lines[i]);
+    arms.push(changeLine(temp, thing.truncate, thing.shorten));
+    // arms.push(ptsOnLine(thing, lines[i]));
+  }
+  return arms;
+}
+
+function createLinesFromNodesMiddle(nodes, midpoint) {
+  const lines = [];
+  for (let i = 0; i < nodes.length; i++) {
+    lines.push(new Line(midpoint, nodes[i]));
+  }
+  return lines;
+}
+
+function createLinesFromNodesOuter(nodes) {
+  const lines = [];
+  for (let i = 0; i < nodes.length; i++) {
+    let j = (i + 1) % nodes.length;
+    lines.push(new Line(nodes[i], nodes[j]));
+  }
+  return lines;
+}
+
+function createParab(arm1, arm2) {
+  if (arm1.length > arm2.length) {
+    [arm1, arm2] = [arm2, arm1];
+  }
+  let parab = stitcher(arm1, arm2);
+  return parab;
+}
+
+/**
+ * Creates an array of parabolas by stitching together corresponding arms from two arrays.
+ * Ensures the first array is the shorter one before processing.
+ * @param {*} thing - The object or context for which parabolas are being created.
+ * @param {Array} arms1 - First array of arms to stitch together.
+ * @param {Array} arms2 - Second array of arms to stitch together.
+ * @returns {Array} An array of stitched parabolas, one for each arm pair in the shorter array.
+ */
+function createParabs(thing, arms1, arms2) {
+  if (arms1[0].length > arms2[0].length) {
+    [arms1, arms2] = [arms2, arms1];
+  }
+  const parabs = [];
+  for (let i = 0; i < arms1.length; i++) {
+    parabs.push(stitcher(arms1[i], arms2[i]));
+  }
+  return parabs;
+}
+
+function drawManyParabs(thing, parabs) {
+  parabs.forEach((parab) => drawParab(thing, parab));
+}
+
+function drawAParab(thing, line1, line2) {
+  const pts = [line1.start, line1.end, line2.start, line2.end];
+  return drawParab(thing, pts);  // thread return value up
+}
+
+function changeLine(arm, truncate = 0, shorten = 0) {
+  const minLength = 2;
+  const available = Math.max(0, arm.length - minLength);
+
+  // Clamp combined removal to what's actually available
+  if (truncate + shorten > available) {
+    const ratio = available / (truncate + shorten);
+    truncate = Math.floor(truncate * ratio);
+    shorten = Math.floor(shorten * ratio);
+  }
+
+  // Remove from back
+  if (truncate > 0) {
+    arm.length = arm.length - truncate;
+  }
+
+  // Remove from front
+  if (shorten > 0) {
+    arm.reverse();
+    arm.length = arm.length - shorten;
+    arm.reverse();
+  }
+  return arm;
+}
+
+/* ============================================================
+   drawParab(thing, pts)
+   ------------------------------------------------------------
+   PURPOSE
+   - Build two arms from two lines and stitch them into a parabola.
+   ============================================================ */
+   function drawParab(thing, pts) {
+    if (pts.length === 3) pts.splice(1, 0, pts[1]);
+    const line1 = new Line(pts[0], pts[1]);
+    const line2 = new Line(pts[2], pts[3]);
+    const savedTransform = thing.lineTransform;
+    thing.lineTransform = 0;
+    let arm1 = ptsOnLine(thing, line1);
+    arm1 = changeLine(arm1, thing.truncate, thing.shorten);
+    thing.lineTransform = savedTransform;
+    const arm2 = ptsOnLine(thing, line2);
+    drawLines(thing, stitcher(arm1, arm2));
+
+    return { start: arm1[0], end: arm1[arm1.length - 1] };  // trimmed endpoints
+  }
+
+
+
+function drawCircularParabola(thing) {
+
+  const numSteps = thing.numSteps;
+
+  // ------------------------------------------------------------
+  // Arms1: radial arms from center to the N polygon nodes
+  // ------------------------------------------------------------
+  const origNodes = thing.numNodes;
+
+  let nodes = createNodes(thing);
+  const linesInner = createLinesFromNodesMiddle(nodes, thing.midpoint);
+  let arms1 = createArms(thing, linesInner);
+  // ------------------------------------------------------------
+  // Arms2: subdivide the circle perimeter into N arc-arms,
+  // each with (numSteps + 1) points INCLUDING BOTH ENDPOINTS.
+  // ------------------------------------------------------------
+  thing.numNodes = origNodes * numSteps;
+  nodes = createNodes(thing);
+
+  // Confining circle
+  drawNodes(thing, nodes);
+
+  function buildWrappedArm(circleNodes, startIndex, steps) {
+    const arm = [];
+    for (let k = 0; k <= steps; k++) {
+      arm.push(circleNodes[(startIndex + k) % circleNodes.length]);
+    }
+    return arm;
+  } // end buildWrappedArm
+
+  let arms2 = [];
+  for (let i = 0; i < nodes.length; i += numSteps) {
+    arms2.push(buildWrappedArm(nodes, i, numSteps));
+  }
+
+
+  let parabs = createParabs(thing, arms1, arms2);
+  drawParabs(thing, parabs);
+
+  // ------------------------------------------------------------
+  // Counter-clockwise set
+  // ------------------------------------------------------------
+  for (let arm of arms2) arm.reverse();
+  arms2 = [arms2[arms2.length - 1], ...arms2.slice(0, -1)];
+
+  parabs = createParabs(thing, arms1, arms2);
+
+
+  drawParabs(thing, parabs);
+
+  // Restore original polygon node count
+  thing.numNodes = origNodes;
+
+} // end drawCircularParabola
+
+function drawInnerStar(thing) {
+  const nodes = createNodes(thing);
+  const lines = createLinesFromNodesMiddle(nodes, thing.midpoint);
+  const arms = createArms(thing, lines);
+  const parabs = [];
+  for (let i = 0; i < arms.length; i++) {
+    let j = (i + 1) % arms.length;
+    parabs.push(stitcher(arms[i], arms[j].toReversed()));
+  }
+  drawParabs(thing, parabs);
+  //  displayPoint(thing.midpoint);
+}
+
+function drawInverseStar(thing) {
+  const nodes = createNodes(thing);
+  const linesInner = createLinesFromNodesMiddle(nodes, thing.midpoint);
+  let linesOuter = createLinesFromNodesOuter(nodes);
+  const arms1 = createArms(thing, linesInner);
+  let arms2 = createArms(thing, linesOuter);
+  let parabs = createParabs(thing, arms1, arms2);
+  drawParabs(thing, parabs);
+  // do clockwise
+  linesOuter.forEach((line) => {
+    const temp = line.start;
+    line.start = line.end;
+    line.end = temp;
+  });
+  arms2 = createArms(thing, linesOuter);
+  arms2 = [arms2[arms2.length - 1], ...arms2.slice(0, -1)];
+  parabs = createParabs(thing, arms1, arms2);
+  drawParabs(thing, parabs);
+  // displayPoint(thing.midpoint);
+}
+
+/* ============================================================
+   regularPolygonParabolas(thing)
+   ------------------------------------------------------------
+   The parts drawRegularPolygon draws, as data instead of pixels
+   (Phase 7c, Break apart). One entry per parabola:
+     { line1: [start, end], line2: [start, end], numSteps }
+   Each line is the stretch of a polygon side that is actually stitched,
+   i.e. after Shorten/Trim have cut the arm, so a Parabola given these four
+   points and numSteps draws exactly the same stitches. Same nodes, lines
+   and arms as drawRegularPolygon; only the drawing is left out.
+   ============================================================ */
+function regularPolygonParabolas(thing) {
+  const nodes = createNodes(thing);
+  const lines = createLinesFromNodesOuter(nodes);
+  const arms  = createArms(thing, lines);
+  const parts = [];
+  for (let i = 0; i < arms.length; i++) {
+    const a = arms[i];
+    const b = arms[(i + 1) % arms.length];
+    parts.push({
+      line1:    [a[0], a[a.length - 1]],
+      line2:    [b[0], b[b.length - 1]],
+      numSteps: a.length - 1
+    });
+  }
+  return parts;
+} // end regularPolygonParabolas
+
+
+/* ============================================================
+   inverseStarParabolas(thing)
+   ------------------------------------------------------------
+   The parabolas drawInverseStar draws, as data instead of pixels (Break
+   apart, v1-finish item 7), in the same shape as
+   regularPolygonParabolas(). drawInverseStar stitches each spoke (centre
+   to node i) twice: once with the outer edge that starts at node i, and
+   once with the edge that ends there, run backwards. So there are two
+   parabolas per node. Same nodes, lines and arms as drawInverseStar;
+   only the drawing is left out.
+   ============================================================ */
+function inverseStarParabolas(thing) {
+  const nodes  = createNodes(thing);
+  const spokes = createArms(thing, createLinesFromNodesMiddle(nodes, thing.midpoint));
+  const edges  = createArms(thing, createLinesFromNodesOuter(nodes));
+  // The same edges, each run from its far end, then shifted by one so
+  // spoke i meets the edge that ends at node i (as drawInverseStar does).
+  const backLines = createLinesFromNodesOuter(nodes).map((l) => new Line(l.end, l.start));
+  let back = createArms(thing, backLines);
+  back = [back[back.length - 1], ...back.slice(0, -1)];
+
+  const parts = [];
+  const add = (a, b) => {
+    // createParabs puts the shorter set of arms first; keep that order.
+    if (a.length > b.length) [a, b] = [b, a];
+    parts.push({ line1: [a[0], a[a.length - 1]], line2: [b[0], b[b.length - 1]], numSteps: a.length - 1 });
+  };
+  for (let i = 0; i < spokes.length; i++) add(spokes[i], edges[i]);
+  for (let i = 0; i < spokes.length; i++) add(spokes[i], back[i]);
+  return parts;
+} // end inverseStarParabolas
+
+
+function drawRegularPolygon(thing) {
+  const nodes = createNodes(thing);
+  const lines = createLinesFromNodesOuter(nodes);
+  const arms = createArms(thing, lines);
+  const parabs = [];
+  for (let i = 0; i < arms.length; i++) {
+    let j = (i + 1) % arms.length;
+    parabs.push(stitcher(arms[i], arms[j]));
+  }
+  drawParabs(thing, parabs);
+}
+
+/*****************************************************
+ * drawRegularPolygonCorner
+ *   From each node, draw a curve-stitch parabola. The
+ *   arms begin at the node and go halfway to to the
+ *   next and previous line
+ ****************************************************/
+function drawRegularPolygonCorner(thing) {
+  const nodes = createNodes(thing);
+  let lines = createLinesFromNodesOuter(nodes);
+  let shortLines = [];
+  // Divide each connecting line into two parts
+  for (let i = 0; i < lines.length; i++) {
+    shortLines.push(new Line(lines[i].start, lines[i].midpoint()));
+    shortLines.push(new Line(lines[i].midpoint(), lines[i].end));
+  }
+  // For each of these lines, figure out the where
+  // each point it
+  const arms = createArms(thing, shortLines);
+  // Construct each parabola
+  const parabs = [];
+  for (let i = 0; i < arms.length; i += 2) {
+    let armA = arms[i];
+    let armB = arms[getPreviousIndex(i, arms.length)];
+    parabs.push(stitcher(armA, armB));
+  }
+  drawParabs(thing, parabs);
+}
+
+function drawRegularPolygonTouch(thing) {
+  const nodes = createNodes(thing);
+  const lines = createLinesFromNodesOuter(nodes);
+  const arms = createArms(thing, lines);
+  const parabs = [];
+  let length = thing.numNodes;
+  if (length % 2 == 1) length--;
+  for (let i = 0; i < length; i += 2) {
+    parabs.push(stitcher(arms[i], arms[i + 1]));
+  }
+  drawParabs(thing, parabs);
+}
+
+export {
+    drawAParab,
+    drawCircularParabola,
+    drawInnerStar,
+    drawInverseStar,
+    drawManyParabs,
+    drawParab,
+    drawRegularPolygon,
+    regularPolygonParabolas,
+  inverseStarParabolas,
+    drawRegularPolygonCorner,
+    drawRegularPolygonTouch,
+    createLinesFromNodesMiddle,
+    createLinesFromNodesOuter,
+    trimmedRange
+};
+
+/* ============================================================
+   trimmedRange(steps, truncate, shorten)
+   ------------------------------------------------------------
+   The same clamp changeLine() applies, but returning the index window
+   { from, to } instead of a cut-down array. Used by infrastructure()
+   methods (Phase 7d) that need the trimmed range of an arm without
+   building its points: candidates are t = i/steps for i = from..to,
+   matching Parabola's own infrastructure().
+   ============================================================ */
+function trimmedRange(steps, truncate, shorten) {
+  truncate = Number(truncate) || 0;
+  shorten  = Number(shorten)  || 0;
+  const available = Math.max(0, (steps + 1) - 2);
+  if (truncate + shorten > available) {
+    const ratio = available / (truncate + shorten);
+    truncate = Math.floor(truncate * ratio);
+    shorten  = Math.floor(shorten * ratio);
+  }
+  return { from: shorten, to: steps - truncate };
+}

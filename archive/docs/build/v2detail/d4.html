@@ -1,0 +1,118 @@
+<h2>8.0 STORAGE, CATALOG AND THE NODE SERVICE</h2>
+<h3>8.1 The folders are the truth</h3>
+<p>V1 keeps manifests: stored lists of what is in each folder, rebuilt at start-up and checked for missing files (P-10). In V2
+the catalog is worked out from the folders and a small metadata file beside each item; nothing else is stored about them.</p>
+<pre class="code">library/scripts/curve-stitch/manyRowsColumns.js          the item
+library/scripts/curve-stitch/manyRowsColumns.meta.json   { "status": "favorite", "tags": [...], "order": 3, "hidden": false }
+library/scripts/curve-stitch/manyRowsColumns.png         its thumbnail, made by the renderer</pre>
+<table class="req">
+<tr><td>DR-8.1</td><td>The catalog entry of an item shall be: its id (path from the library root, without extension), kind, category (its folder), title (from its header or <tt>meta</tt>), status and tags (from <tt>.meta.json</tt>), thumbnail, and for scripts the host's report (section 9). It is rebuilt for one item when that item's files change.</td></tr>
+<tr><td>DR-8.2</td><td>Renaming or moving an item shall be a command that moves its files, its metadata, its thumbnail and its journal together (FR-6.16.2).</td></tr>
+<tr><td>DR-8.3</td><td>Archiving shall move an item into its category's <tt>archive/</tt> folder; archived items are left out of lists, tests and the catalog, and can be brought back.</td></tr>
+</table>
+<h3>8.2 The Node service</h3>
+<p>One process on one port (5174). Requests are <tt>POST /dispatch</tt> with <tt>{ requestName, payload }</tt>, as in V1. The
+service also keeps one Server-Sent Events connection open to tell the application that files changed.</p>
+<table class="small">
+<tr><th>Request</th><th>Payload</th><th>Reply</th></tr>
+<tr><td>catalog.list</td><td>{ kind?, category? }</td><td>{ entries: CatalogEntry[] }</td></tr>
+<tr><td>item.read</td><td>{ id }</td><td>{ text, meta }</td></tr>
+<tr><td>item.write</td><td>{ id, text, expectedVersion }</td><td>{ version } or { conflict: currentVersion }</td></tr>
+<tr><td>item.move</td><td>{ id, toId }</td><td>{ id }</td></tr>
+<tr><td>item.archive</td><td>{ id }</td><td>{ archivedId }</td></tr>
+<tr><td>meta.write</td><td>{ id, meta }</td><td>{}</td></tr>
+<tr><td>thumbnail.write</td><td>{ id, png (base64) }</td><td>{}</td></tr>
+<tr><td>journal.append</td><td>{ id, entry }</td><td>{}</td></tr>
+<tr><td>journal.read</td><td>{ id, since? }</td><td>{ entries }</td></tr>
+<tr><td>log.append</td><td>{ kind: "errors" | ..., lines }</td><td>{ name }</td></tr>
+<tr><td>log.list / log.read</td><td>{ limit } / { name }</td><td>V1's listLogFiles / readLogFile</td></tr>
+<tr><td>output.write</td><td>{ id, format, bytes }</td><td>{ path } (SVG, PDF, DXF beside the item)</td></tr>
+<tr><td>editor.open</td><td>{ id }</td><td>opens the file in VS Code</td></tr>
+<tr><td>history.vscode</td><td>{ id }</td><td>VS Code's saved versions (V1 Script history, kept as a bridge)</td></tr>
+<tr><td>status</td><td>{}</td><td>{ version, root, uptime } (FR-6.18.6)</td></tr>
+</table>
+<table class="req">
+<tr><td>DR-8.4</td><td>Every path in a payload shall be an id relative to the library root; the service resolves it and refuses anything outside the root, any <tt>..</tt> segment, and any absolute path (V1's path-safety module, kept).</td></tr>
+<tr><td>DR-8.5</td><td>Every write shall go to a temporary file in the same folder and be renamed into place, so a crash leaves the old file whole (V1 already does this for figures).</td></tr>
+<tr><td>DR-8.6</td><td><tt>item.write</tt> takes the version the editor read; if the file has changed since (the owner edited it in VS Code), the write is refused with the current version, and the application offers to reload or keep both.</td></tr>
+<tr><td>DR-8.7</td><td>The service shall accept requests only from the application's own origin and from no origin (local tools), and refuse other origins and hosts (V1's rule).</td></tr>
+<tr><td>DR-8.8</td><td>The file watcher shall debounce changes by 200 ms and report <tt>{ id, change: "added" | "changed" | "removed" }</tt>; a new item appears within 2 s (FR-6.9.2).</td></tr>
+<tr><td>DR-8.9</td><td>When the service does not answer, the application shall say so in the status strip and go read-only: every command that writes is greyed with "the Node service is not running (start it with ...)" (FR-6.18.6).</td></tr>
+</table>
+[[FIG dynamic_add | Adding an item by saving a file]]
+<h3>8.3 Acceptance tests</h3>
+<table class="req">
+<tr><td>AT-8.1</td><td>Save a new script in VS Code: it is listed, with a thumbnail, within 2 s; no restart.</td></tr>
+<tr><td>AT-8.2</td><td>Edit an open figure in VS Code and in the app at once, then save from the app: the conflict is reported, nothing is lost.</td></tr>
+<tr><td>AT-8.3</td><td>Request a path with <tt>..</tt>, an absolute path, and a foreign origin: all three refused.</td></tr>
+<tr><td>AT-8.4</td><td>Stop the service: the app says so within 5 s; Save is greyed with the reason; start it: Save returns.</td></tr>
+</table>
+
+<h2>9.0 THE SCRIPT HOST AND THE LEGACY ADAPTER</h2>
+<h3>9.1 Isolation</h3>
+<p>V1 runs scripts in the application's own page, sharing <tt>ctx</tt>, <tt>drawState</tt> and window globals; two scripts failed
+after about a hundred earlier runs (P-12; fixed in V1 by a reset, but structurally still shared). V2 runs each script in its own
+frame.</p>
+<table class="req">
+<tr><td>DR-9.1</td><td>Each script shall run in a fresh sandboxed iframe (<tt>sandbox="allow-scripts"</tt>), with its own canvas, given its settings by message and returning either Geometry (a recorded run) or pixels (a painting script). Nothing it does can reach the application.</td></tr>
+<tr><td>DR-9.2</td><td>A run has a time limit (default 5 s, a setting per script) and a point budget (DR-17.1); past either it is stopped and reported (FR-6.18.2).</td></tr>
+<tr><td>DR-9.3</td><td>An animated script runs only while its view is on screen and stops when left.</td></tr>
+<tr><td>DR-9.4</td><td>The host shall record, while a legacy script runs, every line it draws through the adapter's <tt>drawLine</tt> and every canvas stroke, giving a <i>recorded geometry</i> that can be placed in a figure as a frozen layer.</td></tr>
+</table>
+<h3>9.2 The legacy adapter</h3>
+<p>The survey of the 185 V1 scripts (R-12) lists what they use: 85 distinct imported names from 29 modules, the
+<tt>drawState</tt> fields they touch, bare <tt>ctx</tt> in 88 scripts, <tt>scriptInfo</tt> controls with a
+<tt>redrawHandler</tt> in 80, <tt>armInteractor</tt> in 8, draggable points in 3, animation in 4, blending or transparency in 20,
+fills or text in 29.</p>
+<table class="req">
+<tr><td>DR-9.5</td><td>Inside the frame, the adapter shall provide every one of those 85 names at the module paths the scripts use (both <tt>/draw/x.js</tt> and <tt>../../draw/x.js</tt> forms), implemented over the V2 kernel where a kernel equivalent exists and as V1's own code otherwise, so every V1 script runs unchanged.</td></tr>
+<tr><td>DR-9.6</td><td>The adapter's <tt>scriptInfo</tt> support shall build the script's controls in the host's settings panel from its V1 declarations (converted by FR-6.4.8) and call its <tt>redrawHandler</tt> on change.</td></tr>
+<tr><td>DR-9.7</td><td>Every legacy script shall be classified in a migration ledger: runs, adapted, preview only (fills, text, blending: kept as playpen with their own canvas), or blocked, with a reason.</td></tr>
+</table>
+[[FIG ladder | The ingestion ladder: from a foreign script to a generator]]
+<h3>9.3 Acceptance tests</h3>
+<table class="req">
+<tr><td>AT-9.1</td><td>Run all 185 legacy scripts in order and shuffled: every one that ran in V1 runs, and its recorded geometry matches V1's approved copy (FR-6.17.4).</td></tr>
+<tr><td>AT-9.2</td><td>A script with an endless loop is stopped at its time limit; the app stays responsive.</td></tr>
+<tr><td>AT-9.3</td><td>A script that writes <tt>window.x = 1</tt> leaves no <tt>x</tt> in the application.</td></tr>
+</table>
+
+<h2>10.0 RENDERING AND OUTPUT</h2>
+<h3>10.1 The canvas renderer</h3>
+<table class="req">
+<tr><td>DR-10.1</td><td>Paint order: background; layers bottom to top (dimmed when not active, unless Show All or Final); discs; weld marks; magic-point and intersection marks (points mode); then, on a separate canvas, handles, selection, centroid and the drag preview.</td></tr>
+<tr><td>DR-10.2</td><td>Final is a renderer option: points only, guides and scaffold left out (FR-6.11.2).</td></tr>
+<tr><td>DR-10.3</td><td>Hit-testing uses the same geometry and transforms the renderer draws, from the evaluation result, never from what was painted.</td></tr>
+<tr><td>DR-10.4</td><td>Device-pixel ratio is honoured, so lines are sharp on high-density screens; line width is in document units, scaled with zoom.</td></tr>
+</table>
+<h3>10.2 Physical output</h3>
+<p>The output is what the owner hammers from. Its correctness is checked with a ruler.</p>
+<pre class="code">nailsOf(document, evaluation):
+  nails = []
+  for each disc point (and, if a layer has no discs, each stitch end of a printing layer):
+    if the layer's role is guide or scaffold, or includeInOutput is false: skip
+    p = its position, in document units, transformed
+    add { number: point number, x, y, z, sources: [{ layer, path, i }] }
+  merge nails closer than 0.05 mm: one nail, all numbers ("11+12"), all sources   // a weld is already one point
+  return nails
+
+templatePages(nails, scale, paper, margin, overlap):
+  convert to mm (x * scale); find the extent; tile it with sheets of (paper - 2*margin),
+  each overlapping its neighbour by overlap; on each sheet draw every nail inside it (+ the overlap),
+  a cross at its centre, its number beside it, alignment marks in the overlap;
+  page 1: title, scale, nail size, a 100 mm calibration line and a 10 mm scale bar</pre>
+<table class="req">
+<tr><td>DR-10.5</td><td>The printed 100 mm calibration line shall measure 100 &plusmn; 0.5 mm when printed at "actual size"; the cover page says to print at actual size and to measure it.</td></tr>
+<tr><td>DR-10.6</td><td>Nail spacing check: every pair of nails whose centres are closer than diameter + clearance is ringed and listed; it warns, it does not refuse (FR-6.11.6).</td></tr>
+<tr><td>DR-10.7</td><td>Colour cycle (FR-6.11.9, O-14): when on, a nail's colour is <tt>palette[step mod 5]</tt>, step being its index i along its source path; a nail with several sources is drawn as a circle split into its colours. Off by default.</td></tr>
+<tr><td>DR-10.8</td><td>Nail list (CSV): number, x, y, z in the chosen units, sources, merged numbers.</td></tr>
+<tr><td>DR-10.9</td><td>SVG output is the canvas renderer's same paint list written as SVG paths, in mm with a <tt>viewBox</tt>, so it opens at true size in Inkscape and drives a pen plotter or laser cutter.</td></tr>
+<tr><td>DR-10.10</td><td>Per-layer output (FR-6.11.10): one file per printing layer, the same sheet layout and alignment marks on each, for layers mounted at depth.</td></tr>
+</table>
+<h3>10.3 Acceptance tests</h3>
+<table class="req">
+<tr><td>AT-10.1</td><td>Print the calibration page at actual size on the owner's printer; the line measures 100 mm.</td></tr>
+<tr><td>AT-10.2</td><td>A figure 600 mm wide on Letter paper with 10 mm margins and overlap tiles to the expected sheet count; every nail appears on exactly the sheets whose area (with overlap) contains it.</td></tr>
+<tr><td>AT-10.3</td><td>Two welded discs print as one nail with both numbers; two unwelded discs 0.01 mm apart likewise, with a note.</td></tr>
+<tr><td>AT-10.4</td><td>The SVG of a 100 mm square opens in Inkscape measuring 100 mm.</td></tr>
+</table>

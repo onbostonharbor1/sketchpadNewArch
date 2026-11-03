@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Patterns Tab — How It Works</title>
+  <link rel="stylesheet" href="/help/help_treatise.css" />
+</head>
+<body>
+
+<h1>Patterns Tab — How It Works</h1>
+
+<p class="note">Rewritten 27 October 2026 against the current code. The earlier page described a single
+<code>patterns.js</code>; the tab is now five files under <code>ui/patterns/</code>. Several of the old page's
+"discussion points" have been settled: script paths are rooted (<code>/patterns/&lt;category&gt;/&lt;file&gt;.js</code>),
+scripts run through the shared script runner, and the canvas is attached in one place.</p>
+
+<p>Patterns browses the saved pattern scripts under <code>/patterns/</code>, one category frame per folder.
+Choosing one runs it on the shared canvas, with a thumbnail strip of its category and Prev/Next.</p>
+
+<h2>The files</h2>
+<table>
+<tr><th>File</th><th>Owns</th></tr>
+<tr><td><code>patterns.js</code></td><td><code>PatternsTabSpec</code>, <code>PatternsController</code>; init / restore / save;
+  loading the manifest</td></tr>
+<tr><td><code>patternsNav.js</code></td><td>the subtab bar (Categories, and Pattern once one is chosen); the category
+  view</td></tr>
+<tr><td><code>patternsDisplay.js</code></td><td>running the chosen pattern, the thumbnail grid, Prev/Next</td></tr>
+<tr><td><code>patternsMenuCmds.js</code></td><td>caption and menu (Help, Show Script, Notes, Create Thumbnail, Edit
+  Manifest, Archive); the Commands panel</td></tr>
+<tr><td><code>patternsState.js</code></td><td>the current category and index</td></tr>
+</table>
+
+<h2>State</h2>
+<pre>uiState.patterns = {
+  activeCategory, activeItem,
+  saved: { view: "categories" | "pattern", activeCategory, activeItem }
+}</pre>
+<p>The rule the code follows: any action that changes what you are looking at writes
+<code>uiState.patterns.saved</code> first, then draws. Because <code>saved</code> is set during navigation,
+<code>setUI.js</code> uses <code>restore()</code> when you come back to the tab, and the tab returns to the same
+view. (<code>setUI</code> never calls <code>save()</code>; it is not needed.)</p>
+<p><code>showSelectedPattern()</code> also writes <code>saved</code> to the browser's session storage, and
+<code>rehydratePatternsState()</code> can read it back, but nothing calls that function at present, so a page
+reload still starts at Categories.</p>
+
+<h2>Two views</h2>
+<ul>
+<li><strong>Categories</strong>: one frame per category, from <code>manifest.getCategoryMap("patterns")</code>.
+  A click writes the new <code>saved</code> and shows the pattern.</li>
+<li><strong>Pattern</strong>: the pattern on the canvas in <code>#sketchpad</code>, its category's thumbnails in
+  <code>#action</code> (the current one highlighted), and a caption with the title, Prev/Next and the menu.</li>
+</ul>
+
+<h2>Showing a pattern: showSelectedPattern(category, index)</h2>
+<ol>
+<li>Write the module state, <code>uiState.patterns</code> and <code>saved</code> (and session storage).</li>
+<li>Clear <code>#text</code>, <code>#action</code>, <code>#sketchpad</code>.</li>
+<li>Run <code>/patterns/&lt;category&gt;/&lt;filename&gt;.js</code> with <code>runScriptByPath()</code> into
+  <code>#sketchpad</code>, with controls enabled. An error is shown in red in its place.</li>
+<li>Draw the thumbnail grid, the caption, and make sure the Pattern subtab exists and is active.</li>
+</ol>
+<p>Prev and Next wrap around at the ends of the category.</p>
+
+<h2>The manifest</h2>
+<p><code>ensurePatternsManifestLoaded()</code> asks the shared manifest system for "patterns"
+(<code>manifest.get</code>), which reads the category list and each category's <code>manifest.json</code> into
+<code>manifest.cache</code>. Everything else reads it through <code>manifest.getCategoryMap("patterns")</code>.</p>
+
+<h2>Commands panel</h2>
+<p>Rebuild &amp; Validate asks the Node service to rebuild every manifest, clears the cache and marks every tab
+<code>needsUpdate</code> (<code>syncSystemStateAfterRebuild</code>), and redraws the current view from
+<code>saved</code>.</p>
+
+<h2>Small things worth knowing</h2>
+<ul>
+<li>Prev/Next on an empty category quietly does nothing (it reads an empty list rather than failing).</li>
+<li>A restore that finds its category gone (after a rebuild) falls back to Categories; an index past the
+  end is pulled back to the last item.</li>
+</ul>
+
+</body>
+</html>

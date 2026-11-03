@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Parameter Controls — Sliders and Their Kin</title>
+  <link rel="stylesheet" href="/help/help_treatise.css" />
+</head>
+<body>
+
+<h1>Parameter Controls — Sliders and Their Kin</h1>
+
+<p class="note">Rewritten 27 October 2026 against the current code. <code>ui/parameterControls.js</code> is now a
+27-line forwarder; the real code is split by job under <code>ui/controls/</code>. The point-picker widgets the
+earlier page described are switched off (handles are dragged by <code>interactor.js</code> instead), and there are
+new widgets: number, accordion and thumbnail grid. The schema flags are listed on the companion page
+"Control Schema Flags" (<code>parameterControls2.html</code>).</p>
+
+<p>Given an object's control schema and its current values, this system builds the controls in the left
+action panel and, when one changes, updates the value and asks for a redraw. Draw, Figures and runnable
+scripts all use it.</p>
+
+<h2>Where the code is</h2>
+<table>
+<tr><th>File</th><th>Job</th></tr>
+<tr><td><code>ui/parameterControls.js</code></td><td>forwards everything from <code>controlsCore.js</code>, so old imports keep working</td></tr>
+<tr><td><code>controls/controlsCore.js</code></td><td><code>buildParameterControls()</code>, the public entry point</td></tr>
+<tr><td><code>controls/builders/dataBuilder.js</code></td><td>schema plus values into one uniform list, for Draw-style and
+  script-style sources</td></tr>
+<tr><td><code>controls/builders/groupFilter.js</code></td><td>hides controls whose group is not selected (see the grouping guide)</td></tr>
+<tr><td><code>controls/rendering/renderer.js</code></td><td>the list into DOM; <code>buildSingleControl()</code> picks the widget</td></tr>
+<tr><td><code>controls/rendering/rebuild.js</code></td><td>rebuilds the whole panel (after a group switch)</td></tr>
+<tr><td><code>controls/widgets/*.js</code></td><td>one file per kind of control</td></tr>
+<tr><td><code>controls/shared/</code></td><td>widget names, CSS class names, small helpers</td></tr>
+</table>
+
+<h2>buildParameterControls(sourceInfo, targetTabId, render)</h2>
+<p>Two kinds of source:</p>
+<ul>
+<li><strong>Draw-style</strong> (Draw, Figures): <code>{ drawRegistry, parameters, redrawHandler, onParamChange }</code>.
+  The schema is <code>drawRegistry.controls</code>.</li>
+<li><strong>Script-style</strong>: the script's <code>scriptInfo</code>, <code>{ controls, parameters, redrawHandler }</code>.</li>
+</ul>
+<p>Which one is chosen: a <code>targetTabId</code> starting <code>"tab-draw"</code> means Draw-style,
+<code>"tab-scripts"</code> means script-style; anything else (including the default <code>"tab-generic"</code>) is
+decided by the source's shape (<code>controls</code> present: script; <code>drawRegistry</code> present: Draw). Figures
+passes <code>"tab-draw"</code>. The result is a normalized list,
+<code>{ key, label, widget, min, max, step, options, value, default, ... }</code>, drawn at once unless
+<code>render</code> is false.</p>
+
+<h2>Drawing the panel</h2>
+<ul>
+<li>Writes into <code>#drawControls</code> inside <code>#action</code> (created if missing), emptied first, so other
+  things in <code>#action</code> survive. <code>#action</code> must exist.</li>
+<li>Controls marked as interface controls go to <code>#interface-controls</code> instead.</li>
+<li>No controls: "(no parameters)".</li>
+<li>Each entry goes through <code>buildSingleControl()</code>: a <code>div.ctrl-field</code> with a label and the
+  widget. A hidden widget returns nothing and takes no room.</li>
+</ul>
+
+<h2>The widgets</h2>
+<table>
+<tr><th>widget</th><th>What it is</th></tr>
+<tr><td><code>range</code></td><td>slider with min / value / max (and &lt; &gt; step buttons); or the header style with
+  <code>rangeHeader: true</code></td></tr>
+<tr><td><code>rangeHeader</code></td><td>"Label: value" above a full-width slider</td></tr>
+<tr><td><code>checkbox</code></td><td>true / false</td></tr>
+<tr><td><code>select</code></td><td>drop-down from <code>options</code> (strings or <code>{ value, label }</code>); numeric strings
+  come back as numbers</td></tr>
+<tr><td><code>radio</code></td><td>one of several, from <code>options</code></td></tr>
+<tr><td><code>color</code>, <code>colorPicker</code></td><td>color chooser, stores <code>"#rrggbb"</code></td></tr>
+<tr><td><code>number</code></td><td>a number box, respecting min and max</td></tr>
+<tr><td><code>button</code></td><td>runs an action (a function, or a name looked up in <code>info.actions</code>)</td></tr>
+<tr><td><code>accordion</code></td><td>collapsible sections</td></tr>
+<tr><td><code>thumbnailGrid</code></td><td>a grid of thumbnails to pick from</td></tr>
+<tr><td><code>staticText</code></td><td>text only; can be shown only when a boolean parameter is on (<code>showKey</code>)</td></tr>
+<tr><td><code>hidden</code></td><td>nothing drawn</td></tr>
+<tr><td><code>text</code>, or anything unknown</td><td>a plain input box</td></tr>
+</table>
+<p><code>pointPicker</code> and <code>pointPickerArray</code> are still named in the constants, but their cases in
+<code>buildSingleControl</code> are commented out, so such a key falls through to a plain input box. Two registry
+objects still declare one (<code>boxes</code>, <code>regularPursuit</code>, for a midpoint).</p>
+
+<h2>When a control changes</h2>
+<ol>
+<li>The new value goes into <code>info.parameters[key]</code> (for Draw and Figures, that is the object's own
+  <code>params</code>, so the drawing data changes directly).</li>
+<li><code>info.onParamChange()</code>, if there is one (Draw marks the subtab with "*"; Figures passes an empty
+  function).</li>
+<li><code>info.redrawHandler()</code>.</li>
+<li>If the control asks for it (<code>rebuildControls</code>, or <code>showsGroup</code> on a select or radio), the
+  whole panel is rebuilt.</li>
+</ol>
+
+</body>
+</html>

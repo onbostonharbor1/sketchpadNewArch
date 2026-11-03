@@ -1,0 +1,52 @@
+{
+  "name": "sketchpad",
+  "version": "1.0.0",
+  "description": "Sketchpad generative art environment",
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "build:home": "node ./node/maintain_manifests.mjs",
+    "// Note": "Combined predev into concurrently to prevent one script failure from blocking others",
+    "predev": "node ./node/check_ports.mjs & node ./node/generateHelpManifest.mjs",
+    "dev:vite": "vite --port 5173 --strictPort",
+    "dev:svc": "node ./node/sketchpadServer.mjs",
+    "// Logic": "sketchpad.bat runs the manifest check once (node ./node/maintain_manifests.mjs) and then launches the environment; the app asks the service for a complete rebuild after any manifest change",
+    "dev:all": "concurrently -k -n SVC,VITE \"npm run dev:svc\" \"npm run dev:vite\"",
+    "dev:sketchpad": "npm run predev && npm run dev:all",
+    "open:sketchpad": "wait-on http://localhost:5173/ && start http://localhost:5173/",
+    "start:sketchpad": "concurrently -n MAINT,DEV,OPEN \"npm run predev\" \"npm run dev:all\" \"npm run open:sketchpad\"",
+    "dev:draw": "npm run dev:vite",
+    "open:draw": "wait-on http://localhost:5173/ && start http://localhost:5173/draw.html",
+    "start:draw": "concurrently -n VITE,OPEN \"npm run dev:draw\" \"npm run open:draw\"",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint:globals": "eslint --no-error-on-unmatched-pattern ui draw classes drawRegistry utilities home gallery patterns help main.js drawMain.js",
+    "test:tabs": "node tests/tabSwitch.mjs",
+    "check:imports": "node tests/importCheck.mjs",
+    "check:ids": "node tests/idCheck.mjs",
+    "test:node": "node tests/nodeSmoke.mjs",
+    "test:scripts": "node tests/scriptOrder.mjs",
+    "test:regression": "node tests/regression.mjs",
+    "test:errors": "node tests/errorReport.mjs",
+    "test:history": "node tests/scriptHistory.mjs",
+    "test:ideabook": "node tests/ideabook.mjs",
+    "build:static": "node scripts/buildStatic.mjs",
+    "pixels:save": "node tests/pixelShots.mjs",
+    "pixels:compare": "node tests/pixelCompare.mjs",
+    "time:startup": "node tests/timeStartup.mjs"
+  },
+  "dependencies": {
+    "jquery": "^3.7.1",
+    "jstree": "^3.3.17",
+    "tinymce": "^8.3.2"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "eslint": "^9.39.5",
+    "globals": "^17.13.0",
+    "playwright": "^1.63.0",
+    "pngjs": "^7.0.0",
+    "vite": "^7.1.12",
+    "wait-on": "^9.0.3"
+  }
+}

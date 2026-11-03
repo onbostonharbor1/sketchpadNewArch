@@ -1,0 +1,59 @@
+<h2>17.0 NON-FUNCTIONAL REQUIREMENTS</h2>
+<table class="req">
+<tr><td>DR-17.1</td><td>Performance, on the owner's ordinary Windows PC: dragging a handle in a 20-layer, 20,000-stitch figure redraws at 60 frames a second; opening a 100-layer figure takes under 2 s; a full regression run of 1,000 items takes under 10 minutes.</td></tr>
+<tr><td>DR-17.2</td><td>Start-up to a usable Home under 3 s with 2,000 catalogue items (no start-up rebuild: P-10).</td></tr>
+<tr><td>DR-17.3</td><td>Readability (DR-2.5) is a requirement, not a preference: every file has its header comment; a reviewer unfamiliar with the code can say what a file does from its header and its first screen.</td></tr>
+<tr><td>DR-17.4</td><td>Dependencies: Vite (development only), Playwright (tests only), and in <tt>vendor/</tt> only what a feature cannot do without (d3-delaunay for Voronoi; Acorn for the importer, O-4). Each is pinned and listed with why.</td></tr>
+<tr><td>DR-17.5</td><td>Browsers: current Chrome and Edge on Windows; Safari on iPad for review (read-only).</td></tr>
+<tr><td>DR-17.6</td><td>Accessibility at the owner's level: every control has a visible label; keyboard use for the common commands (DR-11.3); colour is never the only signal (greyed items also say why).</td></tr>
+<tr><td>DR-17.7</td><td>Security is local: the service listens on localhost only, checks origins (DR-8.7), refuses paths outside the library (DR-8.4); Learn is the only outbound connection and is the owner's press each time (DR-14.8).</td></tr>
+</table>
+
+<h2>18.0 MIGRATION FROM VERSION 1</h2>
+<h3>18.1 Figure files (format 1)</h3>
+<p>V1's figure format is fixed and documented (R-11) and may only gain fields, so every V1 figure can be read.</p>
+<table class="small">
+<tr><th>V1 (format 1)</th><th>V2 (format 2)</th></tr>
+<tr><td><tt>layers[i]</tt> with <tt>id</tt>, <tt>lid</tt> "L"+(i+1), <tt>objectVersion</tt>, <tt>role</tt>, <tt>includeInOutput</tt>, <tt>visible</tt>, <tt>deleted</tt>, <tt>color</tt>, <tt>params</tt>, <tt>transform</tt></td><td>layer with the same <tt>lid</tt>, role, transform, output and visibility; <tt>generator</tt> = V1 <tt>id</tt>; settings = the generator's "from V1" mapping of <tt>params</tt> keyed by <tt>objectVersion</tt>; deleted layers dropped (their numbers stay used)</td></tr>
+<tr><td><tt>params.points</tt> and named fields (<tt>pt1</tt> ...)</td><td>handle points: each a new point number, from the named fields (preferred over the <tt>points</tt> mirror)</td></tr>
+<tr><td>points: <tt>anchored</tt> {layer, arm, t, feature?}</td><td>attached point {on: lid, path: arm, t} or {on, feature}</td></tr>
+<tr><td>points: <tt>free</tt> {ox, oy}</td><td>free point at (ox, oy) transformed by the layer</td></tr>
+<tr><td>points: <tt>handle</tt> {h, hname}</td><td>the handle's point (by name)</td></tr>
+<tr><td><tt>welds</tt> [{members}]</td><td>members that are free or handle discs become one shared point; a group with an anchored disc becomes an attachment to that disc</td></tr>
+<tr><td><tt>units</tt> "px", <tt>scale</tt> mm/px, <tt>nail</tt></td><td><tt>units</tt> "legacy", <tt>scale</tt> carried, <tt>nail</tt> carried</td></tr>
+<tr><td><tt>drawOrder</tt> (indices, top first)</td><td><tt>order</tt> (lids, top first)</td></tr>
+</table>
+<h3>18.2 Draw objects</h3>
+<p>Each of the 14 V1 registry objects is rewritten as a generator (D-5) after a one-page feature list agreed with the owner
+(FR-6.3.9), with a "from V1" settings mapping. Known particulars: Parametrics gained handles (centre, size) on
+<tt>v1-finish</tt>; Linked Circles strokes its circles itself (O-16); Circular Parabola (Multi) and Linked Circles are kept for
+the sketching purpose, not because a template needs them.</p>
+<h3>18.3 Scripts, hints and approved copies</h3>
+<table class="req">
+<tr><td>DR-18.1</td><td>Every V1 pattern and gallery script runs in the host unchanged (DR-9.5); its recorded geometry is compared with V1's approved copy (FR-6.17.4).</td></tr>
+<tr><td>DR-18.2</td><td>V1's approved regression copies (<tt>tests/regression/</tt>) are the baseline for that comparison; they are made on the owner's PC before cut-over.</td></tr>
+<tr><td>DR-18.3</td><td>The 282 Ideabook hint scripts convert to hint documents (DR-16.11); their shared routines map to kernel connectors and composites (FR-6.2.5a, b).</td></tr>
+<tr><td>DR-18.4</td><td>Saved Draw variations ("secondary objects") import through the same mapping as layers.</td></tr>
+<tr><td>DR-18.5</td><td>V1 remains usable throughout (D-1); cut-over is the owner's decision at CP-8.</td></tr>
+</table>
+
+<h2>19.0 CONSTRUCTION AND TEST PLAN</h2>
+[[FIG roadmap | Checkpoints and their order]]
+<p>Each checkpoint is a branch the owner reviews, uses and accepts before the next begins (FS 10). The table lists, for each, what
+is built, the acceptance tests of this document that must pass, and the regression state expected.</p>
+<table class="small">
+<tr><th>CP</th><th>Built</th><th>Must pass</th><th>Regression</th></tr>
+<tr><td>CP-0 Skeleton</td><td>folders and layers (3.2), the service with its core requests, catalog from folders, error bar and log, the regression harness, the commit hook and checks, plugin finding, seeds, z in points</td><td>AT-8.1, 8.3, 8.4, 12.1, 12.2</td><td>harness runs on V1's approved copies (nothing V2 yet)</td></tr>
+<tr><td>CP-1 Kernel bench</td><td>kernel types, makers, shapers, connectors, composites, finders, pursuit engine, roulettes, adaptive sampling; the kernel bench page</td><td>AT-4.1 to 4.7, 13.2</td><td>kernel items approved</td></tr>
+<tr><td>CP-2 Generators</td><td>generator files and schema, the common settings panel, controls, the 14 rewritten objects, commands table with scopes, journals and Notes, the budget</td><td>AT-5.1 to 5.3, 11.1 to 11.3, 16.x schema check</td><td>generators approved; V1 Draw comparison reviewed</td></tr>
+<tr><td>CP-3 Documents</td><td>document model, point table, welds, attachments, evaluation, commands and undo, session, crash recovery, kept versions, integrity check; Sweep</td><td>AT-6.1 to 6.4, 7.1 to 7.3, 15.1 to 15.3</td><td>saved test figures approved</td></tr>
+<tr><td>CP-4 Figures</td><td>the Figures tab, discs, points mode, magic points and intersections, transforms, lattice, symmetry, templates</td><td>AT-13.1, 13.3</td><td>V1 figures imported and compared</td></tr>
+<tr><td>CP-5 Script host</td><td>the frame, adapter, recorder, limits, run history with pictures, Learn</td><td>AT-9.1 to 9.3, 14.1 to 14.3</td><td>all 185 legacy scripts compared</td></tr>
+<tr><td>CP-6 Importer</td><td>ingestion levels 1 to 3, review panel; Ideabook hints as documents</td><td>DR-16.11 ledger complete</td><td>hints approved</td></tr>
+<tr><td>CP-7 Output</td><td>SVG, PDF with tiling and calibration, nail list, spacing check, colour cycle, per-layer files</td><td>AT-10.1 to 10.4</td><td>output files compared</td></tr>
+<tr><td>CP-8 Parity</td><td>everything V1 did that the owner wants; help pages; cut-over</td><td>every AT; the owner's own walk through every tab</td><td>no unexplained change anywhere</td></tr>
+</table>
+<table class="req">
+<tr><td>DR-19.1</td><td>Each checkpoint ends with: every check of 16.2 green; the regression report reviewed with the owner; a checklist for the owner of what to try by hand (V1's CHECKLIST files are the model); and the decisions log updated.</td></tr>
+<tr><td>DR-19.2</td><td>Guesses made while building go in a decisions log with the guess and how to reverse it (V1's <tt>V1_FINISH_PLAN.md</tt> G-1 to G-18 is the model).</td></tr>
+</table>

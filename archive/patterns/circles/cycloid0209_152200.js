@@ -1,0 +1,49 @@
+/* ===========================================================
+   GENERATED PATTERN (from Draw / drawRegistry)
+   -----------------------------------------------------------
+   Category: circles
+   drawRegistry id: cycloid
+   Notes:
+     - This file is generated from the CURRENT Draw parameters.
+     - It rehydrates by importing the drawRegistry module and
+       then applying the saved params.
+=========================================================== */
+
+import "../../drawRegistry/cycloid.js";
+
+export function runPattern() {
+  const entry = window.drawRegistry["cycloid"];
+  if (!entry) throw new Error("runPattern: window.drawRegistry['cycloid'] missing");
+
+  // Saved parameters from the Draw tab (current state)
+  const s = {
+    "midpoint": {
+      "x": 300,
+      "y": 300
+    },
+    "radius": 250,
+    "numNodes": 240,
+    "numCycloids": 2,
+    "xScale": 1,
+    "yScale": 1,
+    "color": "blue",
+    "lineWidth": 1,
+    "points": [
+      {
+        "x": 300,
+        "y": 300
+      }
+    ]
+  };
+
+  // Apply params + redraw deterministically
+  // Draw with a private copy, so the shared registry object keeps its own
+  // settings (Object.create falls back on entry for init, update and draw).
+  const inst = Object.create(entry);
+  inst.params = s;
+  inst.elements = null;
+  inst.init();
+  inst.update(inst.params);
+  inst.draw();
+
+} // end runPattern

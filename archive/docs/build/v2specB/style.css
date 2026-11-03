@@ -1,0 +1,36 @@
+@page { size: Letter; margin: 0.9in 0.85in 0.85in 0.85in; }
+body { font-family: "Bitstream Charter", "Charter", Georgia, serif; font-size: 10.4pt; line-height: 1.42; color: #000; margin: 0; }
+tt, code, pre, .req td:first-child, .mono { font-family: "Courier 10 Pitch", "Courier New", monospace; }
+tt { font-size: 9.6pt; }
+h2 { font-size: 13pt; letter-spacing: 0.04em; border-bottom: 1.5px solid #000; padding-bottom: 3px; margin: 0 0 10px; break-before: page; break-after: avoid; }
+h3 { font-size: 11pt; margin: 16px 0 6px; break-after: avoid; }
+h2.nonum:first-of-type { break-before: page; }
+p { margin: 0 0 8px; text-align: justify; hyphens: auto; }
+ul, ol { margin: 0 0 8px; padding-left: 1.6em; } li { margin: 2px 0; }
+table { border-collapse: collapse; width: 100%; margin: 6px 0 12px; font-size: 9.4pt; }
+th, td { border: 0.8px solid #000; padding: 3px 6px; vertical-align: top; text-align: left; }
+th { background: #e8e5de; font-weight: bold; }
+tr { break-inside: avoid; }
+table.small { font-size: 8.7pt; }
+table.req td:first-child { width: 78px; font-size: 8.8pt; font-weight: bold; white-space: nowrap; }
+table.cp { margin: 0 0 12px; break-inside: avoid; }
+table.cp th { text-align: left; letter-spacing: 0.05em; background: #d9d5cc; }
+table.cp td:first-child { width: 92px; font-weight: bold; }
+pre.code { font-size: 8.4pt; line-height: 1.3; border: 0.8px solid #000; padding: 7px 9px; margin: 6px 0 12px; white-space: pre; break-inside: avoid; background: #fbfaf7; }
+pre.listing .ln { color: #666; }
+pre.dd { font-size: 8.2pt; }
+.fig { margin: 10px 0 14px; text-align: center; break-inside: avoid; }
+.fig svg { display: block; margin: 0 auto; }
+.cap { font-size: 9.2pt; font-weight: bold; margin-top: 5px; text-align: center; }
+.cover { text-align: center; padding-top: 30px; }
+.docno { font-family: "Courier 10 Pitch", monospace; font-size: 10pt; text-align: right; }
+.ctitle { font-size: 34pt; font-weight: bold; letter-spacing: 0.12em; margin: 90px 0 18px; line-height: 1.15; }
+.csub { font-size: 17pt; letter-spacing: 0.18em; border-top: 2px solid #000; border-bottom: 2px solid #000; display: inline-block; padding: 6px 20px; margin-bottom: 16px; }
+.csub2 { font-size: 12pt; font-style: italic; margin-bottom: 70px; }
+table.ctl { width: 82%; margin: 0 auto 18px; font-size: 9.6pt; }
+table.ctl td:first-child { width: 28%; font-weight: bold; }
+table.sig td.line { height: 34px; vertical-align: bottom; font-size: 8pt; color: #555; }
+.toc { font-size: 10pt; margin: 0 0 14px; }
+.toc div { display: flex; } .toc .t3 { padding-left: 2em; font-size: 9.6pt; }
+.toc .fill { flex: 1; border-bottom: 1px dotted #000; margin: 0 6px 4px; }
+.endmark { text-align: center; font-family: "Courier 10 Pitch", monospace; margin-top: 30px; letter-spacing: 0.2em; }

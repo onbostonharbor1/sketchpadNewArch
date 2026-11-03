@@ -1,0 +1,26 @@
+[
+  {
+    "filename": "big Width",
+    "path": "big Width.json",
+    "title": "big Width",
+    "thumb": "images/thumb_big Width.png"
+  },
+  {
+    "filename": "Green ellipse",
+    "path": "Green ellipse.json",
+    "title": "Green ellipse",
+    "thumb": "images/thumb_Green ellipse.png"
+  },
+  {
+    "filename": "Rotated",
+    "path": "Rotated.json",
+    "title": "Rotated",
+    "thumb": "images/thumb_Rotated.png"
+  },
+  {
+    "filename": "Full",
+    "path": "Full.json",
+    "title": "Full",
+    "thumb": "images/thumb_Full.png"
+  }
+]

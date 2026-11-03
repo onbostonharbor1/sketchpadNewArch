@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Draw Tab — How It Works</title>
+  <link rel="stylesheet" href="/help/help_treatise.css" />
+</head>
+<body>
+
+<h1>Draw Tab — How It Works</h1>
+
+<p class="note">Rewritten 27 October 2026 against the current code. The earlier page described a single
+<code>draw.js</code>; the tab has since been split into seven files under <code>ui/draw/</code>, and it
+gained secondary objects (saved parameter variations).</p>
+
+<p>The Draw tab shows one registry object at a time on the shared canvas, with its controls. It is a small
+tab system inside the main one: a permanent <strong>Categories</strong> subtab that lists every
+<code>drawRegistry</code> object, plus one subtab per object you open.</p>
+
+<h2>The files</h2>
+<table>
+<tr><th>File</th><th>Owns</th></tr>
+<tr><td><code>draw.js</code></td><td><code>DrawTabSpec</code>, <code>DrawController</code>, init / restore / save, and the
+  launch intent from Home</td></tr>
+<tr><td><code>drawNav.js</code></td><td>the subtab bar: open, switch, close; the dirty mark; secondary objects (find,
+  list, load)</td></tr>
+<tr><td><code>drawCategories.js</code></td><td>the Categories view: read <code>window.drawRegistry</code>, group by
+  category, render with <code>categories.js</code></td></tr>
+<tr><td><code>drawRunner.js</code></td><td><code>drawActiveTab()</code>: put the canvas in <code>#sketchpad</code>, build the
+  controls, <code>update()</code> then <code>draw()</code>; scaffold guides; export to a Pattern script</td></tr>
+<tr><td><code>drawMenuCmds.js</code></td><td>caption bar and its menu; Save / Copy / Reset; PNG and Pattern export;
+  secondary save and archive; the Commands panel</td></tr>
+<tr><td><code>drawTabState.js</code></td><td>one shared value: the set of registry ids that have secondaries on disk</td></tr>
+<tr><td><code>secondaryObjects.js</code></td><td>the requests to the Node service that save, list, load and archive
+  secondaries</td></tr>
+</table>
+
+<h2>State</h2>
+<pre>uiState.draw = {
+  activeSubtab: "tab-categories" | "tab-&lt;object name&gt;",
+  tabs: {
+    "tab-categories": { type: "categories" },
+    "tab-parabola":   { type: "object", drawRegistry: &lt;the registry entry&gt;,
+                        dirty, parameters,
+                        redrawHandler, onParamChange }
+  },
+  saved: null
+}</pre>
+<p>An object subtab holds the <em>registry entry itself</em>, not a copy (contrast Figures, where each layer
+gets its own instance). Its <code>parameters</code> is the entry's own <code>params</code> object.
+<code>redrawHandler</code> and <code>onParamChange</code> are attached by <code>drawActiveTab()</code> for the
+parameter controls to call.</p>
+
+<h2>Activation: init, and why restore never runs</h2>
+<p><code>setUI.js</code> decides how to show a tab: <code>init(true)</code> if the tab is flagged
+<code>needsUpdate</code>; otherwise <code>restore()</code> if <code>uiState.draw.saved</code> is set; otherwise
+<code>init(false)</code>. Nothing ever sets <code>uiState.draw.saved</code> (setUI does not call
+<code>save()</code> on the way out), so Draw always runs <code>initDrawTab()</code>. That is fine in practice:
+<code>initDrawTab()</code> rebuilds the subtab bar from <code>uiState.draw.tabs</code> and switches back to the
+active subtab, so open objects survive a trip to another tab. <code>restoreDrawTab()</code> and
+<code>saveDrawState()</code> exist but are not reached.</p>
+<p><code>initDrawTab()</code> in order:</p>
+<ol>
+<li>Starts finding which objects have secondaries (asynchronous; redraws the category list when done).</li>
+<li>Clears the regions, labels and wires the Commands button.</li>
+<li>Rebuilds the subtab bar from <code>uiState.draw.tabs</code> (or creates Categories if there are none).</li>
+<li>If Home left a launch intent for Draw (<code>uiState.launch</code>), consumes and clears it and opens that
+  object in a new subtab.</li>
+<li>Otherwise switches to the remembered subtab, or Categories.</li>
+</ol>
+
+<h2>Opening, switching, closing</h2>
+<ul>
+<li><strong>addDrawSubtab(item)</strong> makes the subtab id from the object's name
+  (<code>"tab-" + name, spaces to dashes, lower case</code>), calls the entry's <code>init()</code>, arms the
+  interactor if the object is interactive and has handles, records the tab, and draws it.</li>
+<li><strong>switchTab(tabId)</strong> marks the button active, disarms the interactor, clears the regions, and
+  shows Categories or the object (draw, caption, re-arm the interactor).</li>
+<li><strong>deleteTab(tabId)</strong> removes the button and the state and switches to a neighbor.</li>
+</ul>
+
+<h2>Drawing: drawActiveTab()</h2>
+<ol>
+<li>Show <code>#sketchpad-wrapper</code>; put the shared canvas into <code>#sketchpad</code>; clear it.</li>
+<li>Size the "interaction" and "guides" overlay canvases to match.</li>
+<li>Attach <code>redrawHandler</code> (this function) and <code>onParamChange</code> (mark dirty).</li>
+<li>Build the controls with <code>buildParameterControls(state, "tab-draw", true)</code>.</li>
+<li><code>entry.update(params)</code>, <code>entry.draw()</code>, then the scaffold guide (a dashed gray line along
+  <code>elements.l1</code>, for objects that have one).</li>
+</ol>
+
+<h2>Caption menu and commands</h2>
+<p>The caption shows the object's name and a "v" menu built each time it opens: Help, Notes, Save as
+PNG, Save as Pattern, Copy Object, Reset Parameters, then either Save as Secondary (for a primary object)
+or Save Secondary and Archive Secondary (for a loaded secondary). The Commands button opens a maintenance
+panel (Rebuild &amp; Validate through the Node service).</p>
+
+<h2>Secondary objects</h2>
+<p>A secondary is a saved set of parameter values for one registry object, kept on disk by the Node service
+(<code>secondaryObjects.js</code>). On the Categories view, an object that has secondaries shows a "&gt;"
+button that lists them; choosing one loads its values into a subtab. <code>drawTabState.js</code> holds the
+set of ids that have any, filled by <code>updateSecondariesDiscovery()</code>.</p>
+
+<h2>Known gaps (still true on 27 October 2026)</h2>
+<ul>
+<li><strong>Two subtabs of one object collide.</strong> The id comes from the name, and the subtab holds the
+  shared registry entry, so opening the same object twice gives one id and one set of parameters.</li>
+<li><strong>Restore is never used</strong> (above). If whole-page reload persistence is wanted, it needs a real
+  save call and a restore path that rebuilds subtabs from saved keys and parameters.</li>
+<li>Handles are drawn only for objects marked <code>interactive</code> with a <code>params.points</code> array.</li>
+</ul>
+
+</body>
+</html>

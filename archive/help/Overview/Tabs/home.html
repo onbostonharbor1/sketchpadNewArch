@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Home Tab — How It Works</title>
+  <link rel="stylesheet" href="/help/help_treatise.css" />
+</head>
+<body>
+
+<h1>Home Tab — How It Works</h1>
+
+<p class="note">Rewritten 27 October 2026 against the current code. The earlier page described a single
+<code>home.js</code>; the tab is now six files under <code>ui/home/</code>. Two things changed in behavior:
+images now show in <code>#text</code> (not <code>#sketchpad</code>), and the Home manifest now lives in the
+shared <code>manifest.cache</code> instead of a private cache.</p>
+
+<p>Home is a dispatcher. It reads one flat list, <code>/home/manifest.json</code>, groups the entries by their
+<code>status</code>, and shows one category frame per status. Clicking an entry either shows it here
+(a script on the canvas, or an image) or, for a built-in Draw object, opens the Draw tab on it.</p>
+
+<h2>The files</h2>
+<table>
+<tr><th>File</th><th>Owns</th></tr>
+<tr><td><code>home.js</code></td><td><code>HomeTabSpec</code>; init / restore / save; <code>ensureHomeSavedState()</code></td></tr>
+<tr><td><code>homeNav.js</code></td><td>the two subtabs, switching between Categories and Results, the category
+  frames and what a click does, launching Draw</td></tr>
+<tr><td><code>homeManifest.js</code></td><td>loading <code>/home/manifest.json</code>, grouping by status, refreshing
+  after an edit</td></tr>
+<tr><td><code>homeResults.js</code></td><td>showing the chosen entry: run a script or load an image; the render
+  token</td></tr>
+<tr><td><code>homeMenuCmds.js</code></td><td>caption bar with the file's full path; menu (Help, Show Script, Edit
+  Manifest); the Commands panel</td></tr>
+<tr><td><code>homeState.js</code></td><td>the grouped manifest and the render token</td></tr>
+</table>
+
+<h2>State</h2>
+<pre>uiState.home.saved = {
+  view:         "categories" | "results",
+  activeStatus: string | null,
+  activeIndex:  number | null,
+  activeEntry:  the manifest entry object | null
+}</pre>
+<p>Unlike the other tabs, Home's <code>saved</code> is already filled in by <code>uiState.js</code>, so
+<code>setUI.js</code> always calls <code>restore()</code> for Home (after a manifest rebuild it calls
+<code>init(true)</code> instead). Both end in <code>switchHomeView(saved.view)</code>, so Home always comes back
+to what it last showed. <code>saveHomeState()</code> exists but is never called; the state is written as you
+click.</p>
+
+<h2>Two views</h2>
+<ul>
+<li><strong>Categories</strong>: clears the caption, the canvas area and <code>#action</code>, then draws the
+  status frames into <code>#text</code> (or "loading..." until the manifest arrives).</li>
+<li><strong>Results</strong>: shown only once an entry has been chosen (the Results subtab appears when
+  <code>activeEntry</code> is set). Runs <code>renderHomeResults()</code>.</li>
+</ul>
+<p>The subtab bar is built by the shared <code>buildSubtabBar()</code> helper from a small description (an
+"adapter"): the two tabs, which one is active, and a <code>condition</code> that hides Results until there is
+something to show.</p>
+
+<h2>What a click does</h2>
+<ul>
+<li>An entry with <code>sourceType: "drawRegistry"</code> is launch-only. Home resets its own view to
+  Categories, writes a launch intent into <code>uiState.launch</code> (pending, from home, to draw, the
+  registry key), and calls <code>setUI("draw")</code> through a dynamic <code>import()</code>
+  (<code>setUI.js</code> imports Home, so Home cannot import it at load time). Draw consumes and clears the
+  intent.</li>
+<li>Any other entry is stored as <code>activeEntry</code> and shown in Results.</li>
+</ul>
+
+<h2>Results</h2>
+<ul>
+<li>A <code>.js</code> path is run with <code>runScriptByPath()</code> (<code>scriptRunner.js</code>) on the shared
+  canvas in <code>#sketchpad</code>, with its parameter controls in <code>#action</code>.</li>
+<li>An image path (png, jpg, jpeg) is loaded and shown in <code>#text</code>, at most 800 by 800.</li>
+<li>Anything else shows an error and throws.</li>
+</ul>
+<p><strong>The render token.</strong> Each Results render takes a new number from
+<code>incrementHomeResultsRenderToken()</code>. A slow image load checks, when it finishes, that its number is
+still the latest; if you clicked something else meanwhile, it quietly gives up instead of overwriting the
+newer result.</p>
+
+<h2>The manifest</h2>
+<p><code>/home/manifest.json</code> is a flat array (no category folders, no directory registry). It is read
+with <code>fileLayer.loadJSON()</code> and kept in <code>manifest.cache["home"]</code>, so the shared cache
+invalidation clears it like any other. Entries whose <code>status</code> is missing or blank are skipped; a
+non-object entry is an error.</p>
+
+<h2>Caption and commands</h2>
+<p>In Results the caption shows the title and, just before the menu button, the entry's full path. The menu
+has Help, Show Script and Edit Manifest. The Commands panel runs Rebuild &amp; Validate, resyncs, re-runs
+<code>initHomeTab()</code>, and prints the report; it also has a Help button.</p>
+
+<h2>Removed 31 October 2026</h2>
+<p><code>clearHomeCanvasAndOverlays()</code> in <code>homeResults.js</code> was exported but no longer called;
+canvas clearing is done by the script runner. It is gone.</p>
+
+</body>
+</html>

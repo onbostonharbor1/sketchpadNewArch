@@ -1,0 +1,117 @@
+<h2>7.0 DATA FLOW</h2>
+<h3>7.1 Context diagram</h3>
+<p>[[REF context_dfd]] shows Sketchpad as a single process and everything outside it. The owner gives commands and receives
+drawings, lists and reports. The file system holds the library and saved documents. VS Code edits files directly; the
+change reaches Sketchpad through the file system, not through Sketchpad. A foreign script enters by import. The printer
+receives a true-scale template.</p>
+[[FIG context_dfd | Context diagram (Level 0)]]
+<h3>7.2 Level 1: the seven processes</h3>
+<p>[[REF level1_dfd]] expands process 0. Two flows deserve attention. First, process 2.0 is the only process that writes the open
+document (D2); every other process reads it. Second, process 1.0 learns of new files from the library folders (D1)
+directly, by watching them, which is what makes a saved file appear without a Rebuild.</p>
+[[FIG level1_dfd | Level 1 data flow diagram]]
+<table class="t">
+<tr><th>Process</th><th>Takes</th><th>Gives</th><th>Modules</th></tr>
+<tr><td>1.0 Maintain catalog</td><td>file changes from D1</td><td>the index (D5); item lists</td><td>Catalog, Node watcher</td></tr>
+<tr><td>2.0 Edit document</td><td>commands; selection and mode from D4</td><td>the edited document (D2); snapshots (D3)</td><td>Interaction, Commands, History, Session</td></tr>
+<tr><td>3.0 Evaluate geometry</td><td>the document (D2)</td><td>geometry</td><td>Evaluator, Kernel, Generators</td></tr>
+<tr><td>4.0 Render</td><td>geometry; view options (D4); recorded geometry</td><td>picture; template file</td><td>Renderers</td></tr>
+<tr><td>5.0 Host scripts</td><td>script code</td><td>recorded geometry or pixels; recording and report</td><td>Script host</td></tr>
+<tr><td>6.0 Ingest script</td><td>recording and report; the owner's approval</td><td>adapted script (D1)</td><td>Importer</td></tr>
+<tr><td>7.0 Store and retrieve</td><td>save and open requests</td><td>files (D1); opened document (D2)</td><td>Storage, Node service</td></tr>
+</table>
+<h3>7.3 Level 2: process 2.0, Edit document</h3>
+<p>A gesture is interpreted against the session (what is selected, which mode), turned into an intent, then a command.
+The snapshot is taken before the command is applied, so undo can always return to the state before it. The changed
+document goes on to evaluation. Undo and redo exchange the open document with a snapshot from history.</p>
+[[FIG edit_dfd | Level 2: Edit document]]
+<h3>7.4 Level 2: process 3.0, Evaluate geometry</h3>
+<p>Layers are taken in dependency order (Figure 11). For each layer, its handles' point numbers are resolved: free points
+are read from the table, attached points are computed from paths of layers already finished. The generator's recipe
+makes the paths, shapers shape them, connectors join them into stitches, and finders name the points that later layers
+and the nail list need. The loop from 3.6 back to 3.2 is how one layer's named points become available to the next.</p>
+[[FIG eval_dfd | Level 2: Evaluate geometry]]
+
+<h2>8.0 DATA DICTIONARY</h2>
+<p>DeMarco notation (Section 1.4). Names in capitals are defined elsewhere in this dictionary.</p>
+<pre class="code dd">DOCUMENT        = format + title + units + (scale) + POINT-TABLE + {LAYER} + layerOrder + OUTPUT-SETTINGS
+format          = * whole number; 2 for the first V2 format *
+units           = [ "mm" | "in" | "legacy" ]
+POINT-TABLE     = {pointNumber + POINT}
+pointNumber     = * whole number, permanent, never reused *
+POINT           = [ FREE-POINT | ATTACHED-POINT ]
+FREE-POINT      = x + y
+ATTACHED-POINT  = on + [ t | feature ]
+on              = * a layerId *
+t               = * fraction along the path, 0 to 1 *
+feature         = * a finder's name, e.g. "tip of lobe 3" *
+LAYER           = layerId + legacyNumber + [ GENERATOR-USE | DOCUMENT-REF ] + transform + role
+                  + identityColor + includeInOutput
+GENERATOR-USE   = generatorId + generatorVersion + {setting} + {handleName + pointNumber}
+DOCUMENT-REF    = documentPath + [ "reference" | "copy" ]
+role            = [ "stitch" | "guide" | "scaffold" | "image" ]
+transform       = angle + tx + ty
+OUTPUT-SETTINGS = (nailDiameter) + (clearance) + (paper) + (tiling) + (labels)
+
+SESSION         = {tabId + TAB-SESSION}
+TAB-SESSION     = {openDocument} + activeLayer + mode + showAll + {hiddenLayer} + (selectedPoint) + zoom + pan
+HISTORY         = {SNAPSHOT} + position + savedPosition
+SNAPSHOT        = commandName + DOCUMENT
+
+GENERATOR-FILE  = META + PARAMS + [ build | run ] + (drag) + (migrate)
+META            = id + version + title + {tag} + notes
+PARAMS          = {settingName + SETTING-DEF}
+SETTING-DEF     = type + default + (min) + (max) + (step) + (label) + (widget) + (section) + (showIf) + (handle)
+type            = [ "int" | "number" | "angle" | "color" | "choice" | "bool" | "text" | "point" | "points" | "pathRef" ]
+
+PATH            = {point} + closed
+GEOMETRY        = {pathName + PATH} + {STITCH} + {pointName + point} + bounds + style
+STITCH          = point + point
+
+CATALOG-ENTRY   = itemId + kind + category + title + status + sourcePath + (thumbnail) + (report) + (badge)
+kind            = [ "generator" | "script" | "legacyScript" | "foreignScript" | "document" | "image" ]
+ITEM-METADATA   = status + {tag} + (order) + (hidden)       * the small file beside each item *
+SCRIPT-REPORT   = {STITCH-GUESS} + {SETTING-GUESS} + {globalTouched} + usesNetwork + animates + runTime</pre>
+<p>An example document, to show that a figure can be read and understood in VS Code:</p>
+<pre class="code">{ "format": 2, "title": "Two parabolas", "units": "mm", "scale": 0.5,
+  "points": { "9": [60, 30], "10": [60, 190], "11": [220, 190],
+              "14": { "on": "L3", "t": 0.25 } },
+  "layers": [
+    { "id": "L1", "n": 1, "use": "parabola@1", "role": "stitch",
+      "settings": { "steps": 18, "color": "#0044cc" },
+      "handles":  { "a": 9, "b1": 10, "b2": 10, "c": 11 } },
+    { "id": "L2", "n": 2, "doc": "figures/stars/smallStar.json", "mode": "reference",
+      "transform": { "angle": 30, "tx": 200, "ty": 0 } }
+  ],
+  "order": ["L2", "L1"] }</pre>
+
+<h2>9.0 CHANGES FROM VERSION 1</h2>
+<table class="t">
+<tr><th>Area</th><th>Version 1</th><th>Version 2</th><th>Solves</th></tr>
+<tr><td>Geometry</td><td>Exists while painting; <tt>draw()</tt> and <tt>infrastructure()</tt> must agree</td><td><tt>build()</tt> returns all geometry as data, once</td><td>P-1</td></tr>
+<tr><td>Objects</td><td>Shared singletons with live settings; <tt>Object.create</tt> copies</td><td>Generators hold no state; each layer has its own settings in the document</td><td>P-2</td></tr>
+<tr><td>Settings</td><td><tt>params</tt> with a <tt>points[]</tt> mirror and derived values, all saved</td><td>Settings only; handles name point numbers; nothing derived is saved</td><td>P-3</td></tr>
+<tr><td>Dragging</td><td><tt>update()</tt> guesses which handle moved</td><td>A drag writes one named setting or point through a command</td><td>P-4</td></tr>
+<tr><td>Handles</td><td>Undeclared; found by coordinate matching</td><td>Declared by name and role; <tt>drag()</tt> for unusual ones</td><td>P-5</td></tr>
+<tr><td>Welds</td><td>Groups of copies kept in step by a propagation walk</td><td>Shared point numbers and one-way attachments; evaluation in order</td><td>P-6</td></tr>
+<tr><td>Undo</td><td>None</td><td>Snapshot history; one gesture, one step</td><td>P-7</td></tr>
+<tr><td>State</td><td>One object per tab mixing three kinds</td><td>Document, session and interaction kept apart</td><td>P-8</td></tr>
+<tr><td>Tab switching</td><td>Decision order of flags</td><td>Close, then open from own state</td><td>P-9</td></tr>
+<tr><td>Lists</td><td>Stored manifests, rebuilt and checked</td><td>Index worked out from folders plus a metadata file per item</td><td>P-10</td></tr>
+<tr><td>Files and Node</td><td>Two boundaries, often bypassed</td><td>One Storage module, checked automatically</td><td>P-11</td></tr>
+<tr><td>Scripts</td><td>Shared globals and state</td><td>Isolated frame, fresh canvas per run</td><td>P-12</td></tr>
+<tr><td>Adding items</td><td>Restart or Rebuild; registry list edited by hand</td><td>Save the file; it appears</td><td>P-13</td></tr>
+<tr><td>Controls</td><td>Two blocks; widget names; aliases; widgets write settings</td><td>One typed schema; widgets send commands</td><td>P-14</td></tr>
+<tr><td>Output</td><td>Canvas pixels; no true-scale print</td><td>Units, SVG, calibrated PDF, nail list, spacing check</td><td>P-15</td></tr>
+<tr><td>Menus, words</td><td>Eight menu files; "overlay" three ways</td><td>One commands table; panel and canvas layer</td><td>P-16</td></tr>
+<tr><td>Metadata</td><td>Seven unread fields; decorative version</td><td>Only fields that are read; version drives migration</td><td>P-17</td></tr>
+<tr><td>Parametrics</td><td>Separate code; spacing tools for ellipses only</td><td>A maker like any other; shapers work on every path</td><td>P-18</td></tr>
+<tr><td>Adapting scripts</td><td>By hand, into a second format</td><td>Importer proposes levels 1 to 3; owner approves</td><td>P-19</td></tr>
+</table>
+<p><b>What is retired.</b> <tt>drawState.js</tt> globals; <tt>window.drawRegistry</tt> and its hand-kept list; manifests as
+authority, <tt>maintain_manifests</tt>, the start-up rebuild and the Home alert bar's reason for existing;
+<tt>fileLayer</tt> and direct <tt>nodeDispatch</tt> calls; the weld propagation walk and <tt>cornerPartners()</tt>;
+<tt>needsUpdate</tt>; the per-tab menu files; TinyMCE.</p>
+<p><b>What is kept, by intent.</b> The six tabs; Notes from header comments; permanent ids; stable numbers; layer
+transforms; infrastructure (now paths); the list builder's isolation; the playpen rule; the local Node service and its
+path safety; plain JavaScript.</p>

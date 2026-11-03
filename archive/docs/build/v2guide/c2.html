@@ -1,0 +1,37 @@
+<h2>Part 2. What gets in the way</h2>
+<p>The program works and its tests pass. The weaknesses below aren't bugs; they're the reasons each new feature costs more
+than the last. They are grouped by cause.</p>
+<h3>2.1 The shape exists only while it is being painted</h3>
+<p>Because stitches are computed and painted in one step, anything else that needs the shape has to get it some other
+way:
+<ul>
+<li><b>discs</b> through <tt>infrastructure()</tt>;</li>
+<li><b>bounds</b> collected as a side effect while drawing;</li>
+<li><b>thumbnails</b> by borrowing the main canvas;</li>
+<li><b>a printed template</b> would have to be drawn all over again.</li>
+</ul>
+Every one of these is a second account of the same geometry.</p>
+<h3>2.2 One thing, many owners</h3>
+<p>A registry object is a single shared copy, so Draw, Figures and Patterns end up sharing one set of settings. Inside an
+object, end points are kept twice: once by name and once in <tt>points[]</tt>. Across a figure, a welded spot is kept once
+per layer. Wherever there are copies, code has to keep them in step, and that's where the bugs have been, including both
+Phase 8 bugs found in real use.</p>
+[[FIG copies_vs_one | Copies kept in step, against one entry with two names]]
+<h3>2.3 Every change is final</h3>
+<p>There is no undo. Delete Layer warns that it can't be taken back. In a program meant for sketching, where trying
+something and backing out is the point, that's a real cost.</p>
+<h3>2.4 Adding something takes bookkeeping</h3>
+<p>A new script shows up only after a restart or a Rebuild, because its folder's manifest has to be rewritten. A new
+Draw object needs a line added by hand to <tt>drawRegistry.js</tt>. <tt>boxes.js</tt> shows what happens when that step is
+missed: it's loaded and never appears, and nothing says why. The manifests are copies of what's in the folders, so they can
+disagree with the folders. That's why there are start-up rebuilds, missing-file checks and an alert bar.</p>
+<h3>2.5 Scripts share one room</h3>
+<p>Every script draws on the same canvas with the same shared state. One script can leave something behind that the
+next one trips on. Two scripts fail after about a hundred others have run.</p>
+<h3>2.6 Two kinds of drawing, two kinds of code</h3>
+<p>Parametric drawings live in their own code (<tt>drawParametrics.js</tt>). The good tools for spacing points (even
+spacing by arc length, bias, jitter, all in <tt>createNodes</tt>) work only for ellipses. A rose curve can't use them.</p>
+<h3>2.7 Small things that add up</h3>
+<p>Controls are declared in two blocks, with widget names instead of value types, and with two names for the colour
+widget. "Overlay" means three different things. Each tab builds its menus its own way. None of these is serious alone;
+together they make every change start with "which convention does this part use?"</p>

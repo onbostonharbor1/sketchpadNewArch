@@ -1,0 +1,229 @@
+<h2>Part 4. The drawing model: a tutorial</h2>
+<h3>4.0 The whole model on one page</h3>
+<p>Everything Sketchpad draws comes from four verbs:</p>
+<ul>
+<li><b>Make</b> a path from a rule: a line, a circle, a rose.</li>
+<li><b>Shape</b> it: space its points evenly, trim it, reverse it, turn it. Shaping can be repeated as often as you like.</li>
+<li><b>Connect</b> one or more paths into stitch lines.</li>
+<li><b>Find</b> the points worth naming: an end, a corner, the tip of a lobe.</li>
+</ul>
+<p>Named points go into the document's point table. That is where nails come from, and where one layer's handles can be
+tied to another's.</p>
+[[FIG model_onepage | The drawing model: make, shape, connect, find]]
+<div class="box"><b>Vocabulary for this part.</b> A <b>path</b> is a numbered list of points. A <b>maker</b> builds one; a
+<b>shaper</b> turns one path into another; a <b>connector</b> turns paths into stitch lines; a <b>finder</b> names points
+on a path. The <b>point table</b> is the document's list of numbered points. A <b>generator</b> is one file that strings
+these together into an object such as the Parabola.</div>
+
+<h3>Lesson 1. A path is a list of points</h3>
+<p>Under every line Sketchpad draws there is an ordered list of points. A <b>path</b> is that list plus one fact: whether the
+last point joins back to the first. In Figure 11 the line is an open path of 9 points, numbered 0 to 8. The circle is a
+closed path of 12, numbered 0 to 11, and on a closed path counting past 11 comes round to 0 again. That wrap-around is what
+makes stars and roses possible (Lesson 5).</p>
+[[FIG path_figure | An open path and a closed path]]
+<p><b>What to notice.</b> The numbers are positions in the list, not names. Point 3 is "the fourth one along", whatever its
+coordinates are. Every rule in this tutorial is a rule about those positions.</p>
+
+<h3>Lesson 2. Connecting two paths: the parabola</h3>
+<p>Take two lines that meet at a corner, each divided into 8 steps, so each is a path of 9 points. The connector
+<tt>pairwise</tt> joins point <i>i</i> of the first to point <i>i</i> of the second, for every <i>i</i> (Figure 12).</p>
+[[FIG pairwise_indexed | pairwise: point i joins point i]]
+<p>Every stitch is straight. The curve is what the eye sees where the stitches crowd together: the envelope of the lines.
+It is a true parabola. That's why string art can make curves from straight thread, and it is the whole of what the
+Parabola object does.</p>
+<p><b>What to notice.</b> The arms run in a particular direction: arm 1 from its far end towards the corner, arm 2 from the
+corner outward. Point 0 of arm 1 is the far end; point 0 of arm 2 is the corner. Lesson 3 shows why that matters.</p>
+
+<h3>Lesson 3. Direction and length matter</h3>
+<p>Leave the connector alone and change only the paths (Figure 13). Reverse arm 2, so it runs from its far end back to the
+corner, and every stitch becomes parallel to the others: no curve at all. Make one arm shorter than the other and the
+curve leans. The connector never changed; only the lists it was given did.</p>
+[[FIG reverse_compare | Same connector, paths changed]]
+<p><b>Try it</b> (on the kernel bench, checkpoint CP-1). Predict what <tt>pairwise(reverse(arm1), arm2)</tt> looks like
+before you draw it. It is the same as reversing arm 2, mirrored: parallel lines again.</p>
+
+<h3>Lesson 4. The same connector on other paths</h3>
+<p>Nothing in <tt>pairwise</tt> knows about lines. Give it an arc and a line and you get a curve swept between them. Give it
+two circles and you get a band. Start the small circle's numbering 9 places along (<tt>startAt</tt>, a shaper) and the band
+twists (Figure 14). This is the family Linked Circles belongs to: several circles, joined pairwise in a ring or all to all.</p>
+[[FIG same_connector_other_paths | pairwise between an arc and a line, and between two circles with a twist]]
+
+<h3>Lesson 5. One closed path, joined to itself</h3>
+<p>A connector can join a path to itself. Three rules cover most of the classic string-art figures.</p>
+<p><b>Skip.</b> Join each point to the point <i>s</i> places further on (Figure 15). On a circle of 20 points with
+<i>s</i> = 7, point 0 joins 7, point 1 joins 8, and point 13 joins 20, which is past the end, so it wraps round to 0. The
+wrap-around is what closes the star. Chords in Ellipse is this rule on an ellipse.</p>
+[[FIG skip_examples | skip: each point joins the point s places on]]
+<p><b>Multiply.</b> Join point <i>i</i> to point <i>k</i>&times;<i>i</i> (Figure 16). With <i>k</i> = 2 on 96 points, point 1
+joins 2, point 2 joins 4, and point 50 joins 100, which wraps round to 4. The result is a cardioid, which is what the
+Cycloid object draws. <i>k</i> = 3 gives a nephroid (two lobes), <i>k</i> = 5 four lobes. The number of lobes is
+always <i>k</i> &minus; 1.</p>
+[[FIG multiply_examples | multiply: point i joins point k times i]]
+<p><b>All pairs.</b> Join every point to every other point (Figure 17). That is the mystic rose. The number of lines grows
+quickly: <i>n</i> points give <i>n</i>(<i>n</i> &minus; 1)/2 lines, so 14 points give 91 lines and 30 give 435. On a board
+that is 435 lengths of thread, which is worth knowing before choosing <i>n</i>.</p>
+[[FIG allpairs_counts | allPairs: every point to every other]]
+
+<h3>Lesson 6. Shapers: changing a path before it is connected</h3>
+<p>A shaper takes a path and returns another. Your <tt>createNodes</tt> already did several of these, fused together and
+for ellipses only. Version 2 takes them apart so each works on any path, in any order (Figure 18).</p>
+[[FIG shapers_figure | Shapers]]
+<table class="t">
+<tr><th>Shaper</th><th>What it does</th><th>Typical use</th></tr>
+<tr><td><tt>evenSpacing(path, n)</tt></td><td>Re-places n points at equal distances along the path</td><td>Nails at even spacing on any curve</td></tr>
+<tr><td><tt>bias(path, b)</tt></td><td>Crowds points towards one end</td><td>Denser stitching where the eye looks</td></tr>
+<tr><td><tt>jitter(path, size, seed)</tt></td><td>Moves each point a little, at random but repeatably</td><td>A hand-made look; the same seed gives the same picture</td></tr>
+<tr><td><tt>trim(path, a, b)</tt></td><td>Drops a points from the start and b from the end</td><td>Today's Trim and Shorten sliders</td></tr>
+<tr><td><tt>reverse(path)</tt></td><td>Runs the list backwards</td><td>Lesson 3</td></tr>
+<tr><td><tt>startAt(path, i)</tt></td><td>Renumbers a closed path to start at point i</td><td>Twists (Lesson 4); turns a star without moving it</td></tr>
+<tr><td><tt>everyKth(path, k)</tt></td><td>Keeps every k-th point</td><td>Fewer nails on the same curve</td></tr>
+<tr><td><tt>move, rotate, scale</tt></td><td>Moves the points</td><td>Placing a path; a layer's own move and turn</td></tr>
+</table>
+<p><b>What to notice.</b> Jitter takes a seed. With the same settings and the same seed, the same picture comes back every
+time, which matters for a design you mean to print.</p>
+
+<h3>Lesson 7. Where paths come from: makers, and why parametric is not special</h3>
+<p>A maker is a rule that says where the point is at each moment <i>t</i>, as <i>t</i> runs from start to finish. Sampled
+at <i>n</i> moments, it gives a path. A line is the simplest rule: start at <i>a</i> and move steadily towards
+<i>b</i>. A circle goes round its centre. A Lissajous figure or a rose is just a longer formula (Figure 19). Seen this way,
+a "parametric drawing" is an ordinary path from an unusual maker, and everything in Lessons 2 to 6 applies to it.</p>
+[[FIG makers_figure | Three makers, one kind of result]]
+<p>One difference is real. Taking equal steps in <i>t</i> does not give equal spacing along a curve. On a rose, equal steps
+crowd the points near the centre (left of Figure 18). Nails want equal spacing, so a curve is usually followed by
+<tt>evenSpacing</tt>. Version 2 also keeps two samplings of a curve (Figure 20): a fine one, with many points, for drawing
+it smoothly on screen, and a coarse one, with one point per nail, for stitching and printing.</p>
+[[FIG two_samplings | The same curve, sampled for display and for nails]]
+
+<h3>Lesson 8. Finding points worth naming</h3>
+<p>A finder looks at a path and names points on it (Figure 21): its ends and middle, its extremes, the tips of a rose's
+lobes, its cusps, the places where two paths cross. These are Phase 8b's "magic points", and they are what other layers
+attach to.</p>
+[[FIG finders_figure | Finders name points by what they are]]
+<p><b>What to notice.</b> A finder names a point by what it is ("tip of lobe 2"), not by its position in the list
+("point 17"). Change the rose from 30 points to 40 and point 17 is somewhere else, but tip 2 is still tip 2. That is what
+keeps attachments stable when you change a step count.</p>
+
+<h3>Lesson 9. Layers that use other layers</h3>
+<p>So far each drawing has made its own paths. In a figure, a layer can use paths that belong to other layers.
+In Figure 22, layer L3 owns no shape: it connects layer L1's circle to layer L2's line with <tt>pairwise</tt>. Move
+L1 or L2 and L3 follows, because it is recomputed from them.</p>
+[[FIG cross_layer | A layer that connects two other layers' paths]]
+<p>The same idea joins handles. Every handle names a numbered point in the document's <b>point table</b>, and a table entry
+is one of two kinds.</p>
+<p><b>A free point</b> holds its own position. Two handles that name the same free point are welded: there is one point and
+two names for it (Figure 23). Drag it and both layers redraw. There is nothing to copy and nothing to keep in step. This is
+your rule from October: a weld is a shared point number.</p>
+[[FIG weld_shared | Two layers name point 11]]
+<p><b>An attached point</b> doesn't hold a position. It says "a quarter of the way along layer L3's path", or "on the tip of
+lobe 2 of layer L5". The other layer decides where it is, and the handle follows (Figure 24). It works one way only: dragging
+the attached handle slides it along the path; it never pulls the other layer out of shape. Anchored discs, a handle
+dropped mid-arm, and anything placed on scaffold all work like this.</p>
+[[FIG weld_attach | Point 14 lies on layer L3's path]]
+<p>Because attachments run one way, the layers can always be worked out in order: each one after the layers it is attached
+to (Figure 25). If you try to attach L6 to L5 when L5 is already attached to L6, there is no order that works, so
+Sketchpad refuses at that moment, with a message.</p>
+[[FIG eval_order | Layers are worked out in order; a loop is refused]]
+
+<h3>Lesson 10. Putting it together: a figure with no code</h3>
+<p>Many of the pattern scripts are a figure written out as code. <tt>OverlappingStars.js</tt> works out twenty named points
+on a grid, then stitches parabolas between groups of them. In Version 2 that kind of drawing can be put together from
+layers instead (Figure 26). Layer G makes a 3-by-3 grid of named points and is marked as scaffold, so it never prints. Four
+Parabola layers each name three of G's points: two arm ends and the shared centre p5. The result is a four-pointed star.</p>
+[[FIG composed_star | A star composed from a grid, with no code]]
+<p><b>What to notice.</b> Change the spacing of grid G and the star redraws at the new size, because its layers name G's
+points instead of copying them. Add a second grid offset by half a cell, with four more layers, and you have overlapping
+stars: the same idea as the script, but you can now drag it, weld it and print it.</p>
+
+<h3>Lesson 11. Writing your own generator</h3>
+<p>When composition isn't enough, you write a generator: one file, saved into <tt>generators/</tt>. It appears in the
+Insert list straight away. Listing 1 is a complete one that doesn't exist today: a spiral with each point joined to the
+point a fixed number of steps further along.</p>
+<pre class="code listing"><span class="ln"> 1</span> /* generators/spiralWeb.js -- a spiral, each point joined to the point "gap" steps on. */
+<span class="ln"> 2</span> export const meta = { id: "spiralWeb", version: 1, title: "Spiral Web",
+<span class="ln"> 3</span>                      tags: ["stitch", "spiral"], notes: "Skip-connected spiral." };
+<span class="ln"> 4</span>
+<span class="ln"> 5</span> export const params = {
+<span class="ln"> 6</span>   centre: { type: "point", handle: true, default: [400, 400] },
+<span class="ln"> 7</span>   turns:  { type: "number", default: 4,  min: 1, max: 10, step: 0.5, label: "Turns" },
+<span class="ln"> 8</span>   steps:  { type: "int",    default: 80, min: 20, max: 300, label: "Points" },
+<span class="ln"> 9</span>   gap:    { type: "int",    default: 9,  min: 1, max: 60,  label: "Gap" },
+<span class="ln">10</span>   size:   { type: "number", default: 120, min: 20, max: 380, label: "Size" },
+<span class="ln">11</span>   color:  { type: "color",  default: "#0044cc" }
+<span class="ln">12</span> };
+<span class="ln">13</span>
+<span class="ln">14</span> export function build(p, k) {
+<span class="ln">15</span>   const spiral = k.spiral(p.centre, { turns: p.turns, outer: p.size }, p.steps);
+<span class="ln">16</span>   return { paths: { spiral },
+<span class="ln">17</span>            stitches: k.skip(spiral, p.gap, { wrap: false }),
+<span class="ln">18</span>            points: { centre: p.centre, outerEnd: k.ends(spiral).end },
+<span class="ln">19</span>            style: { color: p.color } };
+<span class="ln">20</span> }</pre>
+<div class="cap">Listing 1. A complete generator</div>
+<p>Line by line:</p>
+<ul>
+<li><b>Lines 2 to 3</b> name it. <tt>id</tt> is permanent, because saved figures refer to it.</li>
+<li><b>Lines 5 to 12</b> declare the settings. Each says what kind of value it is, and the sliders are built from that.
+<tt>centre</tt> is a draggable point because it says <tt>handle: true</tt>.</li>
+<li><b>Line 15</b> makes the path.</li>
+<li><b>Line 17</b> connects it. The spiral is open, so <tt>wrap: false</tt> stops the skip from running past the end.</li>
+<li><b>Line 18</b> names two points that other layers may attach to.</li>
+</ul>
+<p>There is no <tt>init</tt>, <tt>update</tt> or <tt>draw</tt>, and nothing is stored between calls. Figure 27 shows the
+output with two values of Gap.</p>
+[[FIG spiral_web | Spiral Web, as Listing 1 draws it]]
+
+<h3>Lesson 12. How today's objects come out</h3>
+<p>Each of the 14 Draw objects becomes a short recipe. The ones marked <i>draft</i> are first guesses, to be settled when
+each object's one-page feature list is written with you (specification 10.2).</p>
+<table class="t">
+<tr><th>Object</th><th>Recipe</th></tr>
+<tr><td>Line</td><td><tt>line(a, b)</tt>; the middle handle moves both ends</td></tr>
+<tr><td>Parabola</td><td>two <tt>line</tt> arms, <tt>pairwise</tt>; the corner is two handles until you weld them</td></tr>
+<tr><td>Regular Polygon</td><td><tt>polygon</tt>; <tt>pairwise</tt> at each corner between neighbouring sides</td></tr>
+<tr><td>Mystic Rose, Mystic Rose (Ellipse)</td><td><tt>circle</tt> or <tt>ellipse</tt>, <tt>allPairs</tt></td></tr>
+<tr><td>Cycloid</td><td><tt>circle</tt> (or ellipse), <tt>multiply(k)</tt></td></tr>
+<tr><td>Chords in Ellipse</td><td><tt>ellipse</tt>, <tt>skip(s)</tt>; <i>draft</i>: how its five modes map, from its feature list</td></tr>
+<tr><td>Circular Parabola</td><td><i>draft</i>: the Parabola recipe, repeated by rotation around a centre</td></tr>
+<tr><td>Circular Parabola (Multi)</td><td>as above; its second handle separates and joins the copies through the generator's own <tt>drag</tt> rule</td></tr>
+<tr><td>Linked Circles</td><td>several <tt>circle</tt> paths, joined <tt>pairwise</tt> as pairs, a ring, or all to all</td></tr>
+<tr><td>Parametrics</td><td><tt>parametric</tt>, <tt>evenSpacing</tt>, then any connector; what can be dragged is still to decide</td></tr>
+<tr><td>Inverse Star, Radiate, Regular Pursuit</td><td><i>draft</i>: from their feature lists</td></tr>
+</table>
+
+<h3>Lesson 13. What the model does not cover</h3>
+<p>The model is about points and lines, because nails and thread are. Fills, gradients, transparency and pixel effects
+don't fit it, and don't need to. Playpen scripts that work that way keep their own canvas inside the script host and paint
+directly, as they do today. They can still be shown, given thumbnails, and placed in a figure as a picture. They just can't
+give nails.</p>
+
+<h2 class="nonum">Quick reference: the kernel's vocabulary</h2>
+<table class="t">
+<tr><th>Family</th><th>Name</th><th>Meaning</th></tr>
+<tr><td rowspan="6">Makers</td><td><tt>line(a, b, n)</tt></td><td>n steps from a to b</td></tr>
+<tr><td><tt>circle(c, r, n)</tt>, <tt>ellipse(c, w, h, n)</tt></td><td>n points round, closed</td></tr>
+<tr><td><tt>polygon(c, r, sides, n)</tt></td><td>sides with n steps each, closed</td></tr>
+<tr><td><tt>arc(c, r, from, to, n)</tt></td><td>part of a circle, open</td></tr>
+<tr><td><tt>spiral(c, options, n)</tt></td><td>a spiral, open</td></tr>
+<tr><td><tt>parametric(f, t0, t1, n)</tt></td><td>any rule p(t), sampled</td></tr>
+<tr><td rowspan="8">Shapers</td><td><tt>evenSpacing(path, n)</tt></td><td>equal distances along the path</td></tr>
+<tr><td><tt>bias(path, b)</tt></td><td>crowd towards one end</td></tr>
+<tr><td><tt>jitter(path, size, seed)</tt></td><td>repeatable random nudges</td></tr>
+<tr><td><tt>trim(path, a, b)</tt></td><td>drop points from the ends</td></tr>
+<tr><td><tt>reverse(path)</tt></td><td>run backwards</td></tr>
+<tr><td><tt>startAt(path, i)</tt></td><td>renumber a closed path</td></tr>
+<tr><td><tt>everyKth(path, k)</tt></td><td>keep every k-th point</td></tr>
+<tr><td><tt>move</tt>, <tt>rotate</tt>, <tt>scale</tt>, <tt>mirror</tt>, <tt>split</tt>, <tt>join</tt></td><td>placement and assembly</td></tr>
+<tr><td rowspan="6">Connectors</td><td><tt>pairwise(p, q)</tt></td><td>point i of p to point i of q</td></tr>
+<tr><td><tt>skip(path, s)</tt></td><td>point i to point i + s</td></tr>
+<tr><td><tt>multiply(path, k)</tt></td><td>point i to point k &times; i</td></tr>
+<tr><td><tt>allPairs(path)</tt></td><td>every point to every other</td></tr>
+<tr><td><tt>ring(paths, rule)</tt></td><td>each path to the next, round</td></tr>
+<tr><td><tt>between(paths, rule)</tt></td><td>several paths, pairs or all to all</td></tr>
+<tr><td rowspan="4">Finders</td><td><tt>ends</tt>, <tt>middle</tt></td><td>start, end, halfway</td></tr>
+<tr><td><tt>extremes</tt></td><td>top, bottom, left, right</td></tr>
+<tr><td><tt>tips</tt>, <tt>cusps</tt>, <tt>centre</tt></td><td>features of curves</td></tr>
+<tr><td><tt>crossings(p, q)</tt></td><td>where two paths cross</td></tr>
+</table>
+<p>Closed paths wrap round: counting past the last point starts again at 0. When two paths of different lengths are
+connected, the connector either respaces one to match, or stops with a message that names both lengths and the missing
+point.</p>

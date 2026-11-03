@@ -1,0 +1,450 @@
+
+/* ===========================================================
+   wrapper.css
+   -----------------------------------------------------------
+   SINGLE STYLE CONTAINER — STRUCTURED DOCUMENT
+
+   TABLE OF CONTENTS
+   -----------------------------------------------------------
+   [LAYOUT]
+     - body
+     - #wrapper
+     - #tabs / tab text
+     - #content
+     - #control / #action
+     - #main
+     - #sketchpad-wrapper / #sketchpad / canvas layers
+
+   [CAPTION]
+     - #caption
+     - caption title + buttons
+     - caption dropdown menu
+
+   [THUMBS_OVERLAYS]
+     - thumbnail panel
+     - thumbnail items
+     - point picker dots
+   =========================================================== */
+
+
+/* ===========================================================
+   [LAYOUT]
+   =========================================================== */
+
+/* ---- Base page ---- */
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
+
+/* ---- Root wrapper ---- */
+#wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+}
+
+/* ---- Tabs bar ---- */
+#tabs {
+  background-color: #ffffff;
+}
+
+/* Tab text color */
+.nav-tabs .nav-link {
+  color: #000000;
+}
+
+.nav-tabs .nav-link.active {
+  color: #000000;
+}
+
+/* ---- Main split: control + main ---- */
+#content {
+  flex: 1;
+  display: flex;
+  width: 100%;
+}
+
+/* ---- Left control column ---- */
+#control {
+  width: 300px;
+  background-color: var(--ui-control-bg);
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+/* ---- Action area inside control ---- */
+#action {
+  flex: 1;
+  background-color: var(--ui-action-bg);
+  padding: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  display: flex;
+  justify-content: center;     /* center the white panel */
+  align-items: flex-start;
+}  /* end #action */
+
+
+/* ---- Right main column ---- */
+#main {
+  flex: 1;
+  background: #fafafa;
+  padding: 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;     /* allow column to shrink smaller than canvas */
+}
+
+
+/* ---- Sketchpad anchoring ---- */
+#sketchpad-wrapper {
+  position: relative;
+  flex: 1;              /* Fill available vertical space in #main */
+  display: flex;        /* Row layout for sidebar + canvas */
+  flex-direction: row;
+  min-height: 0;        /* Allow shrinking */
+  overflow: hidden;
+}
+
+/* Container for Canvas + Overlays */
+#sketchpad-container {
+  flex: 1;
+  position: relative;
+  background: white;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  overflow: hidden;
+}
+
+/* Alignment wrapper for canvas + overlays */
+#sketchpad-stack {
+  position: relative;
+  display: inline-block;
+  /* Will be sized by the canvas inside #sketchpad */
+}
+
+/* The actual canvas target div */
+#sketchpad {
+  /* Canvas often appended here. */
+  display: block;
+}
+
+/* ---- Canvas base ---- */
+#sharedCanvas {
+  position: static;
+  z-index: auto;
+}
+
+/* ---- Overlay layer container ---- */
+#canvasOverlayLayers {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+
+/* ===========================================================
+   [CAPTION]
+   =========================================================== */
+
+#caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 10px;
+  border-top: 2px solid var(--blue-base);
+  background-color: #f8f8f8;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #222;
+  min-width: 0;     /* allow flex shrink */
+}
+
+.caption-title {
+  font-weight: bold;
+  font-size: 0.9rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.caption-buttons {
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.caption-buttons button {
+  padding: 2px 10px;
+  border: 1px solid var(--theme-base);
+  border-radius: 6px;
+  background-color: #fff;
+  color: #000;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.caption-buttons button:hover {
+  color: #fff;
+  background-color: var(--theme-base);
+  border-color: var(--theme-base);
+}
+
+/* ---- Caption dropdown menu ---- */
+.caption-menu {
+  position: absolute;
+  background: white;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  padding: 4px 0;
+  z-index: 9999;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+
+  /* Menu opens leftward under right-justified button */
+  transform: translateX(-100%);
+}
+
+.caption-menu-item {
+  padding: 6px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.caption-menu-item:hover {
+  background: #e8e8e8;
+}
+
+/* Disabled menu items */
+.caption-menu-item.disabled {
+  color: #888;
+  cursor: default;
+  background: white !important;
+}
+
+.caption-menu-item.disabled:hover {
+  background: white !important;
+}
+
+
+/* ===========================================================
+   [THUMBS_OVERLAYS]
+   =========================================================== */
+
+/* ---- Thumbnail panel ---- */
+.thumb-panel {
+  display: grid;
+
+  grid-template-columns: repeat(5, 50px);  /* FIXED columns, no stretching */
+  gap: 2px;
+
+  padding: 12px;                           /* small, even border */
+  box-sizing: border-box;
+
+  background: #ffffff;
+  border: 1px solid var(--outline);
+
+  width: max-content;                      /* shrink-wrap to grid width */
+}  /* end thumb-panel */
+
+
+/* ---- Thumbnail items ---- */
+.thumb-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.7rem;
+  color: #333;
+}
+
+.thumb-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border: 1px solid var(--gray-dark);
+  border-radius: 3px;
+  background-color: white;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.thumb-image:hover {
+  transform: scale(1.1);
+  border-color: var(--theme-accent, var(--blue-base));
+}
+
+.thumb-label {
+  margin-top: 2px;
+  font-size: 0.65rem;
+}
+
+
+/* ===========================================================
+   THUMBNAILS — SELECTED INDICATOR (NO REFLOW)
+   =========================================================== */
+
+.thumb-image.thumb-selected {
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.95),
+    0 0 0 5px var(--theme-base);
+}
+
+.thumb-image.selected {
+  outline: 3px solid #000;
+  outline-offset: -3px;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 5px #000;
+}
+
+/* Subtabs: improve INACTIVE readability only */
+#subtabs .nav-link:not(.active) {
+  color: #111;          /* dark text on bright/pastel tab */
+  font-weight: 700;     /* optional: remove if you dislike */
+} /* end inactive subtab */
+
+/* ============================================================
+   FIGURES SIDEBAR
+   ============================================================ */
+
+#figure-sidebar {
+  width: 50px;
+  flex-shrink: 0;
+  background-color: var(--bg-color-secondary, #f5f5f5);
+  border-right: 1px solid var(--border-color, #dee2e6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 10px;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+
+/* Interface Controls (Above Action Panel) */
+#interface-controls {
+  border-bottom: 1px solid var(--border-color, #ccc);
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  /* hidden if empty? handled by content */
+}
+
+/* If empty, hide border/margin */
+#interface-controls:empty {
+  display: none;
+}
+
+/* Overlay buttons styling */
+.figure-overlay-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--theme-figures-btn-border, #666);
+  background-color: var(--theme-figures-btn-bg, #eee);
+  color: var(--theme-figures-btn-text, #333);
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.figure-overlay-btn:hover {
+  opacity: 1.0;
+  background-color: var(--theme-figures-btn-hover, #ddd);
+}
+
+.figure-overlay-btn.active {
+  border-color: var(--theme-figures-btn-active-border, #007bff);
+  background-color: var(--theme-figures-btn-active-bg, #007bff);
+  color: white;
+  opacity: 1.0;
+  transform: scale(1.05);
+}
+
+/* Tooltip for overlay buttons */
+.figure-tooltip {
+  position: absolute;
+  left: 110%;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.85);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: pre;
+  pointer-events: none;
+  z-index: 1000;
+  display: none;
+  min-width: 150px;
+  max-width: 200px;
+}
+
+.figure-overlay-btn:hover .figure-tooltip {
+  display: block;
+}
+
+
+/* Error bar (ui/errorReport.js): errors since the page loaded, on every tab.
+   It shares the alert bar's layout (head, list, foot) in red. */
+#errorBar {
+  margin: 6px 8px;
+  padding: 6px 10px;
+  background: #fde2e1;
+  border: 1px solid #d9534f;
+  border-radius: 4px;
+  color: #7a1612;
+  font-size: 0.8rem;
+}
+#errorBar .alert-head { display: flex; justify-content: space-between; align-items: center; }
+#errorBar ul          { margin: 4px 0 4px 18px; padding: 0; }
+#errorBar .alert-foot { font-size: 0.72rem; opacity: 0.8; }
+#errorBar .alert-dismiss { font-size: 0.72rem; padding: 0 8px; }
+
+/* Home alert bar: a summary of the last manifest check when it found problems */
+#alertBar {
+  margin: 6px 8px;
+  padding: 6px 10px;
+  background: #fff3cd;
+  border: 1px solid #e0b84a;
+  border-radius: 4px;
+  color: #5c4500;
+  font-size: 0.8rem;
+}
+#alertBar .alert-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#alertBar ul {
+  margin: 4px 0 4px 18px;
+  padding: 0;
+}
+#alertBar .alert-foot {
+  font-size: 0.72rem;
+  opacity: 0.8;
+}
+#alertBar .alert-dismiss {
+  font-size: 0.72rem;
+  padding: 0 8px;
+}

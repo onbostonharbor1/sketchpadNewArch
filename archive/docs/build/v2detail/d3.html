@@ -1,0 +1,157 @@
+<h2>5.0 GENERATORS AND SETTINGS</h2>
+<h3>5.1 The generator file</h3>
+<p>A generator is one file. It declares what it is and what settings it takes, and has one function that turns settings into
+geometry. It replaces both V1's Draw registry objects and its <tt>scriptInfo</tt> scripts.</p>
+<pre class="code">// generators/parabola.js
+/* Parabola: two arms meeting at a corner, nail i of one joined to nail i of the other.
+   The classic corner stitch. Settings: the three corner points, the number of steps. */
+export const meta = {
+  kind: "generator", id: "parabola", version: 2,
+  title: "Parabola", tags: ["fundamental"], notes: "The corner stitch."
+};
+export const params = {
+  a:      { type: "point",  default: { x: 100, y: 100 }, handle: true, label: "Arm 1 end" },
+  corner: { type: "point",  default: { x: 100, y: 400 }, handle: true },
+  b:      { type: "point",  default: { x: 400, y: 400 }, handle: true, label: "Arm 2 end" },
+  steps:  { type: "int",    default: 15, min: 2, max: 200 }
+  // colour, line width, rotate, scale: the common set (DR-5.6), not declared here
+};
+export function build(s, k) {            // s: settings, k: the kernel
+  const arm1 = k.line({ a: s.a, b: s.corner, n: s.steps });
+  const arm2 = k.line({ a: s.corner, b: s.b, n: s.steps });
+  return k.geometry({ paths: { arm1, arm2 }, stitches: k.pairwise(arm1, arm2) });
+}
+export function migrate(old, fromVersion) { /* settings from an older version */ return old; }</pre>
+<table class="req">
+<tr><td>DR-5.1</td><td><tt>build</tt> shall be a pure function of its settings and the kernel. It shall not keep state between calls; every call starts fresh (this is what retires V1's shared singletons, P-2).</td></tr>
+<tr><td>DR-5.2</td><td>A generator may export <tt>drag(settings, handleName, newPoint) &rarr; settings</tt> when dragging a handle must change more than that handle (a midpoint handle that moves both ends). Without it, dragging sets the handle's setting.</td></tr>
+<tr><td>DR-5.3</td><td>A generator shall be registered by saving its file; the catalog reads <tt>meta</tt> and <tt>params</tt> without running <tt>build</tt>, and checks the schema once (FR-6.14.4). A failing check shows the generator greyed in its list with the reason.</td></tr>
+<tr><td>DR-5.4</td><td><tt>version</tt> is a whole number. A document records the version each layer was made with; on open, <tt>migrate</tt> brings older settings forward (FR-6.5.6).</td></tr>
+<tr><td>DR-5.5</td><td>Generators are judged by DR-2.5 (readable) above all: a generator should fit on one screen; anything longer is built from kernel parts.</td></tr>
+</table>
+<h3>5.2 Settings schema</h3>
+<table class="small">
+<tr><th>Type</th><th>Fields</th><th>Control</th><th>Value</th></tr>
+<tr><td>int</td><td>default, min, max, step 1</td><td>slider with a number box</td><td>whole number</td></tr>
+<tr><td>number</td><td>default, min, max, step</td><td>slider with a number box</td><td>number</td></tr>
+<tr><td>angle</td><td>default (degrees), min &minus;360, max 360</td><td>slider and dial</td><td>degrees</td></tr>
+<tr><td>color</td><td>default "#rrggbb"</td><td>colour picker</td><td>"#rrggbb"</td></tr>
+<tr><td>choice</td><td>default, options [..]</td><td>list, or buttons when 4 or fewer</td><td>one option</td></tr>
+<tr><td>bool</td><td>default</td><td>checkbox</td><td>true / false</td></tr>
+<tr><td>text</td><td>default</td><td>text box</td><td>string</td></tr>
+<tr><td>point</td><td>default {x, y}, handle true|false</td><td>a handle on the canvas, and two number boxes</td><td>{x, y, z}</td></tr>
+<tr><td>points</td><td>default [..], handles true|false</td><td>handles; add and remove</td><td>Point[]</td></tr>
+<tr><td>pathRef</td><td>default null</td><td>choose another layer's path</td><td>{ layer, path }</td></tr>
+<tr><td>seed</td><td>default 1</td><td>number box with a "new seed" button</td><td>whole number</td></tr>
+</table>
+<p>Optional fields on any type: <tt>label</tt>, <tt>section</tt> (groups settings into a tab of the settings panel),
+<tt>showIf</tt> (a condition on other settings), <tt>help</tt>.</p>
+<table class="req">
+<tr><td>DR-5.6</td><td>The common set, shared by every generator and shown in a standard panel (FR-6.4.9): colour, line width, steps (where meaningful), rotate, scale, opacity. A generator may hide one it does not use (<tt>common: { steps: false }</tt>).</td></tr>
+<tr><td>DR-5.7</td><td>Every setting's default shall lie inside its limits; the schema check (DR-5.3) enforces it (the V1 registry check found sliders whose settings were not numbers).</td></tr>
+<tr><td>DR-5.8</td><td>A value from a saved file outside its limits shall be kept, shown with a mark, and used: limits guide the slider, they do not refuse a value (D-15).</td></tr>
+</table>
+<h3>5.3 Acceptance tests</h3>
+<table class="req">
+<tr><td>AT-5.1</td><td>Saving a new generator file makes it appear in Draw's list within 2 s with no restart (FR-6.9.2); a file with a default outside its limits appears greyed with that reason.</td></tr>
+<tr><td>AT-5.2</td><td>Two Figures layers made from the same generator, one changed, do not affect each other or Draw (P-2).</td></tr>
+<tr><td>AT-5.3</td><td>A document saved with generator version 1, opened after the generator is at version 2, opens with its settings migrated and draws.</td></tr>
+</table>
+
+<h2>6.0 DOCUMENTS, THE POINT TABLE AND WELDS</h2>
+<h3>6.1 Document format</h3>
+<pre class="code">{
+  "format": 2,                         // V2's first format; V1 files are format 1 (section 18)
+  "createdBy": "sketchpad-v2",
+  "title": "Star in a square",
+  "units": "mm",                       // "mm" | "in" | "legacy" (V1 pixels)
+  "scale": 0.5,                        // mm per document unit; null until set for output
+  "nail": { "diameter": 2, "clearance": 3 },
+  "nextPoint": 14,                     // point numbers are never reused
+  "points": {                          // the point table
+    "1": { "x": 100, "y": 100, "z": 0 },                 // a free point
+    "2": { "on": "L1", "path": "arm1", "t": 0.5 },       // attached by fraction along a path
+    "3": { "on": "L2", "feature": "tip curve #3" }       // attached by feature name
+  },
+  "layers": [
+    { "lid": "L1", "generator": "parabola", "version": 2,
+      "settings": { "steps": 15 },                       // only settings that differ from defaults
+      "handles": { "a": 1, "corner": 5, "b": 6 },         // handle name to point number
+      "transform": { "angle": 0, "tx": 0, "ty": 0 },
+      "role": "stitch",                                   // "stitch" | "guide" | "scaffold" | "image"
+      "includeInOutput": true, "visible": true, "color": "#1c7ed6", "legacyNumber": 1 }
+  ],
+  "order": ["L2", "L1"],               // top first; separate from numbering
+  "discs": [ { "point": 2 }, { "point": 3 } ],           // which points are nails shown on the canvas
+  "output": { "paper": "letter", "margin": 10, "overlap": 10, "labels": true, "colourCycle": false }
+}</pre>
+<table class="req">
+<tr><td>DR-6.1</td><td>A document holds no derived values: no drawn geometry, no bounds, no cached positions. Everything shown is evaluated from it (P-3).</td></tr>
+<tr><td>DR-6.2</td><td>A weld is two handles naming one point number (D-3). There is no weld list to keep in step (P-6).</td></tr>
+<tr><td>DR-6.3</td><td>An attached point that can no longer be found (its feature vanished) shall keep its last position, be marked, and be listed by the integrity check (FR-6.18.5); it shall not jump to another feature.</td></tr>
+<tr><td>DR-6.4</td><td>Settings equal to the generator's default are not written, so a changed default reaches old documents unless they set the value.</td></tr>
+<tr><td>DR-6.5</td><td>Files are written with sorted keys and two-space indent, so a diff in git shows only what changed.</td></tr>
+</table>
+[[FIG weld_shared | A weld: two handles naming one point]]
+[[FIG weld_attach | An attachment: a point found on another layer's path]]
+<h3>6.2 Evaluation</h3>
+<p>Evaluating a document gives, for every layer, its geometry, and for every point, its position.</p>
+<pre class="code">evaluate(document):
+  graph = layers as nodes; an edge L1 &rarr; L2 when a handle of L2 names a point attached to L1
+  if the graph has a cycle: report the layers in it; evaluate the rest; mark the cycle's layers failed
+  for each layer in topological order:
+    for each handle: position = free point, or the attached point evaluated on its layer (already done)
+    settings = defaults + layer.settings + handle positions
+    geometry = generator.build(settings, kernel)       // caught here: a failure marks this layer only (FR-6.14.3)
+    apply layer.transform to geometry
+    record geometry; evaluate attached points that lie on it
+  return { geometries, positions, notes, failures }</pre>
+[[FIG eval_order | Evaluation order follows attachments]]
+<table class="req">
+<tr><td>DR-6.6</td><td>Evaluation shall be memoised per layer by a key of its inputs (settings, handle positions, transform); a change to one layer re-evaluates it and the layers that depend on it, no others. Target: dragging a handle on a 20-layer figure redraws at 60 frames a second (DR-17.1).</td></tr>
+<tr><td>DR-6.7</td><td>A cycle of attachments shall be refused at the command that would create it, with a message naming the layers; evaluation's cycle handling is the backstop for hand-edited files.</td></tr>
+</table>
+<h3>6.3 Acceptance tests</h3>
+<table class="req">
+<tr><td>AT-6.1</td><td>Weld two Parabola corners; drag one: both arms follow in the same frame, with no propagation code (DR-6.2).</td></tr>
+<tr><td>AT-6.2</td><td>Attach a disc to "tip curve #3" of a rose; change the rose's petals from 5 to 7 and back: the disc follows tip #3 throughout and ends where it began.</td></tr>
+<tr><td>AT-6.3</td><td>Save, close, open: the file is byte-identical when saved again with no change (DR-6.5).</td></tr>
+<tr><td>AT-6.4</td><td>A hand-edited file with an attachment cycle opens; the cycle's layers are marked and listed; the rest draw.</td></tr>
+</table>
+
+<h2>7.0 COMMANDS, UNDO AND SESSION</h2>
+<h3>7.1 The command contract</h3>
+<pre class="code">Command = {
+  id: "layers.insert",                 // family.name, unique
+  label: "Insert object...",
+  scope: "tab" | "subtab" | "global",  // section 11 (FR-6.13)
+  enabledWhen(ctx) -&gt; boolean,
+  whyNot(ctx) -&gt; string,               // shown as the greyed item's tooltip
+  run(doc, ctx, args) -&gt; { doc, select? }   // returns a new document; never changes doc
+}</pre>
+<table class="req">
+<tr><td>DR-7.1</td><td>Every change to a document is a command (P-7). A command returns a new document; the old one is kept by history unchanged (structural sharing allowed; mutation not).</td></tr>
+<tr><td>DR-7.2</td><td>History is a list of snapshots with a position (A-3). Undo moves back, redo forward; a new command after an undo drops the redo side. The list keeps at least 200 snapshots or 50 MB, whichever is first, dropping the oldest.</td></tr>
+<tr><td>DR-7.3</td><td>A drag is one command, recorded when the pointer is released; intermediate positions are drawn but not recorded. A run of nudges with the arrow keys within 1 s is one command.</td></tr>
+<tr><td>DR-7.4</td><td>A command that throws leaves the document as it was (it never changed it); the error is reported (FR-6.14.3).</td></tr>
+<tr><td>DR-7.5</td><td>"Changed since saved" is the history position differing from the saved position; selection, mode and view are session, not document, and never mark it changed (P-8).</td></tr>
+</table>
+[[FIG undo_stack | Undo: snapshots and a position]]
+<h3>7.2 Session</h3>
+<pre class="code">Session = {
+  tabs: { [tabId]: { open: documentId[], active: documentId, activeLayer: lid,
+                     mode: "lines" | "points", showAll: boolean, hidden: lid[],
+                     selected: pointNumber | null, zoom: number, pan: {x, y} } },
+  activeTab: tabId
+}</pre>
+<table class="req">
+<tr><td>DR-7.6</td><td>Tab switching shall be a pure function of session state: the tab shows what its session says. There is no "needs update", "saved" or "restore" decision chain (P-9).</td></tr>
+<tr><td>DR-7.7</td><td>The session shall be written to the journal store as it changes (at most once a second) for crash recovery (FR-6.18.3); on start-up after an unclean exit the owner is offered it back.</td></tr>
+</table>
+[[FIG state_diagrams | Session, document and history kept apart]]
+<h3>7.3 Acceptance tests</h3>
+<table class="req">
+<tr><td>AT-7.1</td><td>Delete a layer, undo: the layer, its points and its welds are back exactly (document equal to before).</td></tr>
+<tr><td>AT-7.2</td><td>Select a layer and change mode: the figure is not marked changed.</td></tr>
+<tr><td>AT-7.3</td><td>Kill the browser tab mid-edit, reopen: the session is offered back with the unsaved document.</td></tr>
+</table>

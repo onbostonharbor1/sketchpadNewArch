@@ -1,0 +1,35 @@
+/utilities/logfiles
+/archive
+testTemp.js
+
+# Node.js
+node_modules/
+dist/
+.vite/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Backups
+*~
+#temp
+#backup
+__pycache__/
+/dist-static/
+
+# Pictures from npm run pixels:save
+/pixel-refs/
+
+# Regression test: this run's pictures and report (the approved copies are committed)
+/tests/regression/latest/
+/tests/regression/report.html
