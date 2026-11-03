@@ -1,0 +1,14 @@
+ok: images with no hint script, and why
+=======================================
+(2 Nov 2026) None. All 95 images have a hint script.
+
+Notes for the folder:
+- _Points.png and _points1.png are the nail template of Figure 81; their scripts run First Build
+  in Final mode (points only).
+- 0511, 0512, 0513 and 0514 are screenshots of Barry's own curve-stitching pages (nautilus,
+  chords at a skip, chords in an ellipse); the scripts redo them with the shared routines.
+- Fourteen circle boards (205, 209a, 213, 215, 218, 220, 221, 222, 224, 231, 236, 236a, 239,
+  243, 252, 255a) are one rule: chords whose skip grows round the circle (growingChords). They
+  differ in the first skip, the growth and the colours; the sliders explore between them.
+- Parts not attempted are named in each script's header (the feather eye in 224, the medallion
+  in 213, the real Sri Yantra geometry, sculpted boards).
