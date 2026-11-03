@@ -1,0 +1,7 @@
+Pursuit: images with no hint script, and why
+============================================
+(2 Nov 2026) None. All 14 images have a hint script.
+
+Notes for the folder:
+- 13 of the 14 are pursuit curves (nested polygons), drawn with pursuitEngine.js.
+- 298.jpeg is not a pursuit: it is four corner curve stitches, drawn with corner().

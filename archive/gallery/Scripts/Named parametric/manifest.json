@@ -1,0 +1,122 @@
+[
+  {
+    "filename": "cardiodFromCircles",
+    "path": "cardiodFromCircles.js",
+    "title": "cardiodFromCircles.js"
+  },
+  {
+    "filename": "cochleoid",
+    "path": "cochleoid.js",
+    "title": "cochleoid.js"
+  },
+  {
+    "filename": "epicycloid",
+    "path": "epicycloid.js",
+    "title": "epicycloid.js"
+  },
+  {
+    "filename": "epitrochoid",
+    "path": "epitrochoid.js",
+    "title": "Epitrochoid",
+    "status": "Queue"
+  },
+  {
+    "filename": "epitrochoid_good",
+    "path": "epitrochoid_good.js",
+    "title": "epitrochoid_good.js"
+  },
+  {
+    "filename": "epitrochoid1",
+    "path": "epitrochoid1.js",
+    "title": "epitrochoid1.js"
+  },
+  {
+    "filename": "hypocycloid",
+    "path": "hypocycloid.js",
+    "title": "hypocycloid.js"
+  },
+  {
+    "filename": "hypocycloidEvolute",
+    "path": "hypocycloidEvolute.js",
+    "title": "hypocycloidEvolute.js"
+  },
+  {
+    "filename": "hypocycloidMany",
+    "path": "hypocycloidMany.js",
+    "title": "hypocycloidMany.js"
+  },
+  {
+    "filename": "hypotrochoid",
+    "path": "hypotrochoid.js",
+    "title": "Hypotrochoid"
+  },
+  {
+    "filename": "hypotrochoid1",
+    "path": "hypotrochoid1.js",
+    "title": "hypotrochoid1.js"
+  },
+  {
+    "filename": "hypotrochoidInteractive",
+    "path": "hypotrochoidInteractive.js",
+    "title": "hypotrochoidInteractive.js"
+  },
+  {
+    "filename": "lissajois1",
+    "path": "lissajois1.js",
+    "title": "lissajois1.js"
+  },
+  {
+    "filename": "lissajous",
+    "path": "lissajous.js",
+    "title": "Lissajous (interactive)"
+  },
+  {
+    "filename": "LISSAJOUS100",
+    "path": "LISSAJOUS100.js",
+    "title": "LISSAJOUS100.js",
+    "status": "favorite"
+  },
+  {
+    "filename": "lissajous3",
+    "path": "lissajous3.js",
+    "title": "lissajous3.js"
+  },
+  {
+    "filename": "lissajous4",
+    "path": "lissajous4.js",
+    "title": "lissajous4.js",
+    "status": "favorite"
+  },
+  {
+    "filename": "lissajous5",
+    "path": "lissajous5.js",
+    "title": "lissajous5.js",
+    "status": "Many"
+  },
+  {
+    "filename": "lissajousCurveStitch",
+    "path": "lissajousCurveStitch.js",
+    "title": "lissajousCurveStitch.js",
+    "status": "new"
+  },
+  {
+    "filename": "roseCurve",
+    "path": "roseCurve.js",
+    "title": "roseCurve.js"
+  },
+  {
+    "filename": "roseCurveInterative",
+    "path": "roseCurveInterative.js",
+    "title": "roseCurveInterative.js"
+  },
+  {
+    "filename": "roseCurvesMany",
+    "path": "roseCurvesMany.js",
+    "title": "roseCurvesMany.js"
+  },
+  {
+    "filename": "roseRhodena",
+    "path": "roseRhodena.js",
+    "title": "roseRhodena.js"
+  }
+]

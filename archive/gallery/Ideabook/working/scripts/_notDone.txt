@@ -1,0 +1,6 @@
+working: images with no hint script, and why
+=============================================
+(2 Nov 2026) Every image has a hint script. Parts not attempted are named in each script's
+header: the seated figure in 291, the sculpted board of 309, height in 260a.
+
+None.

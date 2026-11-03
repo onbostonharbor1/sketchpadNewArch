@@ -1,0 +1,33 @@
+[
+  {
+    "filename": "butterfly",
+    "path": "butterfly.js",
+    "title": "6 lobbed butterfly",
+    "status": "Queue"
+  },
+  {
+    "filename": "barnsleyFern",
+    "path": "barnsleyFern.js",
+    "title": "barnsleyFern.js"
+  },
+  {
+    "filename": "boat",
+    "path": "boat.js",
+    "title": "boat.js"
+  },
+  {
+    "filename": "voronoi",
+    "path": "voronoi.js",
+    "title": "Generative Voronoi"
+  },
+  {
+    "filename": "lorenzAttractor",
+    "path": "lorenzAttractor.js",
+    "title": "lorenzAttractor.js"
+  },
+  {
+    "filename": "phyllotaxisSpirals",
+    "path": "phyllotaxisSpirals.js",
+    "title": "phyllotaxisSpirals.js"
+  }
+]

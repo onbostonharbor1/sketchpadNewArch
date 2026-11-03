@@ -1,0 +1,7 @@
+To Build: images with no hint script, and why
+==============================================
+(2 Nov 2026) Every image has a hint script. Four run existing patterns:
+81.jpg and Figure 81.png run Patterns > builds > First Build; 84.jpg and Figure 84.png run
+Overlapping Stars.
+
+None.

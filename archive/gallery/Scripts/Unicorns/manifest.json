@@ -1,0 +1,35 @@
+[
+  {
+    "filename": "bezierBlossom",
+    "path": "bezierBlossom.js",
+    "title": "Butterfly"
+  },
+  {
+    "filename": "curveStitchEditor",
+    "path": "curveStitchEditor.js",
+    "title": "Curve Stitch Editor",
+    "status": "Many"
+  },
+  {
+    "filename": "radialPetals",
+    "path": "radialPetals.js",
+    "title": "Radial Petals",
+    "status": "Queue"
+  },
+  {
+    "filename": "ribbon1",
+    "path": "ribbon1.js",
+    "title": "ribbon1.js"
+  },
+  {
+    "filename": "ribbon2",
+    "path": "ribbon2.js",
+    "title": "ribbon2.js",
+    "status": "favorite"
+  },
+  {
+    "filename": "ribbonAnimated",
+    "path": "ribbonAnimated.js",
+    "title": "ribbonAnimated.js"
+  }
+]

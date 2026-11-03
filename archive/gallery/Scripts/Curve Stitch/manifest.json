@@ -1,0 +1,58 @@
+[
+  {
+    "filename": "arcsAndInner",
+    "path": "arcsAndInner.js",
+    "title": "Arcs and Inner",
+    "status": "Queue"
+  },
+  {
+    "filename": "curveStitch",
+    "path": "curveStitch.js",
+    "title": "curveStitch.js"
+  },
+  {
+    "filename": "joinedParabs",
+    "path": "joinedParabs.js",
+    "title": "joinedParabs.js",
+    "status": "Examine"
+  },
+  {
+    "filename": "manyJoinedParabs",
+    "path": "manyJoinedParabs.js",
+    "title": "Many Joined Parabs",
+    "status": "fix"
+  },
+  {
+    "filename": "manyRowsColumns",
+    "path": "manyRowsColumns.js",
+    "title": "manyRowsColumns.js"
+  },
+  {
+    "filename": "ovalBoat",
+    "path": "ovalBoat.js",
+    "title": "ovalBoat.js"
+  },
+  {
+    "filename": "overlappingStars1",
+    "path": "overlappingStars1.js",
+    "title": "Overlapping Stars*",
+    "status": ""
+  },
+  {
+    "filename": "polygonCorner",
+    "path": "polygonCorner.js",
+    "title": "polygonCorner.js",
+    "status": "favorite"
+  },
+  {
+    "filename": "tractrix",
+    "path": "tractrix.js",
+    "title": "tractrix.js"
+  },
+  {
+    "filename": "weaving",
+    "path": "weaving.js",
+    "title": "weaving.js",
+    "status": "favorite"
+  }
+]

@@ -1,0 +1,24 @@
+[
+  {
+    "filename": "fourParabolicLike",
+    "path": "fourParabolicLike.js",
+    "title": "fourParabolicLike.js"
+  },
+  {
+    "filename": "manyParametric",
+    "path": "manyParametric.js",
+    "title": "Many Parametric",
+    "status": "fix"
+  },
+  {
+    "filename": "parametricSketcher",
+    "path": "parametricSketcher.js",
+    "title": "parametricSketcher.js",
+    "status": "Many"
+  },
+  {
+    "filename": "roseAndLissajous",
+    "path": "roseAndLissajous.js",
+    "title": "roseAndLissajous.js"
+  }
+]
