@@ -111,6 +111,8 @@ Geometry generators run in a Worker, terminated at the time limit. Legacy painti
 `sandbox="allow-scripts"` and never `allow-same-origin`, which current Chrome and Edge put in its own process: its
 code cannot freeze the page, and removing the frame stops it. The frame's content security policy blocks network
 access (to be confirmed on Barry's PC). *Proved: docs/experiments/stopping.md (3 Nov 2026).*
+The limits (time, stitches) are one overall setting for now; a finer one (per generator or per layer) may come later
+(Barry: a huge parametric today usually means a design problem, but may not later).
 
 ## R-14 Regression records
 

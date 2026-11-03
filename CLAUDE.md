@@ -1,4 +1,4 @@
-# New sketchpad: notes for Claude (DRAFT for Barry to edit)
+# Oceania (new sketchpad): notes for Claude (DRAFT for Barry to edit)
 
 The rebuild of Sketchpad. Barry calls it **new sketchpad** (3 Nov 2026); the specifications call it V2; no code name.
 Barry is a retired technical writer and an old-time Unix maintenance programmer. He reads every line he keeps:
@@ -58,6 +58,15 @@ When a decision trades one purpose against the other, say so and let Barry decid
   framework (no Bootstrap), no `!important`, no styles set from JavaScript except to show or hide a fixed region, no
   generated class names, no layout tricks where a plain block or flex row will do. If a style rule needs a comment to
   explain why it wins over another, the structure is wrong: fix the structure.
+
+## Where things are
+
+`settings/` (schema and values), `kernel/` (geometry as values; `makers/`, `shapers/`, `connectors/`, `finders/` to
+fill), `generators/`, `documents/` (model, evaluation, checks), `commands/` (every change to a document),
+`session/` (undo and state ids), `render/` (canvas, nails and the template), `screens/` (pages and their one
+stylesheet each), `service/` (the Node service, which also serves the pages), `templates/`, `host/`, `journal/`,
+`library/` (Barry's content), `vendor/`, `tests/`. Each folder's README says what belongs there and when it is built.
+The layer check (`npm run check`) enforces who may import whom.
 
 ## Decisions since the specifications (Barry, 3 Nov 2026)
 

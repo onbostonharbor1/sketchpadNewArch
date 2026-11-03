@@ -119,6 +119,11 @@ need came from.
 | Setting | Default | Scope | Source |
 |---|---|---|---|
 | Most stitches one layer may make | 500,000 | A | DS DR-16.4 |
+
+Barry (3 Nov 2026): a huge parametric probably shows a design problem today, though it may not later; so one
+overall limit for now, and finer control later if needed (for instance a limit a generator may declare for itself,
+or one per layer).
+
 | Most compute time per layer | 2 s | A | DS DR-16.4 |
 | Move a layer's work to a background worker above | 50 ms | A | DS DR-16.5 |
 | Script time limit | 5 s | A | DS DR-9.2 |

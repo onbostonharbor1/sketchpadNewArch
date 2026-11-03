@@ -13,8 +13,8 @@
    command shows its message and changes nothing.
    ============================================================ */
 
-import * as C from "../documents/commands.js";
-import * as H from "../documents/history.js";
+import * as C from "../commands/index.js";
+import * as H from "../session/history.js";
 import { newDocument, layerById, pointUsers } from "../documents/model.js";
 import { evaluate } from "../documents/evaluate.js";
 import { drawDocument, toDoc, toScreen } from "../render/canvas.js";

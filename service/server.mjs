@@ -41,7 +41,7 @@ const HOST    = process.env.OCEANIA_HOST || "127.0.0.1";
 const EXTRA_ORIGINS = (process.env.OCEANIA_ORIGINS || "").split(",").map((s) => s.trim()).filter(Boolean);
 
 // Folders the browser may read. archive/ is not among them: Oceania never imports V1 code.
-const SERVED = ["screens", "settings", "kernel", "generators", "documents", "render"];
+const SERVED = ["screens", "settings", "kernel", "generators", "documents", "commands", "session", "render"];
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css",
                 ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png" };
 

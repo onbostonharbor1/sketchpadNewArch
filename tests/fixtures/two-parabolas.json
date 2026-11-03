@@ -1,0 +1,173 @@
+{
+  "format": 2,
+  "createdBy": "new-sketchpad",
+  "id": "fixture-two-parabolas",
+  "title": "Two Parabolas, welded, with an attachment and a nail",
+  "units": "mm",
+  "settings": {
+    "nailDiameter": 2,
+    "nailClearance": 3,
+    "mergeDistance": 2
+  },
+  "nextPoint": 15,
+  "points": {
+    "1": {
+      "x": 20,
+      "y": 20,
+      "z": 0
+    },
+    "2": {
+      "x": 20,
+      "y": 120,
+      "z": 0
+    },
+    "3": {
+      "x": 20,
+      "y": 120,
+      "z": 0
+    },
+    "4": {
+      "x": 120,
+      "y": 120,
+      "z": 0
+    },
+    "6": {
+      "x": 160,
+      "y": 120,
+      "z": 0
+    },
+    "7": {
+      "x": 160,
+      "y": 120,
+      "z": 0
+    },
+    "8": {
+      "x": 260,
+      "y": 120,
+      "z": 0
+    },
+    "9": {
+      "x": 20,
+      "y": 180,
+      "z": 0
+    },
+    "10": {
+      "x": 20,
+      "y": 280,
+      "z": 0
+    },
+    "11": {
+      "x": 20,
+      "y": 280,
+      "z": 0
+    },
+    "12": {
+      "x": 120,
+      "y": 280,
+      "z": 0
+    },
+    "13": {
+      "on": "L1",
+      "path": "arm2",
+      "t": 0.5,
+      "fallback": {
+        "x": 70,
+        "y": 120,
+        "z": 0
+      }
+    },
+    "14": {
+      "on": "L2",
+      "path": "arm2",
+      "t": 1,
+      "fallback": {
+        "x": 260,
+        "y": 120,
+        "z": 0
+      }
+    }
+  },
+  "layers": [
+    {
+      "lid": "L1",
+      "generator": "parabola",
+      "version": 1,
+      "settings": {
+        "steps": 15,
+        "color": "#1c4fd8",
+        "lineWidth": 1
+      },
+      "handles": {
+        "arm1Start": 1,
+        "arm1Corner": 2,
+        "arm2Corner": 3,
+        "arm2End": 4
+      },
+      "transform": {
+        "angle": 0,
+        "tx": 0,
+        "ty": 0
+      },
+      "role": "stitch",
+      "includeInOutput": true,
+      "visible": true
+    },
+    {
+      "lid": "L2",
+      "generator": "parabola",
+      "version": 1,
+      "settings": {
+        "steps": 15,
+        "color": "#1c4fd8",
+        "lineWidth": 1
+      },
+      "handles": {
+        "arm1Start": 4,
+        "arm1Corner": 6,
+        "arm2Corner": 7,
+        "arm2End": 8
+      },
+      "transform": {
+        "angle": 0,
+        "tx": 0,
+        "ty": 0
+      },
+      "role": "stitch",
+      "includeInOutput": true,
+      "visible": true
+    },
+    {
+      "lid": "L3",
+      "generator": "parabola",
+      "version": 1,
+      "settings": {
+        "steps": 15,
+        "color": "#1c4fd8",
+        "lineWidth": 1
+      },
+      "handles": {
+        "arm1Start": 13,
+        "arm1Corner": 10,
+        "arm2Corner": 11,
+        "arm2End": 12
+      },
+      "transform": {
+        "angle": 0,
+        "tx": 0,
+        "ty": 0
+      },
+      "role": "stitch",
+      "includeInOutput": true,
+      "visible": true
+    }
+  ],
+  "order": [
+    "L3",
+    "L2",
+    "L1"
+  ],
+  "discs": [
+    14
+  ],
+  "nextLayer": 3
+}

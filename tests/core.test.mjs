@@ -11,8 +11,8 @@ import assert from "node:assert/strict";
 import * as k from "../kernel/kernel.js";
 import { newDocument, layerById } from "../documents/model.js";
 import { evaluate } from "../documents/evaluate.js";
-import * as C from "../documents/commands.js";
-import * as H from "../documents/history.js";
+import * as C from "../commands/index.js";
+import * as H from "../session/history.js";
 import { nailsOf, tooClose, templateSVG } from "../render/nails.js";
 
 const near = (a, b, e = 1e-9) => Math.abs(a - b) < e;

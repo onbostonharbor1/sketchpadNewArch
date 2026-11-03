@@ -15,8 +15,10 @@ const MAY = {
   kernel:     ["kernel"],
   generators: ["generators"],                    // a generator is given the kernel; it imports nothing else
   documents:  ["documents", "kernel", "generators", "settings"],
+  commands:   ["commands", "documents", "generators"],
+  session:    ["session"],                        // history takes commands as values; it imports none
   render:     ["render", "documents", "settings"],
-  screens:    ["screens", "render", "documents", "settings", "kernel", "generators"],
+  screens:    ["screens", "render", "documents", "commands", "session", "settings", "kernel", "generators"],
   service:    ["service"]
 };
 let breaches = 0;
