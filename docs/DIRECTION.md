@@ -97,3 +97,22 @@ Rule for every black box: its contract is in its folder's README, and tests chec
 - Figure robustness lives entirely in Tier C. That's the one real decision: rebuild the figure core inside V1, or
   in Oceania.
 - Tier D is where most of Oceania's extra complexity came from, and none of it serves figures.
+
+## Part 4. Barry's answers (3 November 2026)
+
+**Tier A:** accepted as a natural fit.
+
+**Tier B:**
+
+| Answer | Items |
+|---|---|
+| Want | 23 library index; 24 shapers and connectors library; 25 stepping view; 28 intersections as nail candidates; 29 simplified-curve overlay; 35 Sweep; 31 partly (depth not implemented yet, but points carry x, y and z everywhere) |
+| Free to add | 21 true-scale SVG; 22 units and print width |
+| Nice, a natural fit | 26 visualization separate from the product; 27 magic and named points as an overlay |
+| Natural fit (the rest) | 30 clipping and boolean shapers; 32 crash recovery; 33 undo; 34 document checks; 36 bring-to-front as a view change |
+
+**Tier C:** 42 (a weld is one shared point number) is mostly Barry's original conception of welds.
+
+**Tier D:** 58 (other materials) may be retained. Meshes and inserted objects come almost free from connectors;
+shaped nylon and true 3D stay separate projects. To keep them possible, the geometry code says *link* and
+*anchor point*, not stitch and nail.
